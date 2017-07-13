@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">*
+  <script file="Frame.lua"/>
+  <Script file="Stack.lua"/>
+  <Script file="ObjectManager.lua"/>
+  <Script file="Objective.lua"/>
+  <Script file="QuestItem.lua"/>
+  <Script file="Quest.lua"/>
+  <Script file="QuestHeader.lua"/>
+  <Script file="WorldQuest.lua"/>
+  <Script file="Block.lua"/>
+  <Script file="QuestBlock.lua"/>
+  <Script file="WorldQuestBlock.lua"/>
+  <Script file="Scenario.lua"/>
+  <Script file="Dungeon.lua"/>
+  <Script file="Keystone.lua"/>
+</Ui>

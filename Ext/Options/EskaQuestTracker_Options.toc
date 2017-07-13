@@ -1,0 +1,19 @@
+## Interface: 70200
+## Title: Eska Quest Tracker Options
+## Author: Skamer
+## Notes: Eska Quest Tracker Options
+## Version: 1.1.0
+## RequiredDeps: EskaQuestTracker
+## OptionalDeps: Ace3, LibDDI-1.0
+
+embeds.xml
+OptionBuilder.lua
+
+EskaQuestTracker_Options.lua
+Objectives.lua
+Quests.lua
+Scenario.lua
+WorldQuests.lua
+Dungeon.lua
+Keystone.lua
+Themes.lua
