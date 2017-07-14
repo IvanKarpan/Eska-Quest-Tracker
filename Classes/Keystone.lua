@@ -1,18 +1,18 @@
--- ========================================================================== --
--- 										 EskaQuestTracker                                       --
--- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
--- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
--- ========================================================================== --
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
 Scorpio             "EskaQuestTracker.Classes.Keystone"                       ""
--- ========================================================================== --
+--============================================================================--
 namespace "EQT"
--- ========================================================================== --
+--============================================================================--
 -- @TODO : - Add the ms precision
--- ========================================================================== --
+--============================================================================--
 class "Affix" extend "IFrame" "IReusable"
-  -- ======================================================================== --
-  -- Handlers
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                Handlers                                  --
+  ------------------------------------------------------------------------------
   local function SetTexture(self, new)
     self.frame.texture:SetTexture(new)
   end
@@ -25,18 +25,18 @@ class "Affix" extend "IFrame" "IReusable"
         GameTooltip:Show()
       end)
   end
-  -- ======================================================================== --
-  -- Properties
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
   property "id" { TYPE = Number }
   property "name" { TYPE = String }
   property "desc" { TYPE = String, DEFAULT = "", HANDLER = UpdateTooltip }
   property "texture" { TYPE = String + Number, HANDLER = SetTexture }
   -- Theme
   property "tID" { DEFAULT = "block.keystone"}
-  -- ======================================================================== --
-  -- Constructor
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function Affix(self)
     local frame = CreateFrame("Frame")
     frame:SetHeight(29)
@@ -52,13 +52,12 @@ class "Affix" extend "IFrame" "IReusable"
     self.frame = frame
   end
 endclass "Affix"
--- ========================================================================== --
-__InitChildBlockDB__()
+--============================================================================--
 class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
   _KeystoneCache = setmetatable( {}, { __mode = "k" } )
-  -- ======================================================================== --
-  -- Methods
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                Handlers                                  --
+  ------------------------------------------------------------------------------
   local function SetNumAffixes(self, new, old)
     if new > old then
       for i = 1, new - old do
@@ -86,7 +85,8 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
   end
 
   local function SetLevel(self, new)
-    self.frame.level:SetText(string.format("LEVEL %i", new))
+    -- self.frame.level:SetText(string.format("LEVEL %i", new))
+    Theme.SkinText(self.frame.level, string.format("LEVEL %i", new))
   end
 
   local function SetTimeLimit(self, new)
@@ -118,27 +118,13 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     self.frame.timer:SetText(string.format("%s / %s", strTimer, strTimeLimit))
   end
 
-  -- ======================================================================== --
-  -- Methods
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
   __Arguments__{ Number }
   function GetAffix(self, index)
     return self.affixes[index]
   end
-  -- ======================================================================== --
-  -- Properties
-  -- ======================================================================== --
-  property "level" { TYPE = Number, DEFAULT = 0, HANDLER = SetLevel }
-  property "numAffixes" { TYPE = Number, DEFAULT = 0, HANDLER = SetNumAffixes }
-  property "wasEnergized" { TYPE = Boolean, DEFAULT = true, HANDLER = SetWasEnergized }
-  property "timer" { TYPE = Number, DEFAULT = 0, HANDLER = SetTimer }
-  property "timeLimit" { TYPE = Number, DEFAULT = 0, HANDLER = SetTimeLimit }
-  property "timeLimit2Chest" { TYPE = Number, DEFAULT = 0 }
-  property "timeLimit3Chest" { TYPE = Number, DEFAULT = 0 }
-  property "isCompleted" { TYPE = Boolean, DEFAULT = false }
-  property "text" { TYPE = String, DEFAULT = "Mythic +", HANDLER = "SetText"}
-
-  __Static__() property "_tid" { DEFAULT = "block.keystone" }
 
   __Arguments__{}
   function Draw(self)
@@ -169,6 +155,13 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     end
   end
 
+  __Arguments__{ Argument(Boolean, true, true)}
+  function Refresh(self, callSuper)
+    if callSuper then
+      Super.Refresh(self)
+    end
+  end
+
   __Static__()
   function RefreshAll()
     for obj in pairs(_KeystoneCache) do
@@ -176,6 +169,26 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     end
   end
 
+  __Arguments__ {}
+  function RegisterFramesForThemeAPI(self)
+    Theme.RegisterText(self.tID..".level", self.frame.level)
+  end
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
+  property "level" { TYPE = Number, DEFAULT = 0, HANDLER = SetLevel }
+  property "numAffixes" { TYPE = Number, DEFAULT = 0, HANDLER = SetNumAffixes }
+  property "wasEnergized" { TYPE = Boolean, DEFAULT = true, HANDLER = SetWasEnergized }
+  property "timer" { TYPE = Number, DEFAULT = 0, HANDLER = SetTimer }
+  property "timeLimit" { TYPE = Number, DEFAULT = 0, HANDLER = SetTimeLimit }
+  property "timeLimit2Chest" { TYPE = Number, DEFAULT = 0 }
+  property "timeLimit3Chest" { TYPE = Number, DEFAULT = 0 }
+  property "isCompleted" { TYPE = Boolean, DEFAULT = false }
+  -- Theme
+  property "tID" { DEFAULT = "block.keystone" }
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function Keystone(self)
     Super(self)
     self.id = "Keystone"
@@ -198,12 +211,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     self.frame.redLine = redLine
 
     -- level
-    local font = _LibSharedMedia:Fetch("font", "PT Sans Narrow Bold")
-    local size = 14
     local level = self.frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    level:SetText("Level 12")
-    level:SetFont(font, size)
-    level:SetTextColor(1, 216/255, 0)
     level:SetPoint("TOPLEFT", chest, "TOPRIGHT", 4, 0)
     self.frame.level = level
 
@@ -222,7 +230,6 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     threeChestTimer:SetFont(threeChestTimer:GetFont(), 15)
     self.frame.threeChestTimer = threeChestTimer
 
-
     -- affixes anchor
     local affixes = CreateFrame("Frame", nil, self.frame)
     affixes:SetHeight(29)
@@ -238,7 +245,6 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     timer:SetFont(timer:GetFont(), 18, "OUTLINE")
     self.frame.timer = timer
 
-
     -- Move the dungeon icon
     self.frame.ftex:SetPoint("TOPLEFT", affixes, "BOTTOMLEFT", 0, -4)
 
@@ -246,7 +252,12 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
     self.baseHeight = self.height + 64
 
-    self:Refresh()
+    -- Important : Always use 'This' to avoid issues when this class is inherited
+    -- by other classes.
+    This.RegisterFramesForThemeAPI(self)
+    -- Here the false boolean say to refresh function to not call the refresh super function
+    -- because it's already done by the super constructor
+    This.Refresh(self, false)
 
     _KeystoneCache[self] = true
   end
@@ -262,8 +273,4 @@ Theme:_RegisterClass(Keystone._tid, Keystone)
 function OnLoad(self)
   -- Register this class in the object manager
   _ObjectManager:Register(Affix)
-
-  -- @HACK This is a temporary fix in waiting to release the theme API
-  Keystone.customConfigEnabled = true
-  Keystone:SetBlockPropertyValue("headerTextLocation", "LEFT")
 end

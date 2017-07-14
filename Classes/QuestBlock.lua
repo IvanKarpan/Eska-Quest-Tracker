@@ -1,19 +1,17 @@
--- ========================================================================== --
--- 										 EskaQuestTracker                                       --
--- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
--- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
--- ========================================================================== --
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
 Scorpio               "EskaQuestTracker.Classes.QuestBlock"                   ""
--- ========================================================================== --
+--============================================================================--
 namespace "EQT"
--- ========================================================================== --
--- __DBTextOptions__( function() return _DB.Block.childs.quest end)
- __InitChildBlockDB__() -- Create the functions to handle the db.
+--============================================================================--
 class "QuestBlock" inherit "Block"
   _QuestBlockCache = setmetatable( {}, { __mode = "k" } )
-  -- ======================================================================== --
-  -- Methods
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
   __Arguments__{ Quest }
   function AddQuest(self, quest)
     if not self.quests:Contains(quest) then
@@ -196,12 +194,14 @@ class "QuestBlock" inherit "Block"
     GET = function(self) return _DB.Quests.sortByDistance end
   }
 
-  -- property "text" { TYPE = String, DEFAULT = "Quests", HANDLER = "SetText" }
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
   -- Theme
   property "tID" { DEFAULT = "block.quests"}
-  -- ======================================================================== --
-  -- Contructor
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function QuestBlock(self)
     Super(self, "quests", 20)
     self.text = "Quests"
@@ -213,8 +213,4 @@ class "QuestBlock" inherit "Block"
     -- self:Refresh()
     _QuestBlockCache[self] = true
   end
-
-
 endclass "QuestBlock"
--- Register it in the Theme system.
-Theme:_RegisterClass(QuestBlock._tid, QuestBlock)

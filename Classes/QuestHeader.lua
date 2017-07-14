@@ -1,35 +1,24 @@
--- ========================================================================== --
--- 										 EskaQuestTracker                                       --
--- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
--- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
--- ========================================================================== --
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
 Scorpio           "EskaQuestTracker.Classes.QuestHeader"                      ""
--- ========================================================================== --
+--============================================================================--
 namespace "EQT"
--- ========================================================================== --
-__DBTextOptions__( function() return _DB.Quest.header end, false)
+--============================================================================--
 class "QuestHeader" inherit "Frame" extend "IReusable"
   _QuestHeaderCache = setmetatable( {}, { __mode = "k" } )
-
   event "OnQuestDistanceChanged"
-  -- ======================================================================== --
-  -- Handlers
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                Handlers                                  --
+  ------------------------------------------------------------------------------
   local function SetName(self, new, old, prop)
-    local textTransform = QuestHeader.textTransform
-    local txt = new
-
-    if textTransform == "uppercase" then
-      txt = txt:upper()
-    elseif textTransform == "lowercase" then
-      txt =  txt:lower()
-    end
-    self.frame.name:SetText(txt)
+    Theme.SkinText(self.frame.name, new)
   end
-
-  -- ======================================================================== --
-  -- Methods                                                                  --
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
     __Arguments__{ Quest }
     function AddQuest(self, quest)
       if not self.quests:Contains(quest) then
@@ -65,7 +54,6 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
     return self.quests.Count
   end
 
---[[
   __Arguments__{}
   function Draw(self)
     local previousFrame
@@ -82,42 +70,6 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
       end
       return a.name < b.name
     end
-
-    for index, quest in self.quests:Sort(QuestSortMethod):GetIterator() do
-      --quest:ClearAllPoints()
-      quest:Show()
-      quest:Draw()
-      if index == 1 then
-        quest.frame:SetPoint("TOPLEFT", 0, -36)
-        quest.frame:SetPoint("TOPRIGHT", 0, -36)
-      else
-        quest.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -10)
-        quest.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
-      end
-      previousFrame = quest.frame
-      height = height + quest.height + 10
-    end
-    self.height = self.baseHeight + height
-  end
---]]
-  __Arguments__{}
-  function Draw(self)
-    local previousFrame
-    local height = 0
-
-    -- Quest compare function (Priorty : Distance > ID > Name)
-    local function QuestSortMethod(a, b)
-      if a.distance ~= b.distance then
-        return a.distance < b.distance
-      end
-
-      if a.id ~= b.id then
-        return a.id < b.id
-      end
-      return a.name < b.name
-    end
-
-    --
 
     local mustBeAnchored = false
     for index, quest in self.quests:Sort(QuestSortMethod):GetIterator() do
@@ -164,32 +116,7 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
 
   function Refresh(self)
     Theme.SkinFrame(self.frame)
-
     Theme.SkinText(self.frame.name, self.name)
-
-  end
-
-
---[[  __Arguments__{}
-  function Refresh(self)
-    local theme = _CURRENT_THEME
-
-    local name = self.frame.name
-    local font = _LibSharedMedia:Fetch("font", theme:GetProperty("questHeader.name", "text-font"))
-    local size = theme:GetProperty("questHeader.name", "text-size")
-    local color = theme:GetProperty("questHeader.name", "text-color")
-    local transform = theme:GetProperty("questHeader.name", "text-transform")
-
-    name:SetFont(font, size, "OUTLINE")
-    name:SetTextColor(color.r, color.g, color.b)
-
-    local txt = self.name
-    if transform == "uppercase" then
-      txt = txt:upper()
-    elseif transform == "lowercase" then
-      txt = txt:lower()
-    end
-    name:SetText(txt)
   end
 
   __Static__() function RefreshAll()
@@ -197,20 +124,15 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
       obj:Refresh()
     end
   end
-  --]]
 
-
+  __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    local classPrefix = "questHeader."
-
-    Theme.RegisterFrame(classPrefix, self.frame)
-    Theme.RegisterText(classPrefix.."name", self.frame.name)
+    Theme.RegisterFrame(self.tID, self.frame)
+    Theme.RegisterText(self.tID..".name", self.frame.name)
   end
-
-
-  -- ======================================================================== --
-  -- Properties
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
   property "name" { TYPE = String, DEFAULT = "Misc", HANDLER = SetName }
   property "isActive" { TYPE = Boolean, DEFAULT = true }
   property "nearestQuestDistance" {
@@ -222,28 +144,17 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
         end
       end
   }
-  -- ======================================================================== --
-  -- Contructor
-  -- ======================================================================== --
+  -- Theme
+  property "tID" { DEFAULT = "questHeader" }
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function QuestHeader(self, name)
     Super(self)
     local frame = CreateFrame("Frame")
-    --frame:SetBackdrop(_Backdrops.Common)
-    --frame:SetBackdropColor(0, 1, 0, 1) -- 0.2
-    --frame:SetBackdropBorderColor(0, 0, 0, 0)
+    frame:SetBackdrop(_Backdrops.Common)
 
     local name = frame:CreateFontString(nil, "OVERLAY")
-    --local font = _LibSharedMedia:Fetch("font", QuestHeader.textFont)
-    --local color = QuestHeader.textColor
-
-    --local scriptFunc = _CURRENT_THEME:GetScript("questHeader.*", "OnEnter")
-
-    --frame:SetScript("OnEnter", _CURRENT_THEME:GetScript("questHeader.*", "OnEnter"))
-    --frame:SetScript("OnEnter", function(self) print("OnHover") ; self:SetBackdropColor(0.35, 0.89, 0.6, 1) end)
-
-    --name:SetFont(font, QuestHeader.textSize, "OUTLINE")
-    --name:SetText(self.name)
-    --name:SetTextColor(color.r, color.g, color.b)
     name:SetHeight(29) -- 20
     name:SetPoint("TOPLEFT", 10, 0)
     frame.name = name
@@ -253,28 +164,19 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
     self.baseHeight = self.height
     self.quests = ObjectArray(Quest)
 
-    _QuestHeaderCache[self] = true
-
+    -- Important : Always use 'This' to avoid issues when this class is inherited
+    -- by other classes.
     This.RegisterFramesForThemeAPI(self)
-    self:Refresh()
+    This.Refresh(self)
+
+    _QuestHeaderCache[self] = true
   end
 
 endclass "QuestHeader"
--- Register it in the Theme system.
-Theme:_RegisterClass("questHeader",  questHeader)
--- ========================================================================== --
--- == OnLoad Handler
--- ========================================================================== --
+--============================================================================--
+-- OnLoad Handler
+--============================================================================--
 function OnLoad(self)
-  _DB:SetDefault("Quest", {
-    header = {
-      textColor = { r = 1, g = 0.38, b = 0 },
-      textSize = 12,
-      textFont = "PT Sans Narrow Bold",
-      textTransform = "uppercase", -- none, lowercase
-    }
-  })
-
   -- Register this class in the object manager
   _ObjectManager:Register(QuestHeader)
 end

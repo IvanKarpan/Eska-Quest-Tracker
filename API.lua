@@ -590,8 +590,8 @@ class "Theme" extend "ISerializable"
 
 
   _DEFAULT_PROPERTY_VALUES = {
-    ["background-color"] = { r = 1.0, g = 0.75, b = 1 },
-    ["border-color"] = { r = 0, g = 0, b = 0 },
+    ["background-color"] = { r = 0, g = 0, b = 0, a = 0 },
+    ["border-color"] = { r = 0, g = 0, b = 0, a = 0 },
     ["offsetX"] = 0,
     ["offsetY"] = 0,
     ["text-size"] = 10,
@@ -764,6 +764,7 @@ class "Theme" extend "ISerializable"
     else
       local class, fstr = strsplit(".", target)
       if not fstr then
+        self:_SetProperty(target, property, value)
         return
       end
 

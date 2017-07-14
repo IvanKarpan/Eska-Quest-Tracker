@@ -1,77 +1,35 @@
--- ========================================================================== --
--- 										 EskaQuestTracker                                       --
--- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
--- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
--- ========================================================================== --
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
 Scorpio             "EskaQuestTracker.Classes.Scenario"                       ""
--- ========================================================================== --
+--============================================================================--
 namespace "EQT"
--- ========================================================================== --
-__DBTextOptions__( function() return _DB.Scenario end)
-__InitChildBlockDB__()
+--============================================================================--
 class "Scenario" inherit "Block" extend "IObjectiveHolder"
   _ScenarioCache = setmetatable( {}, { __mode = "k" } )
-  -- [DBElement] => [IndexFrame]
-  _Elements = { ["name"] = "name", ["stageName"] = "stageName", ["stageCounter"] = "stageCounter"}
-  -- ======================================================================== --
-  -- Handlers
-  -- ======================================================================== --
-  local function SetName(self, new)
-    local transform = Scenario:GetTextTransform("name")
-    local txt = new
-    if transform == "uppercase" then
-      txt = txt:upper()
-    elseif transform == "lowercase" then
-      txt = txt:lower()
+  ------------------------------------------------------------------------------
+  --                                Handlers                                  --
+  ------------------------------------------------------------------------------
+  local function UpdateProps(self, new, old, prop)
+    if prop == "name" then
+      Theme.SkinText(self.frame.name, new)
+    elseif prop == "currentStage" or prop == "numStages" then
+      Theme.SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
+    elseif prop == "stageName" then
+      Theme.SkinText(self.frame.stageName, new)
     end
-    self.frame.name:SetText(txt)
   end
-
-  local function SetStageName(self, new)
-    self.frame.stageName:SetText(new)
-  end
-
-  local function SetCurrentStage(self, new)
-    local txt = string.format("%i/%i", self.currentStage, self.numStages)
-    self.frame.stageCounter:SetText(txt)
-  end
-  -- ======================================================================== --
-  -- Methods                                                                  --
-  -- ======================================================================== --
-  --[[
-  function Refresh(self)
-    Super.Refresh(self)
-
-    for elementDBName, elementFrameIndex in pairs(_Elements) do
-      local elementFrame = self.frame[elementFrameIndex]
-
-      local font = _LibSharedMedia:Fetch("font", Scenario:GetTextFont(elementDBName))
-      local size = Scenario:GetTextSize(elementDBName)
-      local color = Scenario:GetTextColor(elementDBName)
-      local transform = Scenario:GetTextTransform(elementDBName)
-
-      elementFrame:SetFont(font, size, "OUTLINE")
-      elementFrame:SetTextColor(color.r, color.g, color.b)
-
-      local txt = ""
-      if elementFrameIndex == "name" then txt = self.name
-      elseif elementFrameIndex == "stageName" then txt = self.stageName
-      elseif elementFrameIndex == "stageCounter" then txt = string.format("%i/%i", self.currentStage, self.numStages) end
-
-      if transform == "uppercase" then
-        txt = txt:upper()
-      elseif transform == "lowercase" then
-        txt = txt:lower()
-      end
-
-      elementFrame:SetText(txt)
+  ------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
+  __Arguments__{ Argument(Boolean, true, true)}
+  function Refresh(self, callSuper)
+    if callSuper then
+      Super.Refresh(self)
     end
-
-  end
-  --]]
-  function Refresh(self)
-    -- Frame
-    Theme.SkinFrame(self.frame)
+    Theme.SkinFrame(self.frame.stage)
 
     -- Text
     Theme.SkinText(self.frame.name)
@@ -79,18 +37,17 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     Theme.SkinText(self.frame.stageCounter)
   end
 
-
-
   function GetBonusObjective(self, index)
 
   end
 
-  __Arguments__{}
+  __Arguments__ {}
   function Draw(self)
     local stage = self.frame.stage
     self:DrawObjectives(stage)
   end
 
+  __Arguments__ {}
   function Reset(self)
     self.name = nil
     self.currentStage = nil
@@ -105,40 +62,33 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     end
   end
 
-  __Arguments__{}
+  __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    -- local classPrefix = "block." .. self.id
-
-    Theme.RegisterFrame(self.tID, self.frame)
-
+    Theme.RegisterFrame(self.tID..".stage", self.frame.stage)
+    -- Text
     Theme.RegisterText(self.tID..".name", self.frame.name)
     Theme.RegisterText(self.tID..".stageName", self.frame.stageName)
     Theme.RegisterText(self.tID..".stageCounter", self.frame.stageCounter)
   end
-  -- ======================================================================== --
-  -- Properties
-  -- ======================================================================== --
-  property "name" { TYPE = Stirng, DEFAULT = "", HANDLER = SetName}
-  property "currentStage" { TYPE = Number, DEFAULT = 1, HANDLER = SetCurrentStage }
-  property "numStages" { TYPE = Number, DEFAULT = 1, HANDLER = SetCurrentStage }
-  property "stageName" { TYPE = String, DEFAULT = "", HANDLER = SetStageName }
-  property "text" { TYPE = String, DEFAULT = "Scenario", HANDLER = "SetText"}
-
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
+  property "name" { TYPE = Stirng, DEFAULT = "", HANDLER = UpdateProps}
+  property "currentStage" { TYPE = Number, DEFAULT = 1, HANDLER = UpdateProps }
+  property "numStages" { TYPE = Number, DEFAULT = 1, HANDLER = UpdateProps }
+  property "stageName" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps }
   property "numBonusObjectives" { TYPE = Number, DEFAULT = 0 }
-
   -- Theme
   property "tID" { DEFAULT = "block.scenario"}
-  -- ======================================================================== --
-  -- Constructor
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function Scenario(self)
     Super(self, "scenario", 10)
     self.text = "Scenario"
 
     local header = self.frame.header
     local headerText = header.text
-
-    self.frame:SetBackdropColor(0, 0, 0, 0.3) -- 0.3
 
     -- Scenario name
     local name = header:CreateFontString(nil, "OVERLAY")
@@ -159,8 +109,6 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     stage:SetPoint("TOPLEFT", header, "BOTTOMLEFT")
     stage:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT")
     stage:SetBackdrop(_Backdrops.Common)
-    stage:SetBackdropBorderColor(0, 0, 0, 0.4)
-    stage:SetBackdropColor(0, 0, 0, 0.4)
     stage:SetHeight(22) -- 22
     self.frame.stage = stage
 
@@ -182,43 +130,14 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     self.height = self.height + stage:GetHeight()
     self.baseHeight = self.height
 
+    -- Important : Always use 'This' to avoid issues when this class is inherited
+    -- by other classes.
     This.RegisterFramesForThemeAPI(self)
-    self:Refresh()
+    -- Here the false boolean say to refresh function to not call the refresh super function
+    -- because it's already done by the super constructor
+    This.Refresh(self, false)
 
     _ScenarioCache[self] = true
 
   end
 endclass "Scenario"
--- Register it in the Theme system.
-Theme:_RegisterClass(Scenario._tid, Scenario)
--- ========================================================================== --
--- == OnLoad Handler
--- ========================================================================== --
-function OnLoad(self)
-  _DB:SetDefault("Scenario", {
-    textSizes = {
-      name = 13,
-      stageName = 11,
-      stageCounter = 12,
-    },
-    textFonts = {
-      name = "PT Sans Bold",
-      stageName = "PT Sans Bold",
-      stageCounter = "PT Sans Narrow Bold"
-    },
-    textTransforms = {
-      name = "uppercase",
-      stageName = "none",
-      stageCounter = "none",
-    },
-    textColors = {
-      name = { r = 1, g = 0.5, b = 0 },
-      stageName = { r = 1, g = 1, b = 0 },
-      stageCounter = { r = 1, g = 1, b = 1 }
-    }
-  })
-
-  -- @HACK This is a temporary fix in waiting to release the theme API
-  Scenario.customConfigEnabled = true
-  Scenario:SetBlockPropertyValue("headerTextLocation", "LEFT")
-end

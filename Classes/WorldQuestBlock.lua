@@ -1,18 +1,17 @@
--- ========================================================================== --
--- 										 EskaQuestTracker                                       --
--- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
--- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
--- ========================================================================== --
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
 Scorpio             "EskaQuestTracker.Classes.WorldQuestBlock"                ""
--- ========================================================================== --
+--============================================================================--
 namespace "EQT"
--- ========================================================================== --
-__InitChildBlockDB__()
+--============================================================================--
 class "WorldQuestBlock" inherit "Block"
   _WorldQuestBlockCache = setmetatable( {}, { __mode = "k" } )
-  -- ======================================================================== --
-  -- Methods
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
   __Arguments__ { WorldQuest }
   function AddWorldQuest(self, worldQuest)
     if not self.worldQuests:Contains(worldQuest) then
@@ -34,7 +33,6 @@ class "WorldQuestBlock" inherit "Block"
       self:RemoveWorldQuest(worldQuest)
     end
   end
-
 
   __Arguments__ { WorldQuest }
   function RemoveWorldQuest(self, worldQuest)
@@ -87,22 +85,20 @@ class "WorldQuestBlock" inherit "Block"
       obj:Refresh()
     end
   end
-
-  property "text" { TYPE = String, DEFAULT = "World Quests", HANDLER = SetText}
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
   -- Theme
   property "tID" { DEFAULT = "block.worldQuests" }
-
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function WorldQuestBlock(self)
     Super(self, "worldQuests", 15)
     self.text = "World Quests"
 
     self.worldQuests = ObjectArray(WorldQuest)
 
-    -- self:RegisterFramesForThemeAPI()
-    self:Refresh()
-
     _WorldQuestBlockCache[self] = true
   end
-
-
 endclass "WorldQuestBlock"

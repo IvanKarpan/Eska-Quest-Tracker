@@ -1,13 +1,12 @@
--- ========================================================================== --
--- 										 EskaQuestTracker                                       --
--- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
--- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
--- ========================================================================== --
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
 Scorpio                "EskaQuestTracker.Classes.Objective"              			""
--- ========================================================================== --
+--============================================================================--
 namespace "EQT"                                                               --                                                           --
--- ========================================================================== --
-__DBTextOptions__( function() return _DB.Objective end, false)
+--============================================================================--
 class "Objective" inherit "Frame" extend "IReusable"
 
 	_ObjectiveCache = setmetatable( {}, { __mode = "k" } )
@@ -78,9 +77,9 @@ class "Objective" inherit "Frame" extend "IReusable"
 		timer:SetFont(timer:GetFont(), 18, "OUTLINE")
 		return timer
 	end
-	-- ======================================================================== --
-	-- Methods                                                                  --
-	-- ======================================================================== --
+	------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
   function SetQuest(self, quest)
     self.quest = quest
   end
@@ -239,9 +238,9 @@ class "Objective" inherit "Frame" extend "IReusable"
 		self:HideTimer()
 	end
 
-	-- ======================================================================== --
-	-- Handlers
-	-- ======================================================================== --
+	------------------------------------------------------------------------------
+  --                                Handlers                                  --
+  ------------------------------------------------------------------------------
 	local function SetText(self, new, old, prop)
 		-- self.frame.text:SetText(new)
 		Theme.SkinText(self.frame.text, new, self.isCompleted and "completed" or "inprogress")
@@ -268,9 +267,9 @@ class "Objective" inherit "Frame" extend "IReusable"
 		Theme.RegisterFrame(classPrefix, self.frame)
 		Theme.RegisterFrame(classPrefix.."square", self.frame.square)
 	end
-	-- ======================================================================== --
-	-- Properties
-	-- ======================================================================== --
+	------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
 	property "text" { TYPE = String, DEFAULT = "DEFAULT", HANDLER = SetText }
 	property "type" { TYPE = String, DEFAULT = "" }
 	property "isCompleted" { TYPE = Boolean, DEFAULT = false, HANDLER = SetCompleted}
@@ -290,9 +289,9 @@ class "Objective" inherit "Frame" extend "IReusable"
 		Get = function(self) return _DB.Objective.colors.inProgress end,
 	}
 
-	-- ======================================================================== --
-	-- Contructor
-	-- ======================================================================== --
+	------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function Objective(self)
 
     local frame = CreateFrame("Frame")
@@ -331,10 +330,9 @@ class "Objective" inherit "Frame" extend "IReusable"
   end
 
 endclass "Objective"
-Theme:_RegisterClass("objective", Objective)
--- ========================================================================== --
--- == OnLoad Handler
--- ========================================================================== --
+--============================================================================--
+-- OnLoad Handler
+--============================================================================--
 function OnLoad(self)
 	_DB:SetDefault("Objective", {
 		colors = {

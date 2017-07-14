@@ -7,29 +7,11 @@ Scorpio         "EskaQuestTracker.Classes.Dungeon"                            ""
 --============================================================================--
 namespace "EQT"
 --============================================================================--
-function OnLoad(self)
-    _DB:SetDefault("Dungeon", {
-    textSizes = {
-      name = 12,
-    },
-    textFonts = {
-      name = "PT Sans Narrow Bold",
-    },
-    textTransforms = {
-      name = "uppercase",
-    },
-    textColors = {
-      name = { r = 1, g = 0.5, b = 0},
-    }
-  })
-end
--- ========================================================================== --
-__InitChildBlockDB__()
 class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   _DungeonCache = setmetatable( {}, { __mode = "k" } )
-  -- ======================================================================== --
-  -- Handlers
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                Handlers                                  --
+  ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
       Theme.SkinText(self.frame.name, new)
@@ -37,9 +19,9 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
       self.frame.ftex.texture:SetTexture(new)
     end
   end
-  -- ======================================================================== --
-  -- Methods                                                                  --
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
   __Arguments__ {}
   function Draw(self)
     if self.numObjectives > 0 then
@@ -65,22 +47,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
       Super.Refresh(self)
     end
 
-    local font = _LibSharedMedia:Fetch("font", "PT Sans Narrow Bold")
-    local size = 12
-    local color = { r = 1, g = 0.5, b = 0}
-    local transform = "none"
-
-    local txt = self.name
-    --if transform == "uppercase" then
-      --txt = txt:upper()
-    --elseif transform == "lowercase" then
-      --txt = txt:lower()
-    --end
-
-    --self.frame.name:SetFont(font, 17, "OUTLINE")
-    --self.frame.name:SetTextColor(color.r, color.g, color.b)
-    --self.frame.name:SetText(txt)
-
+    Theme.SkinFrame(self.frame.ftex)
     Theme.SkinText(self.frame.name, self.name)
   end
 
@@ -93,21 +60,19 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    -- local classPrefix = "block." .. self.id
-
+    Theme.RegisterFrame(self.tID..".icon", self.frame.ftex)
     Theme.RegisterText(self.tID..".name", self.frame.name)
   end
-  -- ======================================================================== --
-  -- Properties
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
   property "name" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps}
   property "texture" { TYPE = String + Number, DEFAULT = nil, HANDLER = UpdateProps }
-  property "text" { TYPE = String, DEFAULT = "Dungeon", HANDLER = "SetText" }
   -- Theme
   property "tID" { DEFAULT = "block.dungeon"}
-  -- ======================================================================== --
-  -- Constructors
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function Dungeon(self)
     Super(self, "dungeon", 10)
     self.text = "Dungeon"
@@ -134,8 +99,6 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     -- Dungeon Texture
     local ftex = CreateFrame("Frame", nil, self.frame)
     ftex:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
-    ftex:SetBackdropBorderColor(0, 0, 0, 0)
-    ftex:SetBackdropColor(0, 0, 0)
     ftex:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 4, -4)
     ftex:SetHeight(92)
     ftex:SetWidth(92)
@@ -159,11 +122,4 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
 
     _DungeonCache[self] = true
   end
-
 endclass "Dungeon"
-
-function OnLoad(self)
-  -- @HACK This is a temporary fix in waiting to release the theme API
-  Dungeon.customConfigEnabled = true
-  Dungeon:SetBlockPropertyValue("headerTextLocation", "LEFT")
-end

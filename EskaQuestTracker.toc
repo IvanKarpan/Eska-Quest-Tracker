@@ -12,8 +12,6 @@ embeds.xml
 
 API.lua
 
-Attributes.lua
-
 Interfaces\interfaces.xml
 
 Widgets\widgets.xml
