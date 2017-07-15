@@ -1,2 +1,3 @@
-[1.1.0]
-
+[1.1.1]
+- Continued to convert the existing frames for the new theme system.
+NOTE: The options are currently broken and need to be rebuilt around of this system.
