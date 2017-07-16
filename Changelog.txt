@@ -1,3 +1,9 @@
+[1.1.2]
+- Added a lib required for the addon works.
+- Converted and exposed the Tracker frame for the theme system.
+- Reviewed and improved the GetProperty function for the Theme API.
+- Updated Eska theme.
+
 [1.1.1]
 - Continued to convert the existing frames for the new theme system.
 NOTE: The options are currently broken and need to be rebuilt around of this system.

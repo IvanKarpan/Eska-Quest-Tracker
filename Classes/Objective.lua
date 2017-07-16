@@ -170,7 +170,7 @@ class "Objective" inherit "Frame" extend "IReusable"
 
 
 	function Refresh(self)
-		local state = self.isCompleted and "completed" or "inprogress"
+		local state = self.isCompleted and "completed" or "progress"
 
 		Theme.SkinFrame(self.frame, nil, state)
 		Theme.SkinFrame(self.frame.square, nil, state)
@@ -243,7 +243,7 @@ class "Objective" inherit "Frame" extend "IReusable"
   ------------------------------------------------------------------------------
 	local function SetText(self, new, old, prop)
 		-- self.frame.text:SetText(new)
-		Theme.SkinText(self.frame.text, new, self.isCompleted and "completed" or "inprogress")
+		Theme.SkinText(self.frame.text, new, self.isCompleted and "completed" or "progress")
 	end
 
 	local function SetCompleted(self, new, old, prop)
@@ -256,16 +256,16 @@ class "Objective" inherit "Frame" extend "IReusable"
 			--self.frame.text:SetTextColor(148/255, 148/255, 148/255)
 		end
 
-		local state = new and "completed" or "inprogress"
+		local state = new and "completed" or "progress"
 		Theme.SkinFrame(self.frame, self.text, state)
 		Theme.SkinFrame(self.frame.square, nil, state)
 	end
 
 	function RegisterFramesForThemeAPI(self)
-		local classPrefix = "objective."
+		local classPrefix = "objective"
 
 		Theme.RegisterFrame(classPrefix, self.frame)
-		Theme.RegisterFrame(classPrefix.."square", self.frame.square)
+		Theme.RegisterFrame(classPrefix..".square", self.frame.square)
 	end
 	------------------------------------------------------------------------------
   --                            Properties                                    --

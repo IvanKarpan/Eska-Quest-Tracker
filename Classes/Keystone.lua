@@ -265,8 +265,6 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
 
 endclass "Keystone"
--- Register it in the Theme system.
-Theme:_RegisterClass(Keystone._tid, Keystone)
 -- ========================================================================== --
 -- == OnLoad Handler
 -- ========================================================================== --

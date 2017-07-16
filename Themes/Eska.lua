@@ -10,7 +10,7 @@ namespace "EQT"
 EskaTheme = Theme()
 EskaTheme.name    = "Eska"
 EskaTheme.author  = "Skamer"
-EskaTheme.version = "1.0.0"
+EskaTheme.version = "1.1.2"
 EskaTheme.stage   = "Alpha"
 _Addon:RegisterTheme(EskaTheme)
 -- ========================================================================== --
@@ -24,8 +24,13 @@ EskaTheme:SetProperty("background-color", { r = 0, g = 0, b = 0, a = 0})
 -- ========================================================================== --
 -- == Tracker properties
 -- ========================================================================== --
-EskaTheme:SetProperty("tracker", "background-color", { r = 0, g = 0, b = 0, a = 0.5 })
-EskaTheme:SetProperty("tracker", "border-color", { r = 0, g = 0, b = 0})
+EskaTheme:SetProperty("tracker", "background-color", { r = 125/255, g = 125/255, b = 125/255, a = 0.25 })
+EskaTheme:SetProperty("tracker", "border-color", { r = 0.1, g = 0.1, b = 0.1})
+  -- Scrollbar
+  EskaTheme:SetProperty("tracker.scrollbar", "background-color", { r = 0, g = 0, b = 0, a = 0.5})
+  EskaTheme:SetProperty("tracker.scrollbar", "border-color", { r = 0, g = 0, b = 0 })
+  -- Scrollbar thumb
+  EskaTheme:SetProperty("tracker.scrollbar.thumb", "vertex-color", { r = 1, g = 199/255, b = 0, a = 1})
 -- ========================================================================== --
 -- == Set Default block properties
 -- ========================================================================== --
@@ -96,9 +101,6 @@ EskaTheme:SetProperty("quest.*", "text-color", { r = 1.0, g = 191/255, b = 0})
 EskaTheme:SetProperty("quest", "background-color", { r = 0, g = 0, b = 0, a = 0.3})
 EskaTheme:SetProperty("quest.header", "background-color", { r = 0, g = 0, b = 0, a = 0.4 })
 EskaTheme:SetProperty("quest.header[@hover]", "background-color", { r = 0, g = 148/255, b = 1, a = 0.4 })
-
--- EskaTheme:SetProperty("quest.header[@hover,completed]")
--- EskaTheme:SetProperty("quest.header[@enter||@completed]")
 -- ========================================================================== --
 -- == Objective properties
 -- ========================================================================== --
@@ -109,11 +111,11 @@ EskaTheme:SetProperty("objective.*", "text-transform", "none")
 EskaTheme:SetProperty("objective.*", "text-location", "LEFT")
 EskaTheme:SetProperty("objective.*", "text-offsetX", 5)
   -- completed color
-  EskaTheme:SetProperty("objective.*[@completed]", "text-color", { r = 0, g = 1, b = 0})
+  EskaTheme:SetProperty("objective[@completed]", "text-color", { r = 0, g = 1, b = 0})
   EskaTheme:SetProperty("objective.square[@completed]", "background-color", { r = 0, g = 1, b = 0})
   -- in progress color
-  EskaTheme:SetProperty("objective.*[@inprogress]", "text-color", { r = 148/255, g = 148/255, b = 148/255 })
-    EskaTheme:SetProperty("objective.square[@inprogress]", "background-color", { r = 148/255, g = 148/255, b = 148/255 })
+  EskaTheme:SetProperty("objective[@progress]", "text-color", { r = 148/255, g = 148/255, b = 148/255 })
+    EskaTheme:SetProperty("objective.square[@progress]", "background-color", { r = 148/255, g = 148/255, b = 148/255 })
 -- ========================================================================== --
 -- == Quest header properties
 -- ========================================================================== --

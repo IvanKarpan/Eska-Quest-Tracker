@@ -360,8 +360,8 @@ __Serializable__()
 class "Theme" extend "ISerializable"
   _REGISTERED_FRAMES = {}
 
-
-  __Static__() function RegisterFrame(keyword, frame, type)
+  __Arguments__ { String, Table, Argument(String, true), Argument(String, true, "FRAME")}
+  __Static__() function RegisterFrame(keyword, frame, inherit, type)
     if not frame then
       return
     end
@@ -382,40 +382,44 @@ class "Theme" extend "ISerializable"
     frame.themeClassID = keyword
     frame.type = type
 
+    if inherit then
+      frame.inheritTID = inherit
+    end
+
 
     if frame.text then
       frame.text.themeClassID = keyword
       frame.text.type = "TEXT"
+      if inherit then
+        frame.text.inheritTID = inherit
+      end
     end
 
     if frame.texture then
       frame.texture.themeClassID = keyword
       frame.texture.type = "TEXTURE"
+      if inherit then
+        frame.texture.inheritTID = inherit
+      end
     end
 
     Theme.InstallScript(frame)
   end
 
-  __Static__() function RegisterTexture(keyword, frame)
-    Theme.RegisterFrame(keyword, frame, "TEXTURE")
+  __Arguments__ { String, Table, Argument(String, true) }
+  __Static__() function RegisterTexture(keyword, frame, inherit)
+    Theme.RegisterFrame(keyword, frame, inherit, "TEXTURE")
   end
 
-  __Static__() function RegisterText(keyword, frame)
-    Theme.RegisterFrame(keyword, frame, "TEXT")
+  __Arguments__ { String, Table, Argument(String, true) }
+  __Static__() function RegisterText(keyword, frame, inherit)
+    Theme.RegisterFrame(keyword, frame, inherit, "TEXT")
   end
 
+  __Arguments__ { Table }
   __Static__() function InstallScript(frame)
     if not frame.GetScript or not frame.SetScript then
       return
-    end
-
-    if not frame:GetScript("OnEnter") then
-      frame:SetScript("OnEnter", function()
---      if Theme:HasProperty("")
-        if _CURRENT_THEME and _CURRENT_THEME:HasFlag(frame.themeClassID, "hover", true) then
-          Theme.SkinFrame(frame, nil, "hover")
-        end
-      end)
     end
 
     if _CURRENT_THEME and _CURRENT_THEME:HasFlag(frame.themeClassID, "hover", true) then
@@ -431,16 +435,20 @@ class "Theme" extend "ISerializable"
         end)
       end
 
+      if not frame:GetScript("OnMouseDown") and not frame:GetScript("OnMouseUp") then
+        frame:SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
+        frame:SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
+      end
+
     end
   end
 
-  --__Arguments__ { Number, Argument(String, nil), { Type = String, Nilable = true, IsList = true}}
-
+  __Arguments__ { Table }
   __Static__() function UnregisterFrame(self, frame)
 
   end
 
-
+  __Arguments__ { { Type = String, Nilable = true, IsList = true } }
   __Static__() function GetFlagsString(...)
     local strFlags = ""
     for i = 1, select("#", ...) do
@@ -454,63 +462,66 @@ class "Theme" extend "ISerializable"
     return strFlags
   end
 
+  __Arguments__ { Table, { Type = String, Nilable = true, IsList = true}}
   __Static__() function SkinTexture(texture, ...)
     local theme = _CURRENT_THEME
 
     if not theme then return end -- TODO add error msg
-    if not frame then return end  -- TODO add error msg
+    if not texture then return end  -- TODO add error msg
 
-    local themeClassID = texture.themeClassID or tID
+    local themeClassID = texture.themeClassID
+    local inheritTID = texture.inheritTID
 
     if not themeClassID then return end -- TODO add error msg
 
     local flags = Theme.GetFlagsString(...)
     if flags ~= "" then
       themeClassID = themeClassID.."["..flags.."]"
+      inheritTID = inheritTID and inheritTID.."["..flags.."]"
     end
 
-    local color = theme:GetProperty(themeClassID, "vertex-color")
+    local color = theme:GetProperty(themeClassID, "vertex-color", inheritTID)
+
+    --if color then
     texture:SetVertexColor(color.r, color.g, color.b, color.a )
+  --end
 
   end
 
+    -- @NOTE: No arguments attribute because the systeme can't know who is who in the args
+    -- @TODO: Review the Skin arguments method in order to the arguements attribe can work.
   __Static__() function SkinText(fontstring, originText, ...)
     local theme = _CURRENT_THEME
 
     if not theme then return end -- TODO add error msg
     if not fontstring then return end  -- TODO add error msg
 
-    local themeClassID = fontstring.themeClassID or tID
+    local themeClassID = fontstring.themeClassID
+    local inheritTID = fontstring.inheritTID
+
 
     if not themeClassID then return end -- TODO add error msg
 
     local flags = Theme.GetFlagsString(...)
     if flags ~= "" then
       themeClassID = themeClassID.."["..flags.."]"
+      inheritTID = inheritTID and inheritTID.."["..flags.."]"
     end
 
-    --print("themeClassID", themeClassID)
-
-
-
-    local size = theme:GetProperty(themeClassID, "text-size")
-    local font = _LibSharedMedia:Fetch("font", theme:GetProperty(themeClassID, "text-font"))
-    local transform = theme:GetProperty(themeClassID, "text-transform")
+    local size = theme:GetProperty(themeClassID, "text-size", inheritTID)
+    local font = _LibSharedMedia:Fetch("font", theme:GetProperty(themeClassID, "text-font", inheritTID))
+    local transform = theme:GetProperty(themeClassID, "text-transform", inheritTID)
     fontstring:SetFont(font, size, "OUTLINE")
 
-    local textColor = theme:GetProperty(themeClassID, "text-color")
+    local textColor = theme:GetProperty(themeClassID, "text-color", inheritTID)
 
 
     fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
 
 
-    local location = theme:GetProperty(themeClassID, "text-location")
-    local offsetX = theme:GetProperty(themeClassID, "text-offsetX")
-    local offsetY = theme:GetProperty(themeClassID, "text-offsetY")
-
-    --fontstring:ClearAllPoints()
-    --fontstring:SetPoint("LEFT", offsetX, offsetY)
-    ---fontstring:SetPoint("RIGHT")
+    local location = theme:GetProperty(themeClassID, "text-location", inheritTID)
+    local offsetX = theme:GetProperty(themeClassID, "text-offsetX", inheritTID)
+    local offsetY = theme:GetProperty(themeClassID, "text-offsetY", inheritTID)
 
     for i = 1, fontstring:GetNumPoints() do
       local point, relativeTo, relativePoint, xOffset, yOffset = fontstring:GetPoint(i)
@@ -521,8 +532,6 @@ class "Theme" extend "ISerializable"
 
     fontstring:SetJustifyV(_JUSTIFY_V_FROM_ANCHOR[location])
     fontstring:SetJustifyH(_JUSTIFY_H_FROM_ANCHOR[location])
-    --fontstring:SetPoint("RIGHT")
-
 
     local txt = ""
     if originText then
@@ -540,6 +549,8 @@ class "Theme" extend "ISerializable"
     fontstring:SetText(txt)
   end
 
+  -- @NOTE: No arguments attribute because the systeme can't know who is who in the args
+  -- @TODO: Review the Skin arguments method in order to the arguements attribe can work.
   __Static__() function SkinFrame(frame, originText, ...)
 
     local theme = _CURRENT_THEME
@@ -557,10 +568,12 @@ class "Theme" extend "ISerializable"
     end
 
     local themeClassID = frame.themeClassID
+    local inheritTID = frame.inheritTID
 
     local flags = Theme.GetFlagsString(...)
     if flags ~= "" then
       themeClassID = themeClassID.."["..flags.."]"
+      inheritTID = inheritTID and inheritTID.."["..flags.."]"
     end
 
     -- The frame is a normal frame
@@ -568,13 +581,13 @@ class "Theme" extend "ISerializable"
       -- Background color
       local color
       if frame.SetBackdropColor then
-        color = theme:GetProperty(themeClassID, "background-color")
+        color = theme:GetProperty(themeClassID, "background-color", inheritTID)
         --print("F", frame.themeClassID, color.r, color.g, color.b, color.a)
         frame:SetBackdropColor(color.r, color.g, color.b, color.a)
       end
 
       if frame.SetBackdropBorderColor then
-        color = theme:GetProperty(themeClassID, "border-color")
+        color = theme:GetProperty(themeClassID, "border-color", inheritTID)
         frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
       end
 
@@ -601,62 +614,75 @@ class "Theme" extend "ISerializable"
     ["text-location"] = "CENTER",
     ["text-offsetX"] = 0,
     ["text-offsetY"] = 0,
+    ["vertex-color"] = { r = 1, g = 1, b = 1}
   }
 
   _DEFAULT_CLASSES = setmetatable({}, { __mode = "v"})
 
-  __Arguments__{ String, String }
-  function GetProperty(self, target, property)
-    -- common to normal and block properties
+  -- Helper function
+  local function UnpackTargets(...)
+    local target = ""
+    local count = select("#", ...)
+
+    for i = 1, count do
+      local val = select(i, ...)
+      if i == 1 and i == count then
+        return val, string.format("%s.*", val:gsub("(%[[\@%w]*\%])", ""))
+      elseif i == 1 then
+        target = val
+      elseif i == count then
+        local flags = val:match("[\[\|]([@,%w]*)") or ""
+        if flags ~= "" then
+           flags = "["..flags.."]"
+        end
+        -- local checkAll = "*"..flags
+
+        return string.format("%s.%s", target, val),
+        --val ~= checkAll and string.format("%s.*%s", target, flags) or nil,
+        string.format("%s.*", target),
+        string.format("%s%s", target, flags),
+        count
+      else
+        target = target.."."..val
+      end
+    end
+  end
+
+  local function GetClassAmount(str)
+    local _, count = str:gsub("%.", "")
+    return count + 1
+  end
+
+  __Arguments__{ String, String, Argument(String, true) }
+  function GetProperty(self, target, property, inheritTarget)
     if self.properties[target] and self.properties[target][property] then
       return self.properties[target][property]
     else
-      local class, arg1, arg2 = strsplit(".", target)
-      if class == "block" then
-        return self:_GetBlockProperty(arg1, arg2, property)
-      else
-        target = class..".*"
-        if self.properties[target] and self.properties[target][property] then
-          return self.properties[target][property]
-        elseif self.properties["*"][property] and self.properties["*"][property] then
-          return self.properties["*"][property]
-        end
+      local _, allTarget, parent, num = UnpackTargets(strsplit(".", target))
+
+      if allTarget and self.properties[allTarget] and self.properties[allTarget][property] then
+        return self.properties[allTarget][property]
+      end
+
+      if inheritTarget and self.properties[inheritTarget] and self.properties[inheritTarget][property] then
+        return self.properties[inheritTarget][property]
+      end
+
+      if parent then
+        return self:GetProperty(parent, property)
+      end
+
+      if self.properties["*"] and self.properties["*"][property] then
+        return self.properties["*"][property]
       end
     end
     return _DEFAULT_PROPERTY_VALUES[property]
   end
-
-  function _GetBlockProperty(self, blockName, target, property)
-    t = string.format("block.%s.*", blockName)
-    if self.properties[t] and self.properties[t][property] then
-      return self.properties[t][property]
-    end
-
-    if target then
-      t = string.format("block.%s", target)
-      if self.properties[t] and self.properties[t][property] then
-        return self.properties[t][property]
-      end
-    end
-
-    t = "block.*"
-    if self.properties[t] and self.properties[t][property] then
-      return self.properties[t][property]
-    end
-
-    if self.properties["*"] and self.properties["*"][property] then
-      return self.properties["*"][property]
-    end
-    return _DEFAULT_PROPERTY_VALUES[property]
-  end
-
-
 
   __Arguments__{ String }
   function GetProperty(self, property)
     return This.GetProperty(self, "*", property)
   end
-
 
   __Arguments__{ String, String, Argument(Boolean, true, false)}
   function HasProperty(self, target, property, includeParent)

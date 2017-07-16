@@ -30,9 +30,9 @@ class "Block" inherit "Frame"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    Theme.RegisterFrame(self.tID, self.frame)
-    Theme.RegisterFrame(self.tID..".header", self.frame.header)
-    Theme.RegisterTexture(self.tID..".stripe", self.frame.header.stripe)
+    Theme.RegisterFrame(self.tID, self.frame, "block")
+    Theme.RegisterFrame(self.tID..".header", self.frame.header, "block.header")
+    Theme.RegisterTexture(self.tID..".stripe", self.frame.header.stripe, "block.stripe")
   end
 
   __Static__() function RefreshAll()
