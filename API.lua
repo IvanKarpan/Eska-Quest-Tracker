@@ -635,11 +635,10 @@ class "Theme" extend "ISerializable"
         if flags ~= "" then
            flags = "["..flags.."]"
         end
-        -- local checkAll = "*"..flags
+        local checkAll = "*"..flags
 
         return string.format("%s.%s", target, val),
-        --val ~= checkAll and string.format("%s.*%s", target, flags) or nil,
-        string.format("%s.*", target),
+        val ~= checkAll and string.format("%s.*%s", target, flags) or nil,
         string.format("%s%s", target, flags),
         count
       else

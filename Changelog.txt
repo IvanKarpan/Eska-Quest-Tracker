@@ -3,6 +3,7 @@
 - Converted and exposed the Tracker frame for the theme system.
 - Reviewed and improved the GetProperty function for the Theme API.
 - Updated Eska theme.
+- Fixed an issue where sometime the tracker frame cannot be moved.
 
 [1.1.1]
 - Continued to convert the existing frames for the new theme system.
