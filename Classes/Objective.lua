@@ -222,7 +222,7 @@ class "Objective" inherit "Frame" extend "IReusable"
 	__Static__() function RefreshAll()
 		for obj in pairs(_ObjectiveCache) do
 			obj:Refresh()
-			print("RefreshAlll")
+			--print("RefreshAlll")
 		end
 	end
 
@@ -329,6 +329,10 @@ class "Objective" inherit "Frame" extend "IReusable"
 		_ObjectiveCache[self] = true
   end
 
+	-- Say to option the keyword available
+	Options.AddAvailableThemeKeywords(
+	"objective", "objective[@completed]", "objective[@progress]"
+	)
 endclass "Objective"
 --============================================================================--
 -- OnLoad Handler

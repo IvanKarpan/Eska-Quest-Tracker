@@ -43,8 +43,29 @@ interface "Config"
 
     _DB.options[option] = value
   end
-
 endinterface "Config"
+
+--------------------------------------------------------------------------------
+--                         Options                                            --
+--------------------------------------------------------------------------------
+__Final__()
+interface "Options"
+  _KEYWORDS = List()
+
+  function AddAvailableThemeKeywords(...)
+    --print(self, ...)
+    for i = 1, select('#', ...) do
+      local keyword = select(i, ...)
+      if not _KEYWORDS:Contains(keyword) then
+        _KEYWORDS:Insert(keyword)
+      end
+    end
+  end
+
+  function GetAvailableThemeKeywords()
+    return _KEYWORDS:GetIterator()
+  end
+endinterface "Options"
 
 --------------------------------------------------------------------------------
 --                   Serializable container                                   --
@@ -235,6 +256,25 @@ interface "API"
   end
   -- End encoding and compressing code
 
+  -- Some Theme function
+  function GetThemeProperty(self, target, property, inherit)
+    if _CURRENT_THEME then
+      return _CURRENT_THEME:GetProperty(target, property, inherit)
+    end
+  end
+
+  function SetThemeProperty(self, target, property, value)
+    if _CURRENT_THEME then
+      _CURRENT_THEME:SetProperty(target, property, value, true)
+    end
+  end
+
+  function SetAndRefreshThemeProperty(self, target, property, value)
+    self:SetThemeProperty(target, property, value)
+
+    local firstClass = strsplit(".", target, 2)
+    Theme.RefreshGroup(firstClass)
+  end
 endinterface "API"
 --------------------------------------------------------------------------------
 --                   Base Frame class                                         --
@@ -359,6 +399,38 @@ endclass "Frame"
 __Serializable__()
 class "Theme" extend "ISerializable"
   _REGISTERED_FRAMES = {}
+  _REFRESH_HANDLER = Dictionary()
+  _KEYWORDS = List()
+
+
+  __Static__() function SetAvailableKeywords(...)
+    for i = 1, select('#', ...) do
+      local keyword = select(i, ...)
+      if not _KEYWORDS:Contains(keyword) then
+        _KEYWORDS:Insert(keyword)
+      end
+    end
+  end
+
+  __Static__() function RegisterRefreshHandler(id, handler)
+    local handlers
+    if not _REFRESH_HANDLER[id] then
+      handlers = {}
+      _REFRESH_HANDLER[id] = handlers
+    else
+      handlers = _REFRESH_HANDLER[id]
+    end
+    tinsert(handlers, handler)
+  end
+
+  __Static__() function RefreshGroup(id)
+    if _REFRESH_HANDLER[id] then
+      local handlers = _REFRESH_HANDLER[id]
+      for _, handler in ipairs(handlers) do
+        handler()
+      end
+    end
+  end
 
   __Arguments__ { String, Table, Argument(String, true), Argument(String, true, "FRAME")}
   __Static__() function RegisterFrame(keyword, frame, inherit, type)
@@ -404,6 +476,11 @@ class "Theme" extend "ISerializable"
     end
 
     Theme.InstallScript(frame)
+  end
+
+
+  __Static__() function GetKeywords()
+    return _KEYWORDS:GetIterator()
   end
 
   __Arguments__ { String, Table, Argument(String, true) }
@@ -652,6 +729,50 @@ class "Theme" extend "ISerializable"
     return count + 1
   end
 
+  function _GetProperty(self, target, property)
+    if _DB and _DB.Themes and _DB.Themes[self.name] then
+      local dbTheme = _DB.Themes[self.name]
+      if dbTheme[target] and dbTheme[target][property] then
+        return dbTheme[target][property]
+      end
+    end
+
+    if self.properties[target] and self.properties[target][property] then
+      return self.properties[target][property]
+    end
+  end
+
+  __Arguments__{ String, String, Argument(String, true) }
+  function GetProperty(self, target, property, inheritTarget)
+    local val = self:_GetProperty(target, property)
+    if val then
+      return val
+    else
+      local _, allTarget, parent, num = UnpackTargets(strsplit(".", target))
+
+      val = self:_GetProperty(allTarget, property)
+      if val then
+        return val
+      end
+
+      val = self:_GetProperty(inheritTarget, property)
+      if val then
+        return val
+      end
+
+      if parent then
+        return self:GetProperty(parent, property)
+      end
+
+      val = self:_GetProperty("*", property)
+      if val then
+        return val
+      end
+    end
+    return _DEFAULT_PROPERTY_VALUES[property]
+  end
+
+--[[
   __Arguments__{ String, String, Argument(String, true) }
   function GetProperty(self, target, property, inheritTarget)
     if self.properties[target] and self.properties[target][property] then
@@ -677,6 +798,8 @@ class "Theme" extend "ISerializable"
     end
     return _DEFAULT_PROPERTY_VALUES[property]
   end
+
+  -]]
 
   __Arguments__{ String }
   function GetProperty(self, property)
@@ -763,12 +886,26 @@ class "Theme" extend "ISerializable"
   end
 
 
-  function _SetProperty(self, target, property, value)
-    local targetProps = self.properties[target] and self.properties[target] or SDictionary()
+  function _SetProperty(self, target, property, value, saveInDB)
+    local properties
+    if saveInDB then
+      if not _DB.Themes then _DB.Themes = {} end
+
+      if not _DB.Themes[_CURRENT_THEME.name] then
+        _DB.Themes[_CURRENT_THEME.name] = {}
+      end
+
+      properties = _DB.Themes[_CURRENT_THEME.name]
+    else
+      properties = self.properties
+    end
+
+
+    local targetProps = properties[target] and properties[target] or SDictionary()
     targetProps[property] = value
 
-    if not self.properties[target] then
-      self.properties[target] = targetProps
+    if not properties[target] then
+      properties[target] = targetProps
     end
 
   end
@@ -782,14 +919,14 @@ class "Theme" extend "ISerializable"
   end
 
 
-  __Arguments__{ String, String, Any }
-  function SetProperty(self, target, property, value)
+  __Arguments__{ String, String, Any, Argument(Boolean, true, false) }
+  function SetProperty(self, target, property, value, saveInDB)
     if target == "*" then
-      self:_SetProperty(target, property, value)
+      self:_SetProperty(target, property, value, saveInDB)
     else
       local class, fstr = strsplit(".", target)
       if not fstr then
-        self:_SetProperty(target, property, value)
+        self:_SetProperty(target, property, value, saveInDB)
         return
       end
 
@@ -798,10 +935,10 @@ class "Theme" extend "ISerializable"
         _, _, fstr = fstr:find("(%w*)[\[]")
         for _, flag in pairs(flags) do
           target = string.format("%s.%s[%s]", class, fstr, flag)
-          self:_SetProperty(target, property, value)
+          self:_SetProperty(target, property, value, saveInDB)
         end
       else
-        self:_SetProperty(target, property, value)
+        self:_SetProperty(target, property, value, saveInDB)
       end
     end
   end

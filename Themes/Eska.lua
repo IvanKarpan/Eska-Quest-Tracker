@@ -34,7 +34,7 @@ EskaTheme:SetProperty("tracker", "border-color", { r = 0.1, g = 0.1, b = 0.1})
 -- ========================================================================== --
 -- == Set Default block properties
 -- ========================================================================== --
-EskaTheme:SetProperty("block.*", "background-color", { r = 0, g = 0, b = 0, a = 0})
+-- EskaTheme:SetProperty("block.*", "background-color", { r = 0, g = 0, b = 0, a = 0})
 EskaTheme:SetProperty("block.*", "border-color", { r = 0, g = 0, b = 0, a = 0 })
 -- Header properties
 EskaTheme:SetProperty("block.header", "background-color", { r = 0, g = 0, b = 0, a = 0.5 })

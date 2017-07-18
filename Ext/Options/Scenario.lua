@@ -49,4 +49,4 @@ _Parent.Category.Scenario = {
 -- Class:IsCustomDBPropertyEnabled()
 -- class:SetCustomDBPropertyEnabled()
 
-_OptionBuilder:CreateBlockOptions(Scenario, "Scenario")
+-- _OptionBuilder:CreateBlockOptions(Scenario, "Scenario")

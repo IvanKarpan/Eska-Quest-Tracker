@@ -1,9 +1,9 @@
--- ========================================================================== --
--- 										 EskaQuestTracker                                       --
--- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
--- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
--- ========================================================================== --
-Scorpio                "EskaQuestTracker.Options"                        "1.1.0"
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
+Scorpio                "EskaQuestTracker.Options"                        "1.1.3"
 -- ========================================================================== --
 namespace "EQT"                                                               --                                                          --
 -- ========================================================================== --
@@ -32,6 +32,9 @@ _AnchorPoints = {
   ["RIGHT"] = "RIGHT",
   ["CENTER"] = "CENTER",
 }
+
+_SavedInThemeColor = "FF56C6FF"
+ThemeColor = function(str) return string.format("|c%s%s|r", _SavedInThemeColor, str) end
 -- ========================================================================== --
 GetFontIndex = function(font)
   for i, v in next, _Fonts do
@@ -53,7 +56,7 @@ local function FillSpace(str, maxCharacter)
   return finalStr
 end
 
-local function CreateRowString(label, field, strColorLabel, strColorField, maxChar)
+CreateRowString = function(label, field, strColorLabel, strColorField, maxChar)
   local finalStr = ""
 
   label = FillSpace(label, maxChar or 12)
@@ -227,25 +230,25 @@ _Categories.Tracker = {
           args = {
             backgroundColor = {
               type = "color",
-              name = "background color",
+              name = ThemeColor("background color"),
               order = 1,
               hasAlpha = true,
               get = function()
-                  local color = ObjectiveTracker.backgroundColor
+                  local color = API:GetThemeProperty("tracker", "background-color")
                   return color.r, color.g, color.b, color.a
               end,
-              set = function(_, r, g, b, a ) ObjectiveTracker.backgroundColor = { r = r, g = g, b = b , a = a } end,
+              set = function(_, r, g, b, a) API:SetAndRefreshThemeProperty("tracker", "background-color", { r = r, g = g, b = b, a = a }) end,
             },
             borderColor = {
               type = "color",
-              name = "border Color",
+              name = ThemeColor("border Color"),
               order = 2,
               hasAlpha = true,
               get = function()
-                local color = ObjectiveTracker.borderColor
+                local color = API:GetThemeProperty("block", "background-color")
                 return color.r, color.g, color.b, color.a
               end,
-              set = function(_, r, g, b, a) ObjectiveTracker.borderColor = { r = r, g = g, b = b, a = a } end,
+              set = function(_, r, g, b, a) API:SetAndRefreshThemeProperty("tracker", "border-color", { r = r, g = g, b = b, a = a }) end,
             }
           }
       },
@@ -269,6 +272,7 @@ _Categories.Tracker = {
 -- ========================================================================== --
 -- == BLOCK CATEGORY
 -- ========================================================================== --
+--[[
 _Categories.Blocks = {
   type = "group",
   name = "Blocks",
@@ -444,6 +448,7 @@ _Categories.Blocks = {
 }
 
 _CustomBlockConfigurations = _Categories.Blocks.args.customBlockConfigs.args
+--]]
 
 
 function OnEnable(self)

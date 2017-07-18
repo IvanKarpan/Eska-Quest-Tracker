@@ -16,4 +16,4 @@ namespace "EQT"
 
   }
 }--]]
-_OptionBuilder:CreateBlockOptions(WorldQuestBlock, "World Quests")
+--_OptionBuilder:CreateBlockOptions(WorldQuestBlock, "World Quests")

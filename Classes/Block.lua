@@ -101,7 +101,12 @@ class "Block" inherit "Frame"
     This(self)
   end
 
+  -- Say to option the keyword available
+  Options.AddAvailableThemeKeywords(
+  "block", "block.header", "block.stripe"
+  )
 endclass "Block"
+Theme.RegisterRefreshHandler("block", Block.RefreshAll)
 -- ========================================================================== --
 -- == OnLoad Handler
 -- ========================================================================== --

@@ -73,7 +73,7 @@ _Categories.Quests = {
   }
 }
 
-_OptionBuilder:CreateBlockOptions(QuestBlock, "Quests")
+-- _OptionBuilder:CreateBlockOptions(QuestBlock, "Quests")
 --[[
 _CustomBlockConfigurations["Quests"] = {
   type = "group",

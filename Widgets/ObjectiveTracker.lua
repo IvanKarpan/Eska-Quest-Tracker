@@ -1,17 +1,17 @@
--- ========================================================================== --
--- 										 EskaQuestTracker                                       --
--- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
--- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
--- ========================================================================== --
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
 Scorpio        "EskaQuestTracker.Widgets.ObjectiveTrackerFrame"               ""
--- ========================================================================== --
+--============================================================================--
 namespace "EQT"
--- ========================================================================== --
-class "ObjectiveTracker" extend "IFrame"
+--============================================================================--
+class "ObjectiveTracker" inherit "Frame"
   _Obj = {}
-  -- ======================================================================== --
-  -- Handlers
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                Handlers                                  --
+  ------------------------------------------------------------------------------
   local function SetContentHeight(self, new, old, prop)
 
     -- Update the content size
@@ -42,22 +42,34 @@ class "ObjectiveTracker" extend "IFrame"
     -- Update the content size
     self.content:SetWidth(self.scrollFrame:GetWidth())
   end
-
-  local function HandleFrameDragStop(frame)
-    frame:StopMovingOrSizing()
-
-    local x = frame:GetLeft()
-    local y = frame:GetBottom()
-
-    if _Obj then
-      _Obj:SetPosition(x, y)
+  ------------------------------------------------------------------------------
+  --                         Global Handlers                                  --
+  --      Some frames can need to get theses handler in order to Tracker      --
+  --      moving works.                                                       --
+  ------------------------------------------------------------------------------
+  _Addon.ObjectiveTrackerMouseDown = function(_, button)
+    if button == "LeftButton" and not ObjectiveTracker.locked and _Obj then
+        _Obj.frame:StartMoving()
     end
-    frame:SetUserPlaced(false)
   end
 
-  -- ======================================================================== --
-  -- Methods
-  -- ======================================================================== --
+  _Addon.ObjectiveTrackerMouseUp = function(_, button)
+    if button == "LeftButton" and not ObjectiveTracker.locked and _Obj then
+      _Obj.frame:StopMovingOrSizing()
+
+      local x = _Obj.frame:GetLeft()
+      local y = _Obj.frame:GetBottom()
+
+      if _Obj then
+        _Obj:SetPosition(x, y)
+      end
+      _Obj.frame:SetUserPlaced(false)
+    end
+  end
+
+  ------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
   __Arguments__ { Boolean }
   function SetLocked(self, locked)
     self.frame:EnableMouse(not locked)
@@ -66,6 +78,7 @@ class "ObjectiveTracker" extend "IFrame"
 
   __Arguments__ { Number, Number, Argument(Boolean, true, true, "saveInDB")}
   function SetPosition(self, x, y, saveInDB)
+    self.frame:ClearAllPoints()
     self.frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)
     if saveInDB then
       _DB.Tracker.xPos = x
@@ -74,28 +87,25 @@ class "ObjectiveTracker" extend "IFrame"
   end
 
   function Refresh(self)
-    local theme = _CURRENT_THEME
-    -- background color
-    local color = theme:GetProperty("tracker", "background-color")
-    --print("bg", color.r, color.g, color.b, color.a)
-  --  self.frame:SetBackdropColor(color.r, color.g, color.b, color.a)
-    -- border color
-    color = theme:GetProperty("tracker", "border-color")
-    --print("border", color.r, color.g, color.b, color.a)
-    --self.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
+    Theme.SkinFrame(self.frame)
+
+    Theme.SkinFrame(self.scrollbar)
+    Theme.SkinTexture(self.scrollbar.thumb)
 
   end
 
+  function RegisterFramesForThemeAPI(self)
+    Theme.RegisterFrame(self.tID, self.frame)
 
-  __Static__() function GetBackgroundColor() end
+    Theme.RegisterFrame(self.tID..".scrollbar", self.scrollbar)
+    Theme.RegisterTexture(self.tID..".scrollbar.thumb", self.scrollbar.thumb)
 
-  --__Arguments__{ Number, Number, Number, Argument(Number, true, 0) }
-  --__Arguments__ { Number, Number, Number, Number }
-  --__Static__() function SetBackdropColor(self, r, g, b, a) print(self, r, g, b, a) end
+    Theme.RegisterRefreshHandler(self.tID, function() self:Refresh() end)
+  end
 
-  -- ======================================================================== --
-  -- Properties
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
   property "isScrollbarShown" { TYPE = Boolean, DEFAULT = true, HANDLER = SetScrollbarVisibility }
   property "contentHeight" { TYPE = Number, DEFAULT = 50, HANDLER = SetContentHeight }
   -- the width used by the tracker
@@ -129,17 +139,18 @@ class "ObjectiveTracker" extend "IFrame"
     SET = function(self, color) _DB.Tracker.backdropBorderColor = color ; _Obj.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a) end,
     GET = function() return _DB.Tracker.backdropBorderColor end,
   }
+  -- Theme
+  property "tID" { DEFAULT = "tracker" }
 
-
-
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   function ObjectiveTracker(self)
     local frame = CreateFrame("Frame", "EQT-TrackerFrame", UIParent)
     -- Register the frame
     self.frame = frame
 
     frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
-    frame:SetBackdropColor(125/255, 125/255, 125/255, 0.25)
-    frame:SetBackdropBorderColor(0.1, 0.1, 0.1)
     frame:SetFrameStrata("LOW")
     frame:SetSize(ObjectiveTracker.width, ObjectiveTracker.height)
     -- Restore the position contained in the DB if exists
@@ -149,21 +160,14 @@ class "ObjectiveTracker" extend "IFrame"
       frame:SetPoint("CENTER")
     end
     -- Drag and move functions
-    frame:RegisterForDrag("LeftButton")
-    frame:SetScript("OnDragStart", frame.StartMoving)
-    frame:SetScript("OnDragStop", HandleFrameDragStop)
+    frame:SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
+    frame:SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
 
 
     self:SetLocked(ObjectiveTracker.locked)
 
     local scrollFrame = CreateFrame("ScrollFrame", "EQT-ObjectiveTrackerFrameScrollFrame", frame, "UIPanelScrollFrameTemplate")
-    --scrollFrame:SetPoint("TOPLEFT")
-    --scrollFrame:SetPoint("BOTTOMRIGHT")
     scrollFrame:SetAllPoints()
-    --scrollFrame:SetBackdrop(_Backdrops.Common)
-    --scrollFrame:SetBackdropColor(0, 1, 1)
-
-
 
     -- Hide the scroll bar and its buttons
     local scrollbarName = scrollFrame:GetName()
@@ -179,15 +183,12 @@ class "ObjectiveTracker" extend "IFrame"
 
     -- customize the scroll bar
     scrollbar:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
-    scrollbar:SetBackdropColor(0, 0, 0, 0.5)
-    scrollbar:SetBackdropBorderColor(0, 0, 0)
     scrollbar:ClearAllPoints()
     scrollbar:SetPoint("TOPRIGHT", frame, "TOPRIGHT")
     scrollbar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
     -- customize the scroll bar thumb
     local thumb = scrollbar:GetThumbTexture()
     thumb:SetTexture(_Backdrops.Common.bgFile)
-    thumb:SetVertexColor(1, 199/255, 0)
     thumb:SetHeight(40)
     thumb:SetWidth(8)
 
@@ -201,15 +202,16 @@ class "ObjectiveTracker" extend "IFrame"
     content:SetHeight(self.contentHeight)
     content:SetWidth(scrollFrame:GetWidth())
 
-
-
-
     self.content = content
     self.scrollFrame = scrollFrame
     self.scrollbar = scrollbar
+    self.scrollbar.thumb = thumb
+
+
+    This.RegisterFramesForThemeAPI(self)
+    self:Refresh()
 
     _Obj = self
-    self:Refresh()
 
     -- OnWidthChanged event handler
     function self:OnWidthChanged(new, old)
