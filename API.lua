@@ -50,20 +50,38 @@ endinterface "Config"
 --------------------------------------------------------------------------------
 __Final__()
 interface "Options"
-  _KEYWORDS = List()
+  _KEYWORDS = Dictionary()
+
+  __Flags__()
+  enum "ThemeKeywordType" {
+    FRAME = 1,
+    TEXT = 2,
+    TEXTURE = 4,
+  }
+
+  struct "ThemeKeyword"
+    target = String
+
+    __Default__( ThemeKeywordType.FRAME )
+    type = ThemeKeywordType
+
+    __Default__("0094FF")
+    flagColorStr = String
+
+  endstruct "ThemeKeyword"
 
   function AddAvailableThemeKeywords(...)
     --print(self, ...)
     for i = 1, select('#', ...) do
       local keyword = select(i, ...)
-      if not _KEYWORDS:Contains(keyword) then
-        _KEYWORDS:Insert(keyword)
+      if not _KEYWORDS[keyword.target] then
+        _KEYWORDS[keyword.target] = keyword
       end
     end
   end
 
   function GetAvailableThemeKeywords()
-    return _KEYWORDS:GetIterator()
+    return _KEYWORDS.Values:ToList():Sort("a,b=>a.target<b.target"):GetIterator()
   end
 endinterface "Options"
 
@@ -257,9 +275,9 @@ interface "API"
   -- End encoding and compressing code
 
   -- Some Theme function
-  function GetThemeProperty(self, target, property, inherit)
+  function GetThemeProperty(self, target, property, inherit, includeParent)
     if _CURRENT_THEME then
-      return _CURRENT_THEME:GetProperty(target, property, inherit)
+      return _CURRENT_THEME:GetProperty(target, property, inherit, includeParent)
     end
   end
 
@@ -270,10 +288,31 @@ interface "API"
   end
 
   function SetAndRefreshThemeProperty(self, target, property, value)
+    if not target or not property then
+      return
+    end
+
+    print(target, property, value)
+
     self:SetThemeProperty(target, property, value)
 
-    local firstClass = strsplit(".", target, 2)
+
+    local firstClass = strsplit(".", API:RemoveThemePropertyFlags(target), 2)
+
+
     Theme.RefreshGroup(firstClass)
+  end
+
+  function GetThemePropertyFlags(self, target)
+    local flags = {}
+    for flag in string.gmatch(target, "[%[@,](%w+)") do
+      tinsert(flags, flag)
+    end
+    return flags
+  end
+
+  function RemoveThemePropertyFlags(self, target)
+    return target:gsub("%[.*%]", "")
   end
 endinterface "API"
 --------------------------------------------------------------------------------
@@ -742,9 +781,14 @@ class "Theme" extend "ISerializable"
     end
   end
 
-  __Arguments__{ String, String, Argument(String, true) }
-  function GetProperty(self, target, property, inheritTarget)
+  __Arguments__{ String, String, Argument(String, true), Argument(Boolean, true, true) }
+  function GetProperty(self, target, property, inheritTarget, includeParent)
     local val = self:_GetProperty(target, property)
+
+    if not includeParent then
+      return val
+    end
+
     if val then
       return val
     else
@@ -1030,32 +1074,6 @@ class "Theme" extend "ISerializable"
       _LibSharedMedia:Register("font", fontID, fontFile)
     end
   end
-
-  __Arguments__ { String }
-  function RefreshFrames(self, target)
-    local class = _DEFAULT_CLASSES[target]
-
-    if class and class.RefreshAll then
-      class:RefreshAll()
-    end
-  end
-
-  __Arguments__{ Table }
-  function RefreshFrames(self, targets)
-    for _, target in pairs(targets) do
-      This.RefreshFrames(self, target)
-    end
-  end
-
-  __Arguments__ {}
-  function RefreshFrames(self)
-    for _, class in pairs(_DEFAULT_CLASSES) do
-      if class and class.RefreshAll then
-        class:RefreshAll()
-      end
-    end
-  end
-
 
   function SetOption(self, option, value)
     self.options[option] = value

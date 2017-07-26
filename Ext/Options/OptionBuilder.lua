@@ -256,6 +256,50 @@ function CreateBlockOptions(self, childBlock, name)
 end
 
 
+function CreateEnableBlockOption(self, order, nameDisplayed, optionType, customOptionArgs)
+  local t = {
+    type = "group",
+    name = "",
+    order = order or 0,
+    inline = true,
+    args = {}
+  }
+  t.args.enable = {
+    type = "toggle",
+    name = nameDisplayed,
+    order = 1,
+    width = "normal",
+  }
+
+  t.args.option = {
+    type = optionType,
+    name = "",
+    order = 2,
+    width = "normal",
+  }
+
+  if optionType == "color" then
+    t.args.option.hasAlpha = true
+  elseif optionType == "selectFont" then
+    t.args.option.type = "select"
+    t.args.option.values = _Fonts
+    t.args.option.itemControl = "DDI-Font"
+  elseif optionType == "selectTransform" then
+    t.args.option.type = "select"
+    t.args.option.values = _TextTransforms
+  end
+
+  if customOptionArgs then
+    for k, v in pairs(customOptionArgs) do
+      t.args.option[k] = v
+    end
+  end
+  return t
+end
+
+
+
+
 
 function CreateBlockPropertyOptions(self, class, nameDisplayed, property, optionType, customOptionArgs)
   local t = {}
@@ -304,5 +348,6 @@ function CreateBlockPropertyOptions(self, class, nameDisplayed, property, option
   end
   return t
 end
+
 
 endclass "OptionBuilder"

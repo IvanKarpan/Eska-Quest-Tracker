@@ -103,7 +103,10 @@ class "Block" inherit "Frame"
 
   -- Say to option the keyword available
   Options.AddAvailableThemeKeywords(
-  "block", "block.header", "block.stripe"
+    Options.ThemeKeyword("block", Options.ThemeKeywordType.FRAME),
+    Options.ThemeKeyword("block.header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+    Options.ThemeKeyword("block.stripe", Options.ThemeKeywordType.TEXTURE),
+    Options.ThemeKeyword("block.stripe.text", Options.ThemeKeywordType.TEXTURE)
   )
 endclass "Block"
 Theme.RegisterRefreshHandler("block", Block.RefreshAll)

@@ -331,9 +331,18 @@ class "Objective" inherit "Frame" extend "IReusable"
 
 	-- Say to option the keyword available
 	Options.AddAvailableThemeKeywords(
-	"objective", "objective[@completed]", "objective[@progress]"
+		-- Global
+		Options.ThemeKeyword("objective", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+		-- Completed objectives
+		Options.ThemeKeyword("objective[@completed]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+		Options.ThemeKeyword("objective.square[@completed]", Options.ThemeKeywordType.FRAME, "00ff00"),
+		-- progress objective
+		Options.ThemeKeyword("objective[@progress]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+		Options.ThemeKeyword("objective.square[@progress]", Options.ThemeKeywordType.FRAME, "808080")
 	)
 endclass "Objective"
+Theme.RegisterRefreshHandler("objective", Objective.RefreshAll)
+
 --============================================================================--
 -- OnLoad Handler
 --============================================================================--
