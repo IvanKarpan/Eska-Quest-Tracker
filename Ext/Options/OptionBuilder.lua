@@ -256,7 +256,7 @@ function CreateBlockOptions(self, childBlock, name)
 end
 
 
-function CreateEnableBlockOption(self, order, nameDisplayed, optionType, customOptionArgs)
+function CreateEnableBlockOption(self, order, nameDisplayed, optionType, customOptionArgs, customToggleArgs)
   local t = {
     type = "group",
     name = "",
@@ -270,6 +270,12 @@ function CreateEnableBlockOption(self, order, nameDisplayed, optionType, customO
     order = 1,
     width = "normal",
   }
+
+  if customToggleArgs then
+    for k, v in pairs(customToggleArgs) do
+      t.args.enable[k] = v
+    end
+  end
 
   t.args.option = {
     type = optionType,

@@ -10,6 +10,12 @@ import "System.Reflector"
 -- ========================================================================== --
 _KEYWORDS_OPTIONS = {}
 
+_BUTTONS = {}
+
+--
+_THEMES_CACHE_VALUES = {}
+_THEMES_ENABLE_CACHE = {}
+
 -- RETURN NAME without flags, flags list, parent with flags
 PROPERTY_INFO = function(target)
   local function UnpackTargets(...)
@@ -88,6 +94,21 @@ function GetThemeProp(self, target, property)
 end
 
 
+
+function GetThemeProperty(self, target, property)
+    return API:GetThemeProperty(target, property)
+end
+
+function SetThemeDBProperty(self, target, property, value)
+  API:SetAndRefreshThemeProperty(target, property, value)
+end
+
+function GetThemeDBProperty(self, target, property)
+  if _CURRENT_THEME then
+    return _CURRENT_THEME:GetDBProperty(target, property)
+  end
+end
+
 function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags)
 
   if not optionflags then
@@ -102,7 +123,7 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
 
   local options = {
     type = "group",
-    name = string.format("%s |cff%s%s|r", name, flagsColor, fstr),
+    name = string.format("%s |cff%s%s|r", name:gsub("^%l", string.upper), flagsColor, fstr),
     args = {}
   }
 
@@ -132,26 +153,46 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
       args = {}
     }
 
-   frameTab.args.backgroundColor = _OptionBuilder:CreateEnableBlockOption(1, "Background Color", "color", {
-     get = function() local color = self:GetThemeProp(target, "background-color")
-       if color then
-         return color.r, color.g, color.b, color.a
+    ----------------------------------------------------------------------------
+    --                     FRAME TAB / Background color                       --
+    ----------------------------------------------------------------------------
+   frameTab.args.backgroundColor = _OptionBuilder:CreateEnableBlockOption(1, "Background Color", "color",
+    -- # Value control
+     {
+       get = function() local color = self:GetThemeProperty(target, "background-color")
+         if color then
+           return color.r, color.g, color.b, color.a
+         end
+       end,
+       set = function(_, r, g, b, a)
+         self:SetThemeDBProperty(target, "background-color", { r = r, g = g, b = b, a = a})
        end
-     end,
-     set = function(_, r, g, b, a)
-       API:SetAndRefreshThemeProperty(target, "background-color", { r = r, g = g, b = b, a = a})
-     end
-   })
-   frameTab.args.borderColor = _OptionBuilder:CreateEnableBlockOption(2, "Border Color", "color", {
-     get = function() local color = self:GetThemeProp(target, "border-color")
-       if color then
-         return color.r, color.g, color.b, color.a
-       end
-     end,
-     set = function(_, r, g, b, a)
-       API:SetAndRefreshThemeProperty(target, "background-color", { r = r, g = g, b = b, a = a})
-     end
-   })
+     },
+    -- # Enable control
+     {
+       get = function() return self:GetThemeDBProperty(target, "background-color") end,
+       set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "background-color", nil)  end end
+     }
+   )
+    ----------------------------------------------------------------------------
+    --                     FRAME TAB / Border color                           --
+    ----------------------------------------------------------------------------
+   frameTab.args.borderColor = _OptionBuilder:CreateEnableBlockOption(2, "Border Color", "color",
+    -- # Value control
+     {
+       get = function() local color = self:GetThemeProperty(target, "border-color")
+         if color then
+           return color.r, color.g, color.b, color.a
+         end
+       end,
+       set = function(_, r, g, b, a) self:SetThemeDBProperty(target, "border-color", { r = r, g = g, b = b, a = a}) end
+     },
+     -- # Enable control
+     {
+       get = function() return self:GetThemeDBProperty(target, "border-color") end,
+       set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "border-color", nil)  end end
+     }
+   )
 
    elementParentOpt.args.frame = frameTab
   end
@@ -162,28 +203,74 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
       name = "Text",
       args = {}
     }
-
-    textTab.args.textSize = _OptionBuilder:CreateEnableBlockOption(1, "Text Size", "range", {
-      min = 6,
-      max = 32,
-      get = function() return self:GetThemeProp(target, "text-size") end,
-    })
-    textTab.args.textColor = _OptionBuilder:CreateEnableBlockOption(2, "Text Color", "color", {
-      get = function() local color = self:GetThemeProp(target, "text-color")
-        if color then
-          return color.r, color.g, color.b, color.a
+    ----------------------------------------------------------------------------
+    --                        TEXT TAB / Text Size                            --
+    ----------------------------------------------------------------------------
+    textTab.args.textSize = _OptionBuilder:CreateEnableBlockOption(1, "Text Size", "range",
+    -- # Value control
+      {
+        min = 6,
+        max = 32,
+        step = 1,
+        get = function() return self:GetThemeProperty(target, "text-size") end,
+        set = function(_, size) self:SetThemeDBProperty(target, "text-size", size) end,
+      },
+     -- # Enable control
+     {
+       get = function() return self:GetThemeDBProperty(target, "text-size") end,
+       set = function(_, size) if not enable then self:SetThemeDBProperty(target, "text-size", nil) end end
+     }
+    )
+    ----------------------------------------------------------------------------
+    --                        TEXT TAB / Text Color                           --
+    ----------------------------------------------------------------------------
+    textTab.args.textColor = _OptionBuilder:CreateEnableBlockOption(2, "Text Color", "color",
+    -- # Value control
+      {
+        get = function() local color = self:GetThemeProperty(target, "text-color")
+          if color then
+            return color.r, color.g, color.b, color.a
+          end
+        end,
+        set = function(_, r, g, b)
+          self:SetThemeDBProperty(target, "text-color", { r = r, g = g, b = b})
         end
-      end,
-      set = function(_, r, g, b)
-        API:SetAndRefreshThemeProperty(target, "text-color", { r = r, g = g, b = b})
-      end
-    })
-    textTab.args.textFont = _OptionBuilder:CreateEnableBlockOption(3, "Text Font", "selectFont", {
-      get = function() return GetFontIndex(self:GetThemeProp(target, "text-font")) end
-    })
-    textTab.args.textTransform = _OptionBuilder:CreateEnableBlockOption(4, "Text Transform", "selectTransform", {
-      get = function() return self:GetThemeProp(target, "text-transform") end
-    })
+      },
+    -- # Enable control
+      {
+        get = function() return self:GetThemeDBProperty(target, "text-color") end,
+        set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-color", nil)  end end
+      }
+    )
+    ----------------------------------------------------------------------------
+    --                        TEXT TAB / Text Font                            --
+    ----------------------------------------------------------------------------
+    textTab.args.textFont = _OptionBuilder:CreateEnableBlockOption(3, "Text Font", "selectFont",
+    -- # Value control
+      {
+        get = function() return GetFontIndex(self:GetThemeProperty(target, "text-font")) end,
+        set = function(_, font) self:SetThemeDBProperty(target, "text-font", _Fonts[font]) end,
+      },
+    -- # Enable control
+      {
+        get = function() return self:GetThemeDBProperty(target, "text-font") end,
+        set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-font", nil) end end
+      }
+    )
+    ----------------------------------------------------------------------------
+    --                        TEXT TAB / Text Transform                       --
+    ----------------------------------------------------------------------------
+    textTab.args.textTransform = _OptionBuilder:CreateEnableBlockOption(4, "Text Transform", "selectTransform",
+    -- # Value control
+      {
+        get = function() return self:GetThemeProperty(target, "text-transform") end,
+        set = function(_, textTransform) self:SetThemeDBProperty(target, "text-transform", textTransform) end
+      },
+    -- # Enable control
+      {
+        get = function() return self:GetThemeDBProperty(target, "text-transform")  end,
+        set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-transform", nil) end end,
+      })
 
     elementParentOpt.args.text = textTab
   end
@@ -194,17 +281,25 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
       name = "Texture",
       args = {}
     }
-
-    textureTab.args.textureColor = _OptionBuilder:CreateEnableBlockOption(1, "Texture Color", "color", {
-      get = function() local color = self:GetThemeProp(target, "vertex-color")
-        if color then
-          return color.r, color.g, color.b, color.a
-        end
-      end,
-      set = function(_, r, g, b, a)
-        API:SetAndRefreshThemeProperty(target, "vertex-color", { r = r, g = g, b = b, a = a })
-      end,
-    })
+    ----------------------------------------------------------------------------
+    --                     TEXTURE TAB /  Vertex Color                        --
+    ----------------------------------------------------------------------------
+    textureTab.args.textureColor = _OptionBuilder:CreateEnableBlockOption(1, "Texture Color", "color",
+    -- # Value control
+       {
+         get = function() local color = self:GetThemeProperty(target, "vertex-color")
+           if color then
+             return color.r, color.g, color.b, color.a
+           end
+         end,
+         set = function(_, r, g, b, a) self:SetThemeDBProperty(target, "vertex-color", { r = r, g = g, b = b, a = a}) end
+       },
+    -- # Enable control
+       {
+         get = function() return self:GetThemeDBProperty(target, "vertex-color") end,
+         set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "vertex-color", nil)  end end
+       }
+     )
 
     elementParentOpt.args.texture = textureTab
   end
@@ -255,6 +350,10 @@ function CreateOptionBuildTable()
 
   _BUILD_OPTION_INFO = _BUILD_OPTION_INFO.Values:ToList():Sort("a,b=>a.id<b.id")
 
+end
+
+function CreateThemeDefaultPropertiesOption(self)
+  return self:CreateKeywordOptions("Default properties", {}, "ffffff", "*")
 end
 
 
@@ -323,6 +422,7 @@ function CreateThemeOption(self, theme)
               }
           }
         },
+        defaultProperties = self:CreateThemeDefaultPropertiesOption(),
         properties = self:CreateThemePropertiesOptions()
       }
     }
