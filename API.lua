@@ -292,7 +292,7 @@ interface "API"
       return
     end
 
-    print(target, property, value)
+    -- print(target, property, value)
 
     self:SetThemeProperty(target, property, value)
 
@@ -781,6 +781,7 @@ class "Theme" extend "ISerializable"
     end
   end
 
+
   __Arguments__{ String, String, Argument(String, true), Argument(Boolean, true, true) }
   function GetProperty(self, target, property, inheritTarget, includeParent)
     local val = self:_GetProperty(target, property)
@@ -816,6 +817,16 @@ class "Theme" extend "ISerializable"
     return _DEFAULT_PROPERTY_VALUES[property]
   end
 
+  __Arguments__{ String, String }
+  function GetDBProperty(self, target, property)
+    if _DB and _DB.Themes and _DB.Themes[self.name] then
+      local dbTheme = _DB.Themes[self.name]
+      if dbTheme[target] and dbTheme[target][property] then
+        return dbTheme[target][property]
+      end
+    end
+  end
+
 --[[
   __Arguments__{ String, String, Argument(String, true) }
   function GetProperty(self, target, property, inheritTarget)
@@ -849,6 +860,8 @@ class "Theme" extend "ISerializable"
   function GetProperty(self, property)
     return This.GetProperty(self, "*", property)
   end
+
+
 
   __Arguments__{ String, String, Argument(Boolean, true, false)}
   function HasProperty(self, target, property, includeParent)
@@ -963,7 +976,7 @@ class "Theme" extend "ISerializable"
   end
 
 
-  __Arguments__{ String, String, Any, Argument(Boolean, true, false) }
+  __Arguments__{ String, String, Argument(Any, true), Argument(Boolean, true, false) }
   function SetProperty(self, target, property, value, saveInDB)
     if target == "*" then
       self:_SetProperty(target, property, value, saveInDB)

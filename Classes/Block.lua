@@ -30,9 +30,19 @@ class "Block" inherit "Frame"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
+    local class = System.Reflector.GetObjectClass
+
     Theme.RegisterFrame(self.tID, self.frame, "block")
     Theme.RegisterFrame(self.tID..".header", self.frame.header, "block.header")
     Theme.RegisterTexture(self.tID..".stripe", self.frame.header.stripe, "block.stripe")
+
+    -- Option part
+    -- Say to option the keyword available
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword("block", Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword("block.header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+      Options.ThemeKeyword("block.stripe", Options.ThemeKeywordType.TEXTURE)
+    )
   end
 
   __Static__() function RefreshAll()

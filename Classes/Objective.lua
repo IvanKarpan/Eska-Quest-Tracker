@@ -332,7 +332,7 @@ class "Objective" inherit "Frame" extend "IReusable"
 	-- Say to option the keyword available
 	Options.AddAvailableThemeKeywords(
 		-- Global
-		Options.ThemeKeyword("objective", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+		-- Options.ThemeKeyword("objective", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
 		-- Completed objectives
 		Options.ThemeKeyword("objective[@completed]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
 		Options.ThemeKeyword("objective.square[@completed]", Options.ThemeKeywordType.FRAME, "00ff00"),

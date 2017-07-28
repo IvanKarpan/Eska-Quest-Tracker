@@ -244,7 +244,17 @@ class "ObjectiveTracker" inherit "Frame"
     end
 
   end
+
+  -- Say to options the keywords availables
+  Options.AddAvailableThemeKeywords(
+    Options.ThemeKeyword("tracker", Options.ThemeKeywordType.FRAME),
+    Options.ThemeKeyword("tracker.scrollbar", Options.ThemeKeywordType.FRAME),
+    Options.ThemeKeyword("tracker.scrollbar.thumb", Options.ThemeKeywordType.TEXTURE)
+  )
 endclass "ObjectiveTracker"
+
+
+
 -- Set the default values for the DB
 function OnLoad(self)
   _DB:SetDefault("Tracker", {
