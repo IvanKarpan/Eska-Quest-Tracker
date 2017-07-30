@@ -1,7 +1,14 @@
+[1.1.5]
+- Created the "Transparence" theme.
+- Options: Added new elements in the themes properties options.
+- Options: "Select theme" option is now implemented.
+- Moved where the DB theme properties are saved (if you have edited some theme properties, you will lost theses changes).
+NOTE: The "Transparence" theme isn't usable in its current state. I will start to work on it in the next update.
+
 [1.1.4]
 - Options : updated the options for themes properties.
 - Options : added a new tab "Default properties" in the themes options.
-NOTE : The base implementation of themes options is now finalized, new options will be now quickly added. With this update, the scroll bar appearance can now be changed (go to Themes -> Eska -> Properties -> Tracker -> Scrollbar)
+NOTE: The base implementation of themes options is now finalized, new options will be now quickly added. With this update, the scroll bar appearance can now be changed (go to Themes -> Eska -> Properties -> Tracker -> Scrollbar)
 
 [1.1.3]
 - Fixed an issue where the tracker cannot be resized after be moved.
