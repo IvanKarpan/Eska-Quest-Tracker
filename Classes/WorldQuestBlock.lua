@@ -90,6 +90,7 @@ class "WorldQuestBlock" inherit "Block"
   ------------------------------------------------------------------------------
   -- Theme
   property "tID" { DEFAULT = "block.worldQuests" }
+  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.worldQuests" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -101,4 +102,16 @@ class "WorldQuestBlock" inherit "Block"
 
     _WorldQuestBlockCache[self] = true
   end
+
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+  end
 endclass "WorldQuestBlock"
+WorldQuestBlock:InstallOptions()

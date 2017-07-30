@@ -80,6 +80,7 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   property "numBonusObjectives" { TYPE = Number, DEFAULT = 0 }
   -- Theme
   property "tID" { DEFAULT = "block.scenario"}
+  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.scenario" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -140,4 +141,22 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     _ScenarioCache[self] = true
 
   end
+
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword(prefix..".stage", Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT),
+      Options.ThemeKeyword(prefix..".stageName", Options.ThemeKeywordType.TEXT),
+      Options.ThemeKeyword(prefix..".stageCounter", Options.ThemeKeywordType.TEXT)
+    )
+  end
 endclass "Scenario"
+Scenario:InstallOptions()

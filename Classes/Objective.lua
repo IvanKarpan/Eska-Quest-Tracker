@@ -293,6 +293,7 @@ class "Objective" inherit "Frame" extend "IReusable"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function Objective(self)
+		Super(self)
 
     local frame = CreateFrame("Frame")
     frame:SetBackdrop(_Backdrops.Common)
@@ -347,7 +348,7 @@ Theme.RegisterRefreshHandler("objective", Objective.RefreshAll)
 -- OnLoad Handler
 --============================================================================--
 function OnLoad(self)
-	_DB:SetDefault("Objective", {
+	--[[_DB:SetDefault("Objective", {
 		colors = {
 			completed = { r = 0, g = 1, b = 0},
 			inProgress = { r = 148/255, g = 148/255, b = 148/255 }
@@ -355,7 +356,7 @@ function OnLoad(self)
 		textSize = 13,
 		textFont = "PT Sans Narrow Bold",
 		textTransform = "none",
-	})
+	})--]]
 
 	-- Register this class in the object manager
 	_ObjectManager:Register(Objective)

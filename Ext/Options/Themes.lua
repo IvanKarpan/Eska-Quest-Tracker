@@ -54,7 +54,10 @@ _Categories.Themes = {
         end
         return list
       end,
-      set = function(_, value)  end,
+      get = function() return _DB.currentTheme end,
+      set = function(_, value)
+        _Addon:SelectTheme(value)
+      end,
     },
     themeInfo = {
       type = "description",

@@ -146,6 +146,8 @@ class "ObjectiveTracker" inherit "Frame"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function ObjectiveTracker(self)
+    Super(self)
+
     local frame = CreateFrame("Frame", "EQT-TrackerFrame", UIParent)
     -- Register the frame
     self.frame = frame
@@ -261,8 +263,8 @@ function OnLoad(self)
     width = 325,
     height = 300,
     locked = false,
-    backdropColor = { r = 0, g = 0, b = 0, a = 0.5 },
-    backdropBorderColor = { r = 0, g = 0, b = 0},
+    --backdropColor = { r = 0, g = 0, b = 0, a = 0.5 },
+    --backdropBorderColor = { r = 0, g = 0, b = 0},
   })
     -- Create and init the objetive tracker that will contains all the blocks (quests, scenario, keystone, ...)
   local tracker = ObjectiveTracker()

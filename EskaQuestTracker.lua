@@ -44,13 +44,16 @@ _THEMES = ObjectArray(Theme)
 function OnLoad(self)
   -- Create and init the DB
   _DB = SVManager("EskaQuestTrackerDB")
+  _DB:SetDefault({
+    currentTheme = "Eska"
+  })
 
   -- Create the blocks table in order to register them.
   self.blocks = Dictionary()
 
 
   _DB:SetDefault({ replaceBlizzardObjectiveTracker = true })
-  self:SelectTheme("Eska")
+  self:SelectTheme(_DB.currentTheme)
 end
 
 function OnEnable(self)
@@ -152,6 +155,8 @@ function SelectTheme(self, name)
 
   if theme then
     _CURRENT_THEME = theme
+    _DB.currentTheme = name
+    Theme.RefreshGroups()
   end
 end
 
@@ -165,6 +170,10 @@ end
 
 function GetThemes()
   return _THEMES
+end
+
+function GetCurrentTheme()
+  return _CURRENT_THEME
 end
 
 -- ImportTheme(encoded)

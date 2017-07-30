@@ -276,14 +276,14 @@ interface "API"
 
   -- Some Theme function
   function GetThemeProperty(self, target, property, inherit, includeParent)
-    if _CURRENT_THEME then
-      return _CURRENT_THEME:GetProperty(target, property, inherit, includeParent)
+    if _Addon:GetCurrentTheme() then
+      return _Addon:GetCurrentTheme():GetProperty(target, property, inherit, includeParent)
     end
   end
 
   function SetThemeProperty(self, target, property, value)
-    if _CURRENT_THEME then
-      _CURRENT_THEME:SetProperty(target, property, value, true)
+    if _Addon:GetCurrentTheme() then
+      _Addon:GetCurrentTheme():SetProperty(target, property, value, true)
     end
   end
 
@@ -320,6 +320,8 @@ endinterface "API"
 --        All the frames must inherit from this class                         --
 --------------------------------------------------------------------------------
 class "Frame"
+  _FrameCache = setmetatable( {}, { __mode = "k" })
+
   event "OnDrawRequest"
   event "OnWidthChanged"
   event "OnHeightChanged"
@@ -417,6 +419,15 @@ class "Frame"
   function IsShown(self)
     return self.frame:IsShown()
   end
+
+  __Static__() function RefreshAll()
+    for obj in pairs(_FrameCache) do
+      if obj.Refresh then
+        obj:Refresh()
+      end
+    end
+  end
+
   -- ======================================================================== --
   -- Properties
   -- ======================================================================== --
@@ -429,6 +440,8 @@ class "Frame"
 
   function Frame(self)
     self.OnDrawRequest = self.OnDrawRequest + OnDrawRequestHandler
+
+    _FrameCache[self] = true
   end
 endclass "Frame"
 
@@ -469,6 +482,10 @@ class "Theme" extend "ISerializable"
         handler()
       end
     end
+  end
+
+  __Static__() function RefreshGroups()
+    Frame:RefreshAll()
   end
 
   __Arguments__ { String, Table, Argument(String, true), Argument(String, true, "FRAME")}
@@ -538,7 +555,7 @@ class "Theme" extend "ISerializable"
       return
     end
 
-    if _CURRENT_THEME and _CURRENT_THEME:HasFlag(frame.themeClassID, "hover", true) then
+    if _Addon:GetCurrentTheme() and _Addon:GetCurrentTheme():HasFlag(frame.themeClassID, "hover", true) then
       if not frame:GetScript("OnEnter") then
           frame:SetScript("OnEnter", function()
             Theme.SkinFrame(frame, nil, "hover")
@@ -580,7 +597,7 @@ class "Theme" extend "ISerializable"
 
   __Arguments__ { Table, { Type = String, Nilable = true, IsList = true}}
   __Static__() function SkinTexture(texture, ...)
-    local theme = _CURRENT_THEME
+    local theme = _Addon:GetCurrentTheme()
 
     if not theme then return end -- TODO add error msg
     if not texture then return end  -- TODO add error msg
@@ -607,7 +624,7 @@ class "Theme" extend "ISerializable"
     -- @NOTE: No arguments attribute because the systeme can't know who is who in the args
     -- @TODO: Review the Skin arguments method in order to the arguements attribe can work.
   __Static__() function SkinText(fontstring, originText, ...)
-    local theme = _CURRENT_THEME
+    local theme = _Addon:GetCurrentTheme()
 
     if not theme then return end -- TODO add error msg
     if not fontstring then return end  -- TODO add error msg
@@ -669,7 +686,8 @@ class "Theme" extend "ISerializable"
   -- @TODO: Review the Skin arguments method in order to the arguements attribe can work.
   __Static__() function SkinFrame(frame, originText, ...)
 
-    local theme = _CURRENT_THEME
+    local theme = _Addon:GetCurrentTheme()
+    -- print("Current Theme", theme.name)
 
     if not theme then
       return
@@ -771,8 +789,11 @@ class "Theme" extend "ISerializable"
   function _GetProperty(self, target, property)
     if _DB and _DB.Themes and _DB.Themes[self.name] then
       local dbTheme = _DB.Themes[self.name]
-      if dbTheme[target] and dbTheme[target][property] then
-        return dbTheme[target][property]
+      --if dbTheme[target] and dbTheme[target][property] and  then
+        --return dbTheme[target][property]
+      --end
+      if dbTheme.properties and dbTheme.properties[target] and dbTheme.properties[target][property] then
+        return dbTheme.properties[target][property]
       end
     end
 
@@ -821,8 +842,8 @@ class "Theme" extend "ISerializable"
   function GetDBProperty(self, target, property)
     if _DB and _DB.Themes and _DB.Themes[self.name] then
       local dbTheme = _DB.Themes[self.name]
-      if dbTheme[target] and dbTheme[target][property] then
-        return dbTheme[target][property]
+      if dbTheme.properties and dbTheme.properties[target] and dbTheme.properties[target][property] then
+        return dbTheme.properties[target][property]
       end
     end
   end
@@ -948,11 +969,12 @@ class "Theme" extend "ISerializable"
     if saveInDB then
       if not _DB.Themes then _DB.Themes = {} end
 
-      if not _DB.Themes[_CURRENT_THEME.name] then
-        _DB.Themes[_CURRENT_THEME.name] = {}
+      if not _DB.Themes[self.name] then
+        _DB.Themes[self.name] = {}
+        _DB.Themes[self.name].properties = {}
       end
 
-      properties = _DB.Themes[_CURRENT_THEME.name]
+      properties = _DB.Themes[self.name].properties
     else
       properties = self.properties
     end

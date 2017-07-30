@@ -85,14 +85,14 @@ endclass "QuestItem"
 -- OnLoad Handler
 --============================================================================--
 function OnLoad(self)
-  _DB:SetDefault("Quest", {
+  --[[_DB:SetDefault("Quest", {
      QuestItem = {
       textColor = { r = 1, g = 0.38, b = 0 },
       textSize = 12,
       textFont = "PT Sans Narrow Bold",
       textTransform = "uppercase", -- none, lowercase
     }
-  })
+  })--]]
   -- Register this class in the object manager
   _ObjectManager:Register(QuestItem)
 end

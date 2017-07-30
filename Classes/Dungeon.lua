@@ -70,6 +70,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   property "texture" { TYPE = String + Number, DEFAULT = nil, HANDLER = UpdateProps }
   -- Theme
   property "tID" { DEFAULT = "block.dungeon"}
+  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.dungeon" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -122,4 +123,21 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
 
     _DungeonCache[self] = true
   end
+
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword(prefix..".icon", Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT)
+    )
+  end
+
 endclass "Dungeon"
+Dungeon:InstallOptions()

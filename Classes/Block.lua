@@ -59,6 +59,7 @@ class "Block" inherit "Frame"
   property "priority" { TYPE = Number, DEFAULT = 100 }
   -- Theme
   property "tID" { DEFAULT = "block" }
+  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block" }
   -- ======================================================================== --
   -- Constructors                                                             --
   -- ======================================================================== --
@@ -112,19 +113,30 @@ class "Block" inherit "Frame"
   end
 
   -- Say to option the keyword available
-  Options.AddAvailableThemeKeywords(
-    Options.ThemeKeyword("block", Options.ThemeKeywordType.FRAME),
-    Options.ThemeKeyword("block.header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-    Options.ThemeKeyword("block.stripe", Options.ThemeKeywordType.TEXTURE),
-    Options.ThemeKeyword("block.stripe.text", Options.ThemeKeywordType.TEXTURE)
-  )
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword(prefix, Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+      Options.ThemeKeyword(prefix..".stripe", Options.ThemeKeywordType.TEXTURE)
+    )
+  end
+
 endclass "Block"
+Block:InstallOptions()
 Theme.RegisterRefreshHandler("block", Block.RefreshAll)
 -- ========================================================================== --
 -- == OnLoad Handler
 -- ========================================================================== --
 function OnLoad(self)
-  _DB:SetDefault("Block", {
+  --[[_DB:SetDefault("Block", {
     -- frame color
     backdropColor = { r = 0, g = 0, b = 0, a = 0},
     borderColor = { r = 0, g = 0, b = 0, a = 0 },
@@ -140,5 +152,5 @@ function OnLoad(self)
     headerTextOffsetX = 0,
     headerTextOffsetY = 0,
     headerTextLocation = "CENTER",
-  })
+  })--]]
 end

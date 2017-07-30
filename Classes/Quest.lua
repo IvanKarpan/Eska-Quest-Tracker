@@ -167,6 +167,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   property "isOnMap" { TYPE = Boolean, DEFAULT = false, EVENT = "IsOnMapChanged" }
   -- Theme system
   property "tID" { DEFAULT = "quest"}
+  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "quest" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -216,7 +217,27 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     _QuestCache[self] = true
   end
 
+  -- Say to option the keyword available
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword(prefix, Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".header", Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT),
+      Options.ThemeKeyword(prefix..".level", Options.ThemeKeywordType.TEXT)
+    )
+  end
+
 endclass "Quest"
+Quest:InstallOptions()
+Theme.RegisterRefreshHandler("quest", Quest.RefreshAll)
 --============================================================================--
 -- OnLoad Handler
 --============================================================================--
