@@ -7,7 +7,7 @@ Scorpio              "EskaQuestTracker.Classes.QuestItem"                     ""
 --============================================================================--
 namespace "EQT"
 --============================================================================--
-class "QuestItem" extend "IFrame" "IReusable"
+class "QuestItem" inherit "Frame" extend "IReusable"
   _QuestItemCount = 1
   ------------------------------------------------------------------------------
   --                                   Methods                                --
@@ -18,6 +18,7 @@ class "QuestItem" extend "IFrame" "IReusable"
 
   function SetLink(self, link)
     self.__link = link
+    self:UpdateTooltip()
   end
 
   function GetTexture(self)
@@ -53,6 +54,8 @@ class "QuestItem" extend "IFrame" "IReusable"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function QuestItem(self)
+    Super(self)
+
     local index = _QuestItemCount
     local name = "EQTQuestItem" .. index
 
@@ -60,7 +63,7 @@ class "QuestItem" extend "IFrame" "IReusable"
     local btn = CreateFrame("Frame")
     --btn:RegisterForClicks("AnyUp")
     --btn:SetAttribute("type","item")
-    --btn:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
+    btn:SetScript("OnLeave", function(self) GameTooltip:Hide() end)
     btn:SetHeight(26)
     btn:SetWidth(26)
 

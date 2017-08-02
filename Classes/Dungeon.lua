@@ -60,8 +60,10 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    Theme.RegisterFrame(self.tID..".icon", self.frame.ftex)
-    Theme.RegisterText(self.tID..".name", self.frame.name)
+    local class = System.Reflector.GetObjectClass(self)
+
+    Theme.RegisterFrame(class._THEME_CLASS_ID..".icon", self.frame.ftex)
+    Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
@@ -82,20 +84,21 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     local headerText = header.text
 
   --  self.frame:SetBackdropColor(0, 0, 0, 0.3)
-    self.frame:SetBackdropBorderColor(0, 0, 0, 1)
+    -- self.frame:SetBackdropBorderColor(0, 0, 0, 1)
 
     -- Dungeon name
     local name = header:CreateFontString(nil, "OVERLAY")
-    name:SetPoint("TOPRIGHT")
-    name:SetPoint("BOTTOMRIGHT")
-    name:SetPoint("LEFT", headerText, "RIGHT")
+    name:SetAllPoints()
+    --name:SetPoint("TOPRIGHT")
+    --name:SetPoint("BOTTOMRIGHT")
+    --name:SetPoint("LEFT", headerText, "RIGHT")
     name:SetJustifyH("CENTER")
     self.frame.name = name
 
     -- Set the headerText to left
-    headerText:SetPoint("LEFT")
-    headerText:SetJustifyH("LEFT")
-    headerText:SetWidth(75)
+    --headerText:SetPoint("LEFT")
+    --headerText:SetJustifyH("LEFT")
+    --headerText:SetWidth(75)
 
     -- Dungeon Texture
     local ftex = CreateFrame("Frame", nil, self.frame)

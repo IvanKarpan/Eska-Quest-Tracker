@@ -150,6 +150,7 @@ function QUEST_WATCH_LIST_CHANGED(questID, isAdded)
   else
     QUESTS_CACHE[questID] = nil
     _QuestBlock:RemoveQuest(questID)
+    _Addon.ItemBar:RemoveItem(questID)
   end
 end
 
@@ -253,6 +254,7 @@ function UpdateQuest(self, questID)
       local itemQuest = quest:GetQuestItem()
       itemQuest.link = itemLink
       itemQuest.texture = itemTexture
+      _Addon.ItemBar:AddItem(questID, itemLink, itemTexture)
     end
 
     -- Update the objective

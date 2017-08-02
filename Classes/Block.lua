@@ -23,7 +23,7 @@ class "Block" inherit "Frame"
   __Arguments__ {}
   function Refresh(self)
     Theme.SkinFrame(self.frame)
-    Theme.SkinFrame(self.frame.header)
+    Theme.SkinFrame(self.frame.header, self.text)
     Theme.SkinTexture(self.frame.header.stripe)
   end
 
@@ -37,12 +37,6 @@ class "Block" inherit "Frame"
     Theme.RegisterTexture(self.tID..".stripe", self.frame.header.stripe, "block.stripe")
 
     -- Option part
-    -- Say to option the keyword available
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword("block", Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword("block.header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-      Options.ThemeKeyword("block.stripe", Options.ThemeKeywordType.TEXTURE)
-    )
   end
 
   __Static__() function RefreshAll()
@@ -87,7 +81,8 @@ class "Block" inherit "Frame"
     headerFrame.stripe = stripe
 
     local headerText = headerFrame:CreateFontString(nil, "OVERLAY")
-    headerText:SetPoint("CENTER", -10, 20)
+    headerText:SetAllPoints()
+    --headerText:SetPoint("CENTER", -10, 20)
     headerText:SetShadowColor(0, 0, 0, 0.25)
     headerText:SetShadowOffset(1, -1)
     headerFrame.text = headerText

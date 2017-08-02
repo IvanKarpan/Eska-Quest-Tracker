@@ -2,4 +2,5 @@
 ..\FrameXML\UI.xsd">
   <Script file="ObjectiveTracker.lua"/>
   <Script file="ItemButton.lua"/>
+  <Script file="ItemBar.lua"/>
 </Ui>

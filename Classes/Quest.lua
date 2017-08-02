@@ -147,11 +147,13 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
 
   function RegisterFramesForThemeAPI(self)
-    Theme.RegisterFrame(self.tID, self.frame)
-    Theme.RegisterFrame(self.tID..".header", self.frame.header)
+    local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterText(self.tID..".name", self.frame.headerName)
-    Theme.RegisterText(self.tID..".level", self.frame.headerLevel)
+    Theme.RegisterFrame(class._THEME_CLASS_ID, self.frame)
+    Theme.RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header)
+
+    Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.headerName)
+    Theme.RegisterText(class._THEME_CLASS_ID..".level", self.frame.headerLevel)
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --

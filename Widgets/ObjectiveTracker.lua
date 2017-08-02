@@ -196,9 +196,9 @@ class "ObjectiveTracker" inherit "Frame"
 
     -- content
     local content = CreateFrame("Frame")
-    content:SetBackdrop(_Backdrops.Common)
-    content:SetBackdropBorderColor(0.1, 0.1, 0.1, 0)
-    content:SetBackdropColor(0, 0, 0, 0.15)
+    --content:SetBackdrop(_Backdrops.Common)
+    --content:SetBackdropBorderColor(0.1, 0.1, 0.1, 0)
+    --content:SetBackdropColor(0, 0, 0, 0.15)
 
     scrollFrame:SetScrollChild(content)
     content:SetHeight(self.contentHeight)

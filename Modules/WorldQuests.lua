@@ -98,6 +98,7 @@ function QUEST_REMOVED(questID)
   end
 
   _WorldQuestBlock:RemoveWorldQuest(questID)
+  _Addon.ItemBar:RemoveItem(questID)
   _M:FireSystemEvent("EQT_WORLDQUEST_REMOVED")
 end
 
@@ -136,6 +137,7 @@ function UpdateWorldQuest(self, worldQuest)
     local itemQuest  = worldQuest:GetQuestItem()
     itemQuest.link = itemLink
     itemQuest.texture = itemTexture
+    _Addon.ItemBar:AddItem(worldQuest.id, itemLink, itemTexture)
   end
 
   if numObjectives then

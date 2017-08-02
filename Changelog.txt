@@ -1,3 +1,9 @@
+[1.1.6]
+- Updated the "Eska" and "Transparence" themes
+-
+NOTE: The "Transparence" theme is now usable. Enjoy it !
+
+
 [1.1.5]
 - Created the "Transparence" theme.
 - Options: Added new elements in the themes properties options.

@@ -14,6 +14,7 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
+      print("Set Name", new, old)
       Theme.SkinText(self.frame.name, new)
     elseif prop == "currentStage" or prop == "numStages" then
       Theme.SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
@@ -32,9 +33,9 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     Theme.SkinFrame(self.frame.stage)
 
     -- Text
-    Theme.SkinText(self.frame.name)
-    Theme.SkinText(self.frame.stageName)
-    Theme.SkinText(self.frame.stageCounter)
+    Theme.SkinText(self.frame.name, self.name)
+    Theme.SkinText(self.frame.stageName, self.stageName)
+    Theme.SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
   end
 
   function GetBonusObjective(self, index)
@@ -95,15 +96,15 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     local name = header:CreateFontString(nil, "OVERLAY")
     name:SetPoint("TOPRIGHT")
     name:SetPoint("BOTTOMLEFT")
-    name:SetPoint("LEFT", headerText, "RIGHT")
+    -- name:SetPoint("LEFT", headerText, "RIGHT")
     name:SetJustifyH("CENTER")
     self.frame.name = name
 
     -- Set the headerText to Left
-    headerText:SetPoint("LEFT")
-    headerText:SetPoint("LEFT")
-    headerText:SetJustifyH("LEFT")
-    headerText:SetWidth(75)
+    --headerText:SetPoint("LEFT")
+    --headerText:SetPoint("LEFT")
+    --headerText:SetJustifyH("LEFT")
+    --headerText:SetWidth(75)
 
     -- Stage frame
     local stage = CreateFrame("Frame", nil, self.frame)

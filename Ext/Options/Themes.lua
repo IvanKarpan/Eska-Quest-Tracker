@@ -275,6 +275,62 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
         set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-transform", nil) end end,
       })
 
+    ----------------------------------------------------------------------------
+    --                        TEXT TAB / Text Location                        --
+    ----------------------------------------------------------------------------
+    -- location
+    -- offsetX
+    -- offsetY
+    textTab.args.textLocation = _OptionBuilder:CreateEnableBlockOption(5, "Text Location", "selectLocation",
+      -- # Value control
+        {
+          get = function() return self:GetThemeProperty(target, "text-location") end,
+          set = function(_, textLocation) self:SetThemeDBProperty(target, "text-location", textLocation) end
+        },
+      -- # Enable control
+        {
+          get = function() return self:GetThemeDBProperty(target, "text-location")  end,
+          set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-location", nil) end end,
+        })
+    ----------------------------------------------------------------------------
+    --                        TEXT TAB / Text offsetX                         --
+    ----------------------------------------------------------------------------
+    textTab.args.textOffsetX = _OptionBuilder:CreateEnableBlockOption(6, "Text Offset X", "range",
+      -- # Value control
+        {
+          min = -256,
+          max = 256,
+          step = 1,
+          get = function() return self:GetThemeProperty(target, "text-offsetX") end,
+          set = function(_, textOffsetX) self:SetThemeDBProperty(target, "text-offsetX", textOffsetX) end
+        },
+      -- # Enable control
+        {
+          get = function() return self:GetThemeDBProperty(target, "text-offsetX")  end,
+          set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-offsetX", nil) end end,
+        })
+
+    ----------------------------------------------------------------------------
+    --                        TEXT TAB / Text offsetY                         --
+    ----------------------------------------------------------------------------
+    ----------------------------------------------------------------------------
+    --                        TEXT TAB / Text offsetX                         --
+    ----------------------------------------------------------------------------
+    textTab.args.textOffsetY = _OptionBuilder:CreateEnableBlockOption(7, "Text Offset Y", "range",
+      -- # Value control
+        {
+          min = -256,
+          max = 256,
+          step = 1,
+          get = function() return self:GetThemeProperty(target, "text-offsetY") end,
+          set = function(_, textOffsetY) self:SetThemeDBProperty(target, "text-offsetY", textOffsetY) end
+        },
+      -- # Enable control
+        {
+          get = function() return self:GetThemeDBProperty(target, "text-offsetY")  end,
+          set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-offsetY", nil) end end,
+        })
+
     elementParentOpt.args.text = textTab
   end
 
@@ -328,7 +384,7 @@ function CreateOptionBuildTable()
     local propName, propFlags, parentTarget = PROPERTY_INFO(target)
 
     if _BUILD_OPTION_INFO[target] then
-      _BUILD_OPTION_INFO[target].optionFlags = bit.bor(_BUILD_OPTION_INFO[target].optionFlags, optionFlags)
+      -- _BUILD_OPTION_INFO[target].optionFlags = bit.bor(_BUILD_OPTION_INFO[target].optionFlags, optionFlags)
     else
       _BUILD_OPTION_INFO[target] = {
         id = ID(API:RemoveThemePropertyFlags(target), propFlags),

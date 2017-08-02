@@ -293,6 +293,9 @@ function CreateEnableBlockOption(self, order, nameDisplayed, optionType, customO
   elseif optionType == "selectTransform" then
     t.args.option.type = "select"
     t.args.option.values = _TextTransforms
+  elseif optionType == "selectLocation" then
+    t.args.option.type = "select"
+    t.args.option.values = _AnchorPoints
   end
 
   if customOptionArgs then

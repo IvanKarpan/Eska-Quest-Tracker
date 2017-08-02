@@ -54,6 +54,10 @@ function OnLoad(self)
 
   _DB:SetDefault({ replaceBlizzardObjectiveTracker = true })
   self:SelectTheme(_DB.currentTheme)
+
+
+  local itemBar = ItemBar()
+
 end
 
 function OnEnable(self)
