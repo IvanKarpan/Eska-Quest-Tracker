@@ -14,7 +14,6 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
-      print("Set Name", new, old)
       Theme.SkinText(self.frame.name, new)
     elseif prop == "currentStage" or prop == "numStages" then
       Theme.SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))

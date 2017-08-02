@@ -1,8 +1,8 @@
 [1.1.6]
-- Updated the "Eska" and "Transparence" themes
--
-NOTE: The "Transparence" theme is now usable. Enjoy it !
-
+- Updated the "Eska" and "Transparence" themes.
+- Added the Quest items button bar.
+- Added Text Location and Text offset (x & y) in themes properties options.
+NOTE: The "Transparence" theme is now usable. Enjoy it ! In addition to that, the "Eska" theme got some updates for the header text. The Quest items button bar is now implemented, allowing you to get a quickly access to item quests (those of world quests included). Currently, all features planned in this 1.1 version are now implemented so i'll prepare the beta and release builds. In the next one (maybe the last alpha version), some useless and not working options will disapear.
 
 [1.1.5]
 - Created the "Transparence" theme.
