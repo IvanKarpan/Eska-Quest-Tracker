@@ -10,12 +10,6 @@ import "System.Reflector"
 -- ========================================================================== --
 _KEYWORDS_OPTIONS = {}
 
-_BUTTONS = {}
-
---
-_THEMES_CACHE_VALUES = {}
-_THEMES_ENABLE_CACHE = {}
-
 -- RETURN NAME without flags, flags list, parent with flags
 PROPERTY_INFO = function(target)
   local function UnpackTargets(...)
@@ -25,10 +19,8 @@ PROPERTY_INFO = function(target)
     for i = 1, count do
       local val = select(i, ...)
       if i == count then
-
-        return API:RemoveThemePropertyFlags(val),
-               API:GetThemePropertyFlags(val),
-               currentParent ~= "" and string.format("%s%s", currentParent, val:match("%[.*%]") or "") or nil
+        return API:RemoveThemePropertyFlags(val), API:GetThemePropertyFlags(val),
+        currentParent ~= "" and string.format("%s%s", currentParent, val:match("%[.*%]") or "") or nil
       elseif i == 1 then
         currentParent = val
       else
@@ -61,7 +53,7 @@ _Categories.Themes = {
     },
     themeInfo = {
       type = "description",
-      name = "Theme info",
+      name = "",
       order = 10,
       fontSize = "large",
     }
@@ -75,44 +67,39 @@ function OnLoad(self)
   for _, theme in _Addon:GetThemes():GetIterator() do
     self:CreateThemeOption(theme)
   end
-
-end
-
-
-function GetThemeProp(self, target, property)
-  if not target or not property then return end
-
-  local val = API:GetThemeProperty(target, property, nil, false)
-
-  if val then
-    return val
-  end
-
-  val = API:GetThemeProperty(target..".*", property, nil, false)
-
-  if val then
-    return val
-  end
-
 end
 
 
 
-function GetThemeProperty(self, target, property)
-    return API:GetThemeProperty(target, property)
-end
 
-function SetThemeDBProperty(self, target, property, value)
-  API:SetAndRefreshThemeProperty(target, property, value)
-end
-
-function GetThemeDBProperty(self, target, property)
-  if _CURRENT_THEME then
-    return _CURRENT_THEME:GetDBProperty(target, property)
+function GetThemeProperty(self, themeName, target, property)
+  local theme = _Addon:GetTheme(themeName)
+  if theme then
+    return theme:GetProperty(target, property)
   end
 end
 
-function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags)
+function GetThemeDBProperty(self, themeName, target, property)
+  local theme = _Addon:GetTheme(themeName)
+  if theme then
+    return theme:GetDBProperty(target, property)
+  end
+end
+
+
+function SetThemeDBProperty(self, themeName, target, property, value)
+  local theme = _Addon:GetTheme(themeName)
+  if theme then
+    theme:SetProperty(target, property, value, true)
+    if theme.name == _Addon:GetCurrentTheme().name then
+      local firstClass = strsplit(".", API:RemoveThemePropertyFlags(target), 2)
+      Theme.RefreshGroup(firstClass)
+    end
+  end
+end
+
+
+function CreateKeywordOptions(self, themeName, name, flags, flagsColor, target, optionflags)
 
   if not optionflags then
     optionflags = Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT + Options.ThemeKeywordType.TEXTURE
@@ -162,19 +149,19 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
    frameTab.args.backgroundColor = _OptionBuilder:CreateEnableBlockOption(1, "Background Color", "color",
     -- # Value control
      {
-       get = function() local color = self:GetThemeProperty(target, "background-color")
+       get = function() local color = self:GetThemeProperty(themeName, target, "background-color")
          if color then
            return color.r, color.g, color.b, color.a
          end
        end,
        set = function(_, r, g, b, a)
-         self:SetThemeDBProperty(target, "background-color", { r = r, g = g, b = b, a = a})
+         self:SetThemeDBProperty(themeName, target, "background-color", { r = r, g = g, b = b, a = a})
        end
      },
     -- # Enable control
      {
-       get = function() return self:GetThemeDBProperty(target, "background-color") end,
-       set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "background-color", nil)  end end
+       get = function() return self:GetThemeDBProperty(themeName, target, "background-color") end,
+       set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "background-color", nil)  end end
      }
    )
     ----------------------------------------------------------------------------
@@ -183,17 +170,17 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
    frameTab.args.borderColor = _OptionBuilder:CreateEnableBlockOption(2, "Border Color", "color",
     -- # Value control
      {
-       get = function() local color = self:GetThemeProperty(target, "border-color")
+       get = function() local color = self:GetThemeProperty(themeName, target, "border-color")
          if color then
            return color.r, color.g, color.b, color.a
          end
        end,
-       set = function(_, r, g, b, a) self:SetThemeDBProperty(target, "border-color", { r = r, g = g, b = b, a = a}) end
+       set = function(_, r, g, b, a) self:SetThemeDBProperty(themeName, target, "border-color", { r = r, g = g, b = b, a = a}) end
      },
      -- # Enable control
      {
-       get = function() return self:GetThemeDBProperty(target, "border-color") end,
-       set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "border-color", nil)  end end
+       get = function() return self:GetThemeDBProperty(themeName, target, "border-color") end,
+       set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "border-color", nil)  end end
      }
    )
 
@@ -215,13 +202,13 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
         min = 6,
         max = 32,
         step = 1,
-        get = function() return self:GetThemeProperty(target, "text-size") end,
-        set = function(_, size) self:SetThemeDBProperty(target, "text-size", size) end,
+        get = function() return self:GetThemeProperty(themeName, target, "text-size") end,
+        set = function(_, size) self:SetThemeDBProperty(themeName, target, "text-size", size) end,
       },
      -- # Enable control
      {
-       get = function() return self:GetThemeDBProperty(target, "text-size") end,
-       set = function(_, size) if not enable then self:SetThemeDBProperty(target, "text-size", nil) end end
+       get = function() return self:GetThemeDBProperty(themeName, target, "text-size") end,
+       set = function(_, size) if not enable then self:SetThemeDBProperty(themeName, target, "text-size", nil) end end
      }
     )
     ----------------------------------------------------------------------------
@@ -230,7 +217,7 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
     textTab.args.textColor = _OptionBuilder:CreateEnableBlockOption(2, "Text Color", "color",
     -- # Value control
       {
-        get = function() local color = self:GetThemeProperty(target, "text-color")
+        get = function() local color = self:GetThemeProperty(themeName, target, "text-color")
           if color then
             return color.r, color.g, color.b, color.a
           end
@@ -241,8 +228,8 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
       },
     -- # Enable control
       {
-        get = function() return self:GetThemeDBProperty(target, "text-color") end,
-        set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-color", nil)  end end
+        get = function() return self:GetThemeDBProperty(themeName, target, "text-color") end,
+        set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "text-color", nil)  end end
       }
     )
     ----------------------------------------------------------------------------
@@ -251,13 +238,13 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
     textTab.args.textFont = _OptionBuilder:CreateEnableBlockOption(3, "Text Font", "selectFont",
     -- # Value control
       {
-        get = function() return GetFontIndex(self:GetThemeProperty(target, "text-font")) end,
-        set = function(_, font) self:SetThemeDBProperty(target, "text-font", _Fonts[font]) end,
+        get = function() return GetFontIndex(self:GetThemeProperty(themeName, target, "text-font")) end,
+        set = function(_, font) self:SetThemeDBProperty(themeName, target, "text-font", _Fonts[font]) end,
       },
     -- # Enable control
       {
-        get = function() return self:GetThemeDBProperty(target, "text-font") end,
-        set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-font", nil) end end
+        get = function() return self:GetThemeDBProperty(themeName, target, "text-font") end,
+        set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "text-font", nil) end end
       }
     )
     ----------------------------------------------------------------------------
@@ -266,13 +253,13 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
     textTab.args.textTransform = _OptionBuilder:CreateEnableBlockOption(4, "Text Transform", "selectTransform",
     -- # Value control
       {
-        get = function() return self:GetThemeProperty(target, "text-transform") end,
-        set = function(_, textTransform) self:SetThemeDBProperty(target, "text-transform", textTransform) end
+        get = function() return self:GetThemeProperty(themeName, target, "text-transform") end,
+        set = function(_, textTransform) self:SetThemeDBProperty(themeName, target, "text-transform", textTransform) end
       },
     -- # Enable control
       {
-        get = function() return self:GetThemeDBProperty(target, "text-transform")  end,
-        set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-transform", nil) end end,
+        get = function() return self:GetThemeDBProperty(themeName, target, "text-transform")  end,
+        set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "text-transform", nil) end end,
       })
 
     ----------------------------------------------------------------------------
@@ -284,13 +271,13 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
     textTab.args.textLocation = _OptionBuilder:CreateEnableBlockOption(5, "Text Location", "selectLocation",
       -- # Value control
         {
-          get = function() return self:GetThemeProperty(target, "text-location") end,
-          set = function(_, textLocation) self:SetThemeDBProperty(target, "text-location", textLocation) end
+          get = function() return self:GetThemeProperty(themeName, target, "text-location") end,
+          set = function(_, textLocation) self:SetThemeDBProperty(themeName, target, "text-location", textLocation) end
         },
       -- # Enable control
         {
-          get = function() return self:GetThemeDBProperty(target, "text-location")  end,
-          set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-location", nil) end end,
+          get = function() return self:GetThemeDBProperty(themeName, target, "text-location")  end,
+          set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "text-location", nil) end end,
         })
     ----------------------------------------------------------------------------
     --                        TEXT TAB / Text offsetX                         --
@@ -301,20 +288,17 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
           min = -256,
           max = 256,
           step = 1,
-          get = function() return self:GetThemeProperty(target, "text-offsetX") end,
-          set = function(_, textOffsetX) self:SetThemeDBProperty(target, "text-offsetX", textOffsetX) end
+          get = function() return self:GetThemeProperty(themeName, target, "text-offsetX") end,
+          set = function(_, textOffsetX) self:SetThemeDBProperty(themeName, target, "text-offsetX", textOffsetX) end
         },
       -- # Enable control
         {
-          get = function() return self:GetThemeDBProperty(target, "text-offsetX")  end,
-          set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-offsetX", nil) end end,
+          get = function() return self:GetThemeDBProperty(themeName, target, "text-offsetX")  end,
+          set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "text-offsetX", nil) end end,
         })
 
     ----------------------------------------------------------------------------
     --                        TEXT TAB / Text offsetY                         --
-    ----------------------------------------------------------------------------
-    ----------------------------------------------------------------------------
-    --                        TEXT TAB / Text offsetX                         --
     ----------------------------------------------------------------------------
     textTab.args.textOffsetY = _OptionBuilder:CreateEnableBlockOption(7, "Text Offset Y", "range",
       -- # Value control
@@ -322,13 +306,13 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
           min = -256,
           max = 256,
           step = 1,
-          get = function() return self:GetThemeProperty(target, "text-offsetY") end,
-          set = function(_, textOffsetY) self:SetThemeDBProperty(target, "text-offsetY", textOffsetY) end
+          get = function() return self:GetThemeProperty(themeName, target, "text-offsetY") end,
+          set = function(_, textOffsetY) self:SetThemeDBProperty(themeName, target, "text-offsetY", textOffsetY) end
         },
       -- # Enable control
         {
-          get = function() return self:GetThemeDBProperty(target, "text-offsetY")  end,
-          set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "text-offsetY", nil) end end,
+          get = function() return self:GetThemeDBProperty(themeName, target, "text-offsetY")  end,
+          set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "text-offsetY", nil) end end,
         })
 
     elementParentOpt.args.text = textTab
@@ -346,17 +330,17 @@ function CreateKeywordOptions(self, name, flags, flagsColor, target, optionflags
     textureTab.args.textureColor = _OptionBuilder:CreateEnableBlockOption(1, "Texture Color", "color",
     -- # Value control
        {
-         get = function() local color = self:GetThemeProperty(target, "vertex-color")
+         get = function() local color = self:GetThemeProperty(themeName, target, "vertex-color")
            if color then
              return color.r, color.g, color.b, color.a
            end
          end,
-         set = function(_, r, g, b, a) self:SetThemeDBProperty(target, "vertex-color", { r = r, g = g, b = b, a = a}) end
+         set = function(_, r, g, b, a) self:SetThemeDBProperty(themeName, target, "vertex-color", { r = r, g = g, b = b, a = a}) end
        },
     -- # Enable control
        {
-         get = function() return self:GetThemeDBProperty(target, "vertex-color") end,
-         set = function(_, enable) if not enable then self:SetThemeDBProperty(target, "vertex-color", nil)  end end
+         get = function() return self:GetThemeDBProperty(themeName, target, "vertex-color") end,
+         set = function(_, enable) if not enable then self:SetThemeDBProperty(themeName, target, "vertex-color", nil)  end end
        }
      )
 
@@ -384,7 +368,8 @@ function CreateOptionBuildTable()
     local propName, propFlags, parentTarget = PROPERTY_INFO(target)
 
     if _BUILD_OPTION_INFO[target] then
-      -- _BUILD_OPTION_INFO[target].optionFlags = bit.bor(_BUILD_OPTION_INFO[target].optionFlags, optionFlags)
+      --_BUILD_OPTION_INFO[target].optionFlags = bit.bor(_BUILD_OPTION_INFO[target].optionFlags, optionFlags)
+      _BUILD_OPTION_INFO[target].optionFlags = optionFlags
     else
       _BUILD_OPTION_INFO[target] = {
         id = ID(API:RemoveThemePropertyFlags(target), propFlags),
@@ -411,36 +396,32 @@ function CreateOptionBuildTable()
 
 end
 
-function CreateThemeDefaultPropertiesOption(self)
-  return self:CreateKeywordOptions("Default properties", {}, "ffffff", "*")
+function CreateThemeDefaultPropertiesOption(self, theme)
+  return self:CreateKeywordOptions(theme.name, "Default properties", {}, "ffffff", "*")
 end
 
 
-function CreateThemePropertiesOptions(self, properties, parent)
-    local options = {
-      type = "group",
-      name = "Properties",
-      order = 2,
-      args = {},
-    }
 
-    for index, propInfo in _BUILD_OPTION_INFO:GetIterator() do
-       local opt = self:CreateKeywordOptions(propInfo.name, propInfo.flags, propInfo.flagsColor, propInfo.target, propInfo.optionFlags)
+function CreateThemePropertiesOptions(self, theme, properties, parent)
+  local options = {
+    type = "group",
+    name = "Properties",
+    order = 2,
+    args = {}
+  }
 
-       if propInfo.parentTarget then
-         _KEYWORDS_OPTIONS[propInfo.parentTarget].args[propInfo.target] = opt
-       else
-         options.args[propInfo.target] = opt
-       end
-
-      _KEYWORDS_OPTIONS[propInfo.target] = opt
+  for index, propInfo in _BUILD_OPTION_INFO:GetIterator() do
+    local opt = self:CreateKeywordOptions(theme.name, propInfo.name, propInfo.flags, propInfo.flagsColor, propInfo.target, propInfo.optionFlags)
+    if propInfo.parentTarget then
+      _KEYWORDS_OPTIONS[propInfo.parentTarget].args[propInfo.target] = opt
+    else
+      options.args[propInfo.target] = opt
     end
-
-    _BUILD_OPTION_INFO = nil
-
-    return options
-
-end
+   _KEYWORDS_OPTIONS[propInfo.target] = opt
+  end
+ _BUILD_OPTION_INFO = nil
+  return options
+ end
 
 function CreateThemeOption(self, theme)
   self:CreateOptionBuildTable()
@@ -481,8 +462,8 @@ function CreateThemeOption(self, theme)
               }
           }
         },
-        defaultProperties = self:CreateThemeDefaultPropertiesOption(),
-        properties = self:CreateThemePropertiesOptions()
+        defaultProperties = self:CreateThemeDefaultPropertiesOption(theme),
+        properties = self:CreateThemePropertiesOptions(theme)
       }
     }
 

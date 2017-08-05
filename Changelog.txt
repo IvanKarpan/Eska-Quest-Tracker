@@ -1,3 +1,8 @@
+[1.1.7]
+- Options: Removed objectives and scenario categories.
+- Options: Added Objective text options in the themes properties.
+- Options: The properties value should now correctly display the right value of theme selected.
+
 [1.1.6]
 - Updated the "Eska" and "Transparence" themes.
 - Added the Quest items button bar.
