@@ -223,7 +223,7 @@ function CreateKeywordOptions(self, themeName, name, flags, flagsColor, target, 
           end
         end,
         set = function(_, r, g, b)
-          self:SetThemeDBProperty(target, "text-color", { r = r, g = g, b = b})
+          self:SetThemeDBProperty(themeName, target, "text-color", { r = r, g = g, b = b})
         end
       },
     -- # Enable control

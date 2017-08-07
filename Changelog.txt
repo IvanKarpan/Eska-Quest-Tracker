@@ -1,39 +1,14 @@
-[1.1.7]
-- Options: Removed objectives and scenario categories.
-- Options: Added Objective text options in the themes properties.
-- Options: The properties value should now correctly display the right value of theme selected.
+[1.1.8]
+* set stage to beta.
 
-[1.1.6]
-- Updated the "Eska" and "Transparence" themes.
-- Added the Quest items button bar.
-- Added Text Location and Text offset (x & y) in themes properties options.
-NOTE: The "Transparence" theme is now usable. Enjoy it ! In addition to that, the "Eska" theme got some updates for the header text. The Quest items button bar is now implemented, allowing you to get a quickly access to item quests (those of world quests included). Currently, all features planned in this 1.1 version are now implemented so i'll prepare the beta and release builds. In the next one (maybe the last alpha version), some useless and not working options will disapear.
+Changelog upgrade from 1.0.27-release:
+- NEW: Added the Theme system.
+- NEW: Add the quest item bar.
+- Fixed an issue where tracker cannot be resized after be moved.
+- Fixed an issue where sometimes the tracker cannot be moved.
+- OPTIONS: With the addition of theme system, the options got some changes.
 
-[1.1.5]
-- Created the "Transparence" theme.
-- Options: Added new elements in the themes properties options.
-- Options: "Select theme" option is now implemented.
-- Moved where the DB theme properties are saved (if you have edited some theme properties, you will lost theses changes).
-NOTE: The "Transparence" theme isn't usable in its current state. I will start to work on it in the next update.
+More info on the new features here : https://wow.curseforge.com/projects/eska-quest-tracker/pages/patch-changes-overview/11
 
-[1.1.4]
-- Options : updated the options for themes properties.
-- Options : added a new tab "Default properties" in the themes options.
-NOTE: The base implementation of themes options is now finalized, new options will be now quickly added. With this update, the scroll bar appearance can now be changed (go to Themes -> Eska -> Properties -> Tracker -> Scrollbar)
-
-[1.1.3]
-- Fixed an issue where the tracker cannot be resized after be moved.
-- Options: Fixed the tracker background and border color.
-- Options: Removed the block category (it will be replaced by the theme Category).
-NOTE: I started to work on the new options related to theme and i continue to fix the existing options.
-
-[1.1.2]
-- Added a lib required for the addon works.
-- Converted and exposed the Tracker frame for the theme system.
-- Reviewed and improved the GetProperty function for the Theme API.
-- Updated Eska theme.
-- Fixed an issue where sometime the tracker frame cannot be moved.
-
-[1.1.1]
-- Continued to convert the existing frames for the new theme system.
-NOTE: The options are currently broken and need to be rebuilt around of this system.
+Changelog upgrade from 1.0.7-alpha:
+- OPTIONS: Fixed an issue where the theme property > text option doesn't work.
