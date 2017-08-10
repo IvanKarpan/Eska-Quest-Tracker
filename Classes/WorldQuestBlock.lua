@@ -89,7 +89,6 @@ class "WorldQuestBlock" inherit "Block"
   --                            Properties                                    --
   ------------------------------------------------------------------------------
   -- Theme
-  property "tID" { DEFAULT = "block.worldQuests" }
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.worldQuests" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --

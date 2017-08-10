@@ -32,8 +32,6 @@ class "Affix" extend "IFrame" "IReusable"
   property "name" { TYPE = String }
   property "desc" { TYPE = String, DEFAULT = "", HANDLER = UpdateTooltip }
   property "texture" { TYPE = String + Number, HANDLER = SetTexture }
-  -- Theme
-  property "tID" { DEFAULT = "block.keystone"}
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -171,7 +169,23 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    Theme.RegisterText(self.tID..".level", self.frame.level)
+    local class = System.Reflector.GetObjectClass(self)
+
+    Theme.RegisterText(class._THEME_CLASS_ID..".level", self.frame.level)
+  end
+
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword(prefix..".level", Options.ThemeKeywordType.TEXT)
+    )
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
@@ -185,7 +199,6 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
   property "timeLimit3Chest" { TYPE = Number, DEFAULT = 0 }
   property "isCompleted" { TYPE = Boolean, DEFAULT = false }
   -- Theme
-  property "tID" { DEFAULT = "block.keystone" }
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.keystone" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
@@ -262,21 +275,6 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
     _KeystoneCache[self] = true
   end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix..".level", Options.ThemeKeywordType.TEXT)
-    )
-  end
-
 endclass "Keystone"
 Keystone:InstallOptions()
 -- ========================================================================== --

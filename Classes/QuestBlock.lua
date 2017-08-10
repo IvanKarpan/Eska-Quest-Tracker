@@ -94,29 +94,6 @@ class "QuestBlock" inherit "Block"
 
   __Arguments__()
   function Draw(self)
-    --[[
-    local previousFrame
-    local height = 0
-    local isFirst = true
-
-    for headerName, header in self.headers.Values:ToList():Sort("x,y=>x.nearestQuestDistance<y.nearestQuestDistance"):GetIterator() do
-      header:ClearAllPoints()
-      header:Show()
-      -- header:Draw()
-
-      if isFirst then
-        header.frame:SetPoint("TOPLEFT", 0, -35)
-        header.frame:SetPoint("TOPRIGHT", 0, -35)
-        isFirst = false
-      else
-        header.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -2)
-        header.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
-      end
-        height = height + header.height
-        previousFrame = header.frame
-    end
-    self.height = self.baseHeight + height + 35--]]
-
 
     local previousFrame
     local height = 0
@@ -159,7 +136,6 @@ class "QuestBlock" inherit "Block"
     self.height = self.baseHeight + height + 10
   end
 
-
   __Arguments__{}
   function Refresh(self)
     Super.Refresh(self)
@@ -171,6 +147,17 @@ class "QuestBlock" inherit "Block"
     for obj in pairs(_QuestBlockCache) do
       obj:Refresh()
     end
+  end
+
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
   end
 
   __Static__() property "showOnlyQuestsInZone" {
@@ -193,12 +180,10 @@ class "QuestBlock" inherit "Block"
     end,
     GET = function(self) return _DB.Quests.sortByDistance end
   }
-
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
   -- Theme
-  property "tID" { DEFAULT = "block.quests"}
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.quests" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
@@ -214,17 +199,5 @@ class "QuestBlock" inherit "Block"
     -- self:Refresh()
     _QuestBlockCache[self] = true
   end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-  end
-
 endclass "QuestBlock"
 QuestBlock:InstallOptions()

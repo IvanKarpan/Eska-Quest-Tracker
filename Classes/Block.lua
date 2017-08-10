@@ -9,17 +9,16 @@ namespace "EQT"
 --============================================================================--
 class "Block" inherit "Frame"
   event "OnActiveChanged"
-
   _BlockCache = setmetatable( {}, { __mode = "k"})
-  -- ======================================================================== --
-  -- Handlers                                                                 --
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                Handlers                                  --
+  ------------------------------------------------------------------------------
   function SetText(self, new)
     Theme.SkinText(self.frame.header.text, new)
   end
-  -- ======================================================================== --
-  -- Methods                                                                  --
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                                   Methods                                --
+  ------------------------------------------------------------------------------
   __Arguments__ {}
   function Refresh(self)
     Theme.SkinFrame(self.frame)
@@ -29,14 +28,29 @@ class "Block" inherit "Frame"
 
 
   __Arguments__ {}
-  function RegisterFramesForThemeAPI(self)
-    local class = System.Reflector.GetObjectClass
+  function RegisterFramesForThemeAPI(self, child)
+    local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterFrame(self.tID, self.frame, "block")
-    Theme.RegisterFrame(self.tID..".header", self.frame.header, "block.header")
-    Theme.RegisterTexture(self.tID..".stripe", self.frame.header.stripe, "block.stripe")
+    Theme.RegisterFrame(class._THEME_CLASS_ID, self.frame, "block")
+    Theme.RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header, "block.header")
+    Theme.RegisterTexture(class._THEME_CLASS_ID..".stripe", self.frame.header.stripe, "block.stripe")
+  end
 
-    -- Option part
+  -- Say to option the keyword available
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword(prefix, Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+      Options.ThemeKeyword(prefix..".stripe", Options.ThemeKeywordType.TEXTURE)
+    )
   end
 
   __Static__() function RefreshAll()
@@ -44,19 +58,18 @@ class "Block" inherit "Frame"
       obj:Refresh()
     end
   end
-  -- ======================================================================== --
-  -- Properties                                                               --
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Properties                                    --
+  ------------------------------------------------------------------------------
   property "id" { TYPE = String }
   property "text" { TYPE = String, DEFAULT = "Default Header Text", HANDLER = SetText}
   property "isActive" { TYPE = Boolean, DEFAULT = true, EVENT = "OnActiveChanged" }
   property "priority" { TYPE = Number, DEFAULT = 100 }
-  -- Theme
-  property "tID" { DEFAULT = "block" }
+
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block" }
-  -- ======================================================================== --
-  -- Constructors                                                             --
-  -- ======================================================================== --
+  ------------------------------------------------------------------------------
+  --                            Constructors                                  --
+  ------------------------------------------------------------------------------
   __Arguments__ { }
   function Block(self)
     Super(self)
@@ -106,24 +119,6 @@ class "Block" inherit "Frame"
 
     This(self)
   end
-
-  -- Say to option the keyword available
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix, Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-      Options.ThemeKeyword(prefix..".stripe", Options.ThemeKeywordType.TEXTURE)
-    )
-  end
-
 endclass "Block"
 Block:InstallOptions()
 Theme.RegisterRefreshHandler("block", Block.RefreshAll)

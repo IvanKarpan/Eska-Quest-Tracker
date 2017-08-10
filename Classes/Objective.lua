@@ -11,7 +11,6 @@ class "Objective" inherit "Frame" extend "IReusable"
 
 	_ObjectiveCache = setmetatable( {}, { __mode = "k" } )
 
-
 	local function CreateStatusBar(self)
 		local bar = CreateFrame("StatusBar", nil, self.frame)
 		bar:SetStatusBarTexture(_Backdrops.Common.bgFile)
@@ -182,43 +181,6 @@ class "Objective" inherit "Frame" extend "IReusable"
 		self.frame.text:SetPoint("RIGHT")
 	end
 
-	--[[
-	function Refresh(self, ...)
-		local theme = _CURRENT_THEME
-		local color, font, size, transform
-		if self.isCompleted then
-			color     = theme:GetProperty("objective.text[completed]", "text-color")
-			font      = _LibSharedMedia:Fetch("font", theme:GetProperty("objective.text[completed]", "text-font"))
-			size      = theme:GetProperty("objective.text[completed]", "text-size")
-			transform = theme:GetProperty("objective.text[completed]", "text-transform")
-
-		else
-			color     = theme:GetProperty("objective.text[inprogress]", "text-color")
-			font      = _LibSharedMedia:Fetch("font", theme:GetProperty("objective.text[inprogress]", "text-font"))
-			size      = theme:GetProperty("objective.text[inprogress]", "text-size")
-			transform = theme:GetProperty("objective.text[inprogress]", "text-transform")
-		end
-		self.frame.square:SetBackdropColor(color.r, color.g, color.b)
-		self.frame.text:SetTextColor(color.r, color.g, color.b)
-
-		--local font = _LibSharedMedia:Fetch("font", Objective.textFont)
-		--local size = Objective.textSize
-		--local transform = Objective.textTransform
-
-		self.frame.text:SetFont(font, size, "OUTLINE")
-
-		local txt = self.text
-		if transform == "uppercase" then
-			txt = txt:upper()
-		elseif transform == "lowercase" then
-			txt = txt:lower()
-		end
-
-		self.frame.text:SetText(txt)
-	end--]]
-
-
-
 	__Static__() function RefreshAll()
 		for obj in pairs(_ObjectiveCache) do
 			obj:Refresh()
@@ -237,25 +199,14 @@ class "Objective" inherit "Frame" extend "IReusable"
 		self:HideProgress()
 		self:HideTimer()
 	end
-
 	------------------------------------------------------------------------------
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
 	local function SetText(self, new, old, prop)
-		-- self.frame.text:SetText(new)
 		Theme.SkinText(self.frame.text, new, self.isCompleted and "completed" or "progress")
 	end
 
 	local function SetCompleted(self, new, old, prop)
-		if new then
-			--self.frame.square:SetBackdropColor(0, 1, 0)
-			--self.frame.text:SetTextColor(0, 1, 0)
-
-		else
-			--self.frame.square:SetBackdropColor(0.5, 0.5, 0.5)
-			--self.frame.text:SetTextColor(148/255, 148/255, 148/255)
-		end
-
 		local state = new and "completed" or "progress"
 		Theme.SkinFrame(self.frame, self.text, state)
 		Theme.SkinFrame(self.frame.square, nil, state)
@@ -266,6 +217,26 @@ class "Objective" inherit "Frame" extend "IReusable"
 
 		Theme.RegisterFrame(classPrefix, self.frame)
 		Theme.RegisterFrame(classPrefix..".square", self.frame.square)
+	end
+
+	__Static__()
+	function InstallOptions(self, child)
+		local class = child or self
+		local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+		local superClass = System.Reflector.GetSuperClass(self)
+
+		if superClass.InstallOptions then
+			superClass:InstallOptions(class)
+		end
+
+		Options.AddAvailableThemeKeywords(
+			-- Completed objectives
+			Options.ThemeKeyword(class._THEME_CLASS_ID.."[@completed]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+			Options.ThemeKeyword(class._THEME_CLASS_ID..".square[@completed]", Options.ThemeKeywordType.FRAME, "00ff00"),
+			-- progress objective
+			Options.ThemeKeyword(class._THEME_CLASS_ID.."[@progress]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
+			Options.ThemeKeyword(class._THEME_CLASS_ID..".square[@progress]", Options.ThemeKeywordType.FRAME, "808080")
+		)
 	end
 	------------------------------------------------------------------------------
   --                            Properties                                    --
@@ -289,6 +260,7 @@ class "Objective" inherit "Frame" extend "IReusable"
 		Get = function(self) return _DB.Objective.colors.inProgress end,
 	}
 
+	__Static__() property "_THEME_CLASS_ID" { DEFAULT = "objective" }
 	------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -329,35 +301,14 @@ class "Objective" inherit "Frame" extend "IReusable"
 
 		_ObjectiveCache[self] = true
   end
-
-	-- Say to option the keyword available
-	Options.AddAvailableThemeKeywords(
-		-- Global
-		-- Options.ThemeKeyword("objective", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-		-- Completed objectives
-		Options.ThemeKeyword("objective[@completed]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-		Options.ThemeKeyword("objective.square[@completed]", Options.ThemeKeywordType.FRAME, "00ff00"),
-		-- progress objective
-		Options.ThemeKeyword("objective[@progress]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-		Options.ThemeKeyword("objective.square[@progress]", Options.ThemeKeywordType.FRAME, "808080")
-	)
 endclass "Objective"
+Objective:InstallOptions()
 Theme.RegisterRefreshHandler("objective", Objective.RefreshAll)
 
 --============================================================================--
 -- OnLoad Handler
 --============================================================================--
 function OnLoad(self)
-	--[[_DB:SetDefault("Objective", {
-		colors = {
-			completed = { r = 0, g = 1, b = 0},
-			inProgress = { r = 148/255, g = 148/255, b = 148/255 }
-		},
-		textSize = 13,
-		textFont = "PT Sans Narrow Bold",
-		textTransform = "none",
-	})--]]
-
 	-- Register this class in the object manager
 	_ObjectManager:Register(Objective)
 end

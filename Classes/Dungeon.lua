@@ -65,13 +65,27 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     Theme.RegisterFrame(class._THEME_CLASS_ID..".icon", self.frame.ftex)
     Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
   end
+
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword(prefix..".icon", Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT)
+    )
+  end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
   property "name" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps}
   property "texture" { TYPE = String + Number, DEFAULT = nil, HANDLER = UpdateProps }
   -- Theme
-  property "tID" { DEFAULT = "block.dungeon"}
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.dungeon" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
@@ -83,22 +97,14 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     local header = self.frame.header
     local headerText = header.text
 
-  --  self.frame:SetBackdropColor(0, 0, 0, 0.3)
+    -- self.frame:SetBackdropColor(0, 0, 0, 0.3)
     -- self.frame:SetBackdropBorderColor(0, 0, 0, 1)
 
     -- Dungeon name
     local name = header:CreateFontString(nil, "OVERLAY")
     name:SetAllPoints()
-    --name:SetPoint("TOPRIGHT")
-    --name:SetPoint("BOTTOMRIGHT")
-    --name:SetPoint("LEFT", headerText, "RIGHT")
     name:SetJustifyH("CENTER")
     self.frame.name = name
-
-    -- Set the headerText to left
-    --headerText:SetPoint("LEFT")
-    --headerText:SetJustifyH("LEFT")
-    --headerText:SetWidth(75)
 
     -- Dungeon Texture
     local ftex = CreateFrame("Frame", nil, self.frame)
@@ -126,21 +132,5 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
 
     _DungeonCache[self] = true
   end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix..".icon", Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT)
-    )
-  end
-
 endclass "Dungeon"
 Dungeon:InstallOptions()

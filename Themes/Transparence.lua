@@ -68,14 +68,23 @@ TransparenceTheme:SetProperty("block.keystone.level", "text-font", "PT Sans Narr
 TransparenceTheme:SetProperty("block.keystone.level", "text-size", 14)
 TransparenceTheme:SetProperty("block.keystone.level", "text-color", { r = 1, g = 215/255, b = 0 })
 -- Scenario
+TransparenceTheme:SetProperty("block.scenario", "background-color", { r = 0.2, g = 0.2, b = 0.2, a = 0.17})
 TransparenceTheme:SetProperty("block.scenario.header", "text-offsetY", 17)
 TransparenceTheme:SetProperty("block.scenario.name", "text-size", 12)
 TransparenceTheme:SetProperty("block.scenario.name", "text-font", "PT Sans Caption Bold")
 TransparenceTheme:SetProperty("block.scenario.name", "text-offsetY", -13)
 TransparenceTheme:SetProperty("block.scenario.name", "text-color", { r = 1, g = 0.42, b = 0})
 TransparenceTheme:SetProperty("block.scenario.name", "text-transform", "uppercase")
-
-
+  -- Stage frame
+  TransparenceTheme:SetProperty("block.scenario.stage", "background-color", { r = 0, g = 0, b = 0, a = 0.3})
+  TransparenceTheme:SetProperty("block.scenario.stage", "border-color", { r = 0, g = 0, b = 0, a = 0.4})
+  -- Stage name
+  TransparenceTheme:SetProperty("block.scenario.stageName", "text-size", 11)
+  TransparenceTheme:SetProperty("block.scenario.stageName", "text-color", { r = 1, g = 1, b = 0 })
+  -- Stage counter
+  TransparenceTheme:SetProperty("block.scenario.stageCounter", "text-size", 12)
+  TransparenceTheme:SetProperty("block.scenario.stageCounter", "text-font", "PT Sans Narrow Bold")
+  TransparenceTheme:SetProperty("block.scenario.stageCounter", "text-color", { r = 1, g = 1, b = 1 })
 -- ========================================================================== --
 -- == Quest properties
 -- ========================================================================== --

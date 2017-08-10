@@ -64,11 +64,30 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    Theme.RegisterFrame(self.tID..".stage", self.frame.stage)
+    local class = System.Reflector.GetObjectClass(self)
+
+    Theme.RegisterFrame(class._THEME_CLASS_ID..".stage", self.frame.stage)
     -- Text
-    Theme.RegisterText(self.tID..".name", self.frame.name)
-    Theme.RegisterText(self.tID..".stageName", self.frame.stageName)
-    Theme.RegisterText(self.tID..".stageCounter", self.frame.stageCounter)
+    Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
+    Theme.RegisterText(class._THEME_CLASS_ID..".stageName", self.frame.stageName)
+    Theme.RegisterText(class._THEME_CLASS_ID..".stageCounter", self.frame.stageCounter)
+  end
+
+  __Static__()
+  function InstallOptions(self, child)
+    local class = child or self
+    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
+    local superClass = System.Reflector.GetSuperClass(self)
+    if superClass.InstallOptions then
+      superClass:InstallOptions(class)
+    end
+
+    Options.AddAvailableThemeKeywords(
+      Options.ThemeKeyword(prefix..".stage", Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT),
+      Options.ThemeKeyword(prefix..".stageName", Options.ThemeKeywordType.TEXT),
+      Options.ThemeKeyword(prefix..".stageCounter", Options.ThemeKeywordType.TEXT)
+    )
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
@@ -79,7 +98,6 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   property "stageName" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps }
   property "numBonusObjectives" { TYPE = Number, DEFAULT = 0 }
   -- Theme
-  property "tID" { DEFAULT = "block.scenario"}
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.scenario" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
@@ -95,15 +113,8 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     local name = header:CreateFontString(nil, "OVERLAY")
     name:SetPoint("TOPRIGHT")
     name:SetPoint("BOTTOMLEFT")
-    -- name:SetPoint("LEFT", headerText, "RIGHT")
     name:SetJustifyH("CENTER")
     self.frame.name = name
-
-    -- Set the headerText to Left
-    --headerText:SetPoint("LEFT")
-    --headerText:SetPoint("LEFT")
-    --headerText:SetJustifyH("LEFT")
-    --headerText:SetWidth(75)
 
     -- Stage frame
     local stage = CreateFrame("Frame", nil, self.frame)
@@ -140,23 +151,6 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
 
     _ScenarioCache[self] = true
 
-  end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix..".stage", Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT),
-      Options.ThemeKeyword(prefix..".stageName", Options.ThemeKeywordType.TEXT),
-      Options.ThemeKeyword(prefix..".stageCounter", Options.ThemeKeywordType.TEXT)
-    )
   end
 endclass "Scenario"
 Scenario:InstallOptions()
