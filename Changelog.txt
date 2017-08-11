@@ -1,18 +1,10 @@
-[1.1.9]
-  - Transparence theme: Added the missing properties for the scenario frame.
+[1.1.10]
+* set stage to release.
 
-
-[1.1.8]
-* set stage to beta.
-
-Changelog upgrade from 1.0.27-release:
 - NEW: Added the Theme system.
-- NEW: Add the quest item bar.
-- Fixed an issue where tracker cannot be resized after be moved.
-- Fixed an issue where sometimes the tracker cannot be moved.
+- NEW: Added the Quest item bar.
+- FIX: An issue where the tracker cannot be resized after to be moved.
+- FIX: An issue where sometimes tracker cannot be moved.
 - OPTIONS: With the addition of theme system, the options got some changes.
 
 More info on the new features here : https://wow.curseforge.com/projects/eska-quest-tracker/pages/patch-changes-overview/11
-
-Changelog upgrade from 1.0.7-alpha:
-- OPTIONS: Fixed an issue where the theme property > text option doesn't work.
