@@ -114,7 +114,7 @@ function LoadWorldQuests(self)
       WORLD_QUESTS_BLACKLIST[questID] = true
     end
 
-    if not isHidden and isTask and not _WorldQuestBlock:GetWorldQuest(questID) then
+    if not isHidden and isTask and IsWorldQuest(questID) and not _WorldQuestBlock:GetWorldQuest(questID) then
       local worldQuest = _ObjectManager:Get(WorldQuest)
       worldQuest.id = questID
       worldQuest.name = title
@@ -173,7 +173,8 @@ end
 
 function HasWorldQuest(self)
   for i = 1, GetNumQuestLogEntries() do
-    if select(13, GetQuestLogTitle(i)) then
+
+    if IsWorldQuest(select(8, GetQuestLogTitle(i))) then
       return true
     end
   end

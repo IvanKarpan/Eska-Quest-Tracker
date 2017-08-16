@@ -117,6 +117,16 @@ EskaTheme:SetProperty("worldQuest", "background-color", { r = 0, g = 0, b = 0, a
 EskaTheme:SetProperty("worldQuest.header", "background-color", { r = 0, g = 0, b = 0, a = 0.4 })
 EskaTheme:SetProperty("worldQuest.header[@hover]", "background-color", { r = 0, g = 148/255, b = 1, a = 0.4 })
 -- ========================================================================== --
+-- == Bonus Quest properties
+-- ========================================================================== --
+EskaTheme:SetProperty("bonusQuest.*", "text-font", "DejaVuSansCondensed Bold")
+EskaTheme:SetProperty("bonusQuest.*", "text-size", 10)
+EskaTheme:SetProperty("bonusQuest.*", "text-transform", "none")
+EskaTheme:SetProperty("bonusQuest.*", "text-color", { r = 1.0, g = 106/255, b = 0})
+EskaTheme:SetProperty("bonusQuest", "background-color", { r = 0, g = 0, b = 0, a = 0.3})
+EskaTheme:SetProperty("bonusQuest.header", "background-color", { r = 0, g = 0, b = 0, a = 0.4 })
+EskaTheme:SetProperty("bonusQuest.header[@hover]", "background-color", { r = 0, g = 148/255, b = 1, a = 0.4 })
+-- ========================================================================== --
 -- == Objective properties
 -- ========================================================================== --
 EskaTheme:SetProperty("objective.*", "border-color", { r = 0, g = 0, b = 0, a = 0})

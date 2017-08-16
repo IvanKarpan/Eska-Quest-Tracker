@@ -12,4 +12,5 @@
   <Script file="Scenario.lua"/>
   <Script file="Dungeon.lua"/>
   <Script file="Keystone.lua"/>
+  <Script file="BonusObjectives.lua"/>
 </Ui>

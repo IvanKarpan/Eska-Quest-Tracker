@@ -1,10 +1,7 @@
-[1.1.10]
-* set stage to release.
+[1.2.0]
+* init 1.2.0 version
+- NEW: Implement the "Bonus objectives" in the tracker.
+- FIX: The tracker should now no longer considered the bonus objectives as world quest.
+- Theme: Update Transparence & Eska.
 
-- NEW: Added the Theme system.
-- NEW: Added the Quest item bar.
-- FIX: An issue where the tracker cannot be resized after to be moved.
-- FIX: An issue where sometimes tracker cannot be moved.
-- OPTIONS: With the addition of theme system, the options got some changes.
-
-More info on the new features here : https://wow.curseforge.com/projects/eska-quest-tracker/pages/patch-changes-overview/11
+NOTE: Small update for implementing the bonus objectives in the tracker. The bonus objectives are the bonus quests availables in some zone and that often you encounter when you're leveling.

@@ -2,7 +2,7 @@
 ## Title: Eska Quest Tracker Options
 ## Author: Skamer
 ## Notes: Eska Quest Tracker Options
-## Version: 1.1.10
+## Version: 1.2.0
 ## RequiredDeps: EskaQuestTracker
 ## OptionalDeps: Ace3, LibDDI-1.0
 
