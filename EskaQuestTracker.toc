@@ -3,8 +3,8 @@
 ## Author: Skamer
 ## Notes: Eska Quest Tracker
 ## SavedVariables: EskaQuestTrackerDB
-## Version: 1.2.0
-## X-Stage: Release
+## Version: 1.2.1
+## X-Stage: Beta
 ## Dependencies: PLoop, Scorpio
 ## OptionalDeps: LibStub, LibSharedMedia-3.0
 

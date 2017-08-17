@@ -1,7 +1,10 @@
-[1.2.0]
-* init 1.2.0 version
-- NEW: Implement the "Bonus objectives" in the tracker.
-- FIX: The tracker should now no longer considered the bonus objectives as world quest.
-- Theme: Update Transparence & Eska.
+[1.2.1]
+* set stage to beta
 
-NOTE: Small update for implementing the bonus objectives in the tracker. The bonus objectives are the bonus quests availables in some zone and that often you encounter when you're leveling.
+Changelog upgrade from 1.1.10-release:
+- NEW: Implementing the Bonus objectives.
+- FIX: The tracker should now no longer considered the bonus objectives as world quest.
+- Update Transparence and Eska themes.
+
+Changelog upgrade from 1.2.0-alpha:
+- FIX: An issue where the bonus objectives aren't correctly removed when completed and preventing the module be disabled.

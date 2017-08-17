@@ -58,7 +58,7 @@ function DisableOn(self, event, ...)
 end
 
 __SystemEvent__()
-function QUEST_ACCEPTED(self, questID)
+function QUEST_ACCEPTED(_, questID)
   if not IsQuestTask(questID) or IsWorldQuest(questID) or _BonusObjectives:GetBonusQuest(questID) then
     return
   end
@@ -73,14 +73,8 @@ end
 
 __SystemEvent__()
 function QUEST_REMOVED(questID)
-  -- if the quest isn't a bonus objective, don't continue
-  if not IsQuestTask(questID) or IsWorldQuest(questID) then
-    return
-  end
-
   _BonusObjectives:RemoveBonusQuest(questID)
   _M:FireSystemEvent("EQT_BONUSQUEST_REMOVED")
-
 end
 
 __Thread__()
