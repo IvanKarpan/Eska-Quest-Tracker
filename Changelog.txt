@@ -1,3 +1,6 @@
+[1.2.2]
+- FIX: An issue where the world quests module is enabled when it contains no world quests.
+
 [1.2.1]
 * set stage to beta
 

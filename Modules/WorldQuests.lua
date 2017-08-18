@@ -173,8 +173,8 @@ end
 
 function HasWorldQuest(self)
   for i = 1, GetNumQuestLogEntries() do
-
-    if IsWorldQuest(select(8, GetQuestLogTitle(i))) then
+    local questID = select(8, GetQuestLogTitle(i))
+    if IsWorldQuest(questID) and not WORLD_QUESTS_BLACKLIST[questID] then
       return true
     end
   end
