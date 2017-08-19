@@ -1,13 +1,6 @@
-[1.2.2]
-- FIX: An issue where the world quests module is enabled when it contains no world quests.
-
-[1.2.1]
-* set stage to beta
-
-Changelog upgrade from 1.1.10-release:
+[1.2.3]
+* set stage to release
 - NEW: Implementing the Bonus objectives.
 - FIX: The tracker should now no longer considered the bonus objectives as world quest.
-- Update Transparence and Eska themes.
 
-Changelog upgrade from 1.2.0-alpha:
-- FIX: An issue where the bonus objectives aren't correctly removed when completed and preventing the module be disabled.
+More info on the new features here : https://wow.curseforge.com/projects/eska-quest-tracker/pages/patch-changes-overview/12

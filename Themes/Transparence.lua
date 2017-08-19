@@ -10,7 +10,7 @@ namespace "EQT"
 TransparenceTheme = Theme()
 TransparenceTheme.name     = "Transparence"
 TransparenceTheme.author   = "Skamer"
-TransparenceTheme.version  = "1.2.1"
+TransparenceTheme.version  = "1.2.3"
 TransparenceTheme.stage    = "Release"
 _Addon:RegisterTheme(TransparenceTheme)
 -- ========================================================================== --
