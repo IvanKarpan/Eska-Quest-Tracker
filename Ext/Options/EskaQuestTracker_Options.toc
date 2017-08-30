@@ -1,8 +1,7 @@
-## Interface: 70200
+## Interface: 70300
 ## Title: Eska Quest Tracker Options
 ## Author: Skamer
 ## Notes: Eska Quest Tracker Options
-## Version: 1.2.1
 ## RequiredDeps: EskaQuestTracker
 ## OptionalDeps: Ace3, LibDDI-1.0
 
