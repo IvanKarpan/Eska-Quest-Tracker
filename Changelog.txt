@@ -1,9 +1,5 @@
-[1.2.4]
-* Updated the toc files for 7.3
-
-[1.2.3]
-* set stage to release
-- NEW: Implementing the Bonus objectives.
-- FIX: The tracker should now no longer considered the bonus objectives as world quest.
-
-More info on the new features here : https://wow.curseforge.com/projects/eska-quest-tracker/pages/patch-changes-overview/12
+[1.3.0]
+- NEW: Integrate the group finder addons in the tracker (compatible with WorldQuestGroupFinder, WorldQuestAssistant and WorldQuestTracker).
+Right click on a world quest name and quest name to open the menu context, allowing you to access to their features.
+- Rewritten the system handling the settings. These last will be migrated to the new system.
+- FIX: An issue where the width of world quest has a value higher than it should be.

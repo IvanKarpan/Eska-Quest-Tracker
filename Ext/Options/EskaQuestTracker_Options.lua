@@ -179,8 +179,8 @@ _Categories.Tracker = {
         type = "toggle",
         name = "Lock",
         order = 1,
-        get = function() return ObjectiveTracker.locked end,
-        set = function(_, locked) ObjectiveTracker.locked = locked end
+        get = function() return Options:Get("tracker-locked") end,
+        set = function(_, locked) Options:Set("tracker-locked", locked) end
       },
       show = {
         type = "execute",
@@ -207,8 +207,8 @@ _Categories.Tracker = {
             step = 1,
             min = 270,
             max = 500,
-            get = function() return ObjectiveTracker.width end,
-            set = function(_, width) ObjectiveTracker.width = width end,
+            get = function() return Options:Get("tracker-width") end,
+            set = function(_, width) Options:Set("tracker-width", width) end,
           },
           height = {
             type = "range",
@@ -217,8 +217,8 @@ _Categories.Tracker = {
             step = 1,
             min = 64,
             max = 1024,
-            get = function() return ObjectiveTracker.height end,
-            set = function(_, height) ObjectiveTracker.height = height end,
+            get = function() return Options:Get("tracker-height") end,
+            set = function(_, height) Options:Set("tracker-height", height) end,
           }
         }
       },
@@ -262,13 +262,70 @@ _Categories.Tracker = {
             type = "toggle",
             name = "Replace completely the blizzard objective tracker",
             width = "full",
-            get = function() return _DB.replaceBlizzardObjectiveTracker end,
-            set = function(_, value) _DB.replaceBlizzardObjectiveTracker = value ; _Addon.BLIZZARD_TRACKER_VISIBLITY_CHANGED(not value) end
+            get = function() return Options:Get("replace-blizzard-objective-tracker") end,
+            set = function(_, value) Options:Set("replace-blizzard-objective-tracker", value) ; _Addon.BLIZZARD_TRACKER_VISIBLITY_CHANGED(not value) end
           }
         }
       }
     }
   }
+
+-- ========================================================================== --
+-- == MENU CONTEXT CATEGORY
+-- ========================================================================== --
+_Categories.MenuContext = {
+  type = "group",
+  name = "Menu context",
+  order = 3,
+  args = {
+    menuContext = {
+      type = "select",
+      name = "Orientation",
+      values = function()
+        local t = {
+          ["RIGHT"] = "RIGHT",
+          ["LEFT"] = "LEFT"
+         }
+         return t
+      end,
+      get = function() return Options:Get("menu-context-orientation") end,
+      set = function(_, value) Options:Set("menu-context-orientation", value) end,
+    }
+  }
+}
+
+
+-- ========================================================================== --
+-- == GROUP FINDER CATEGORY
+-- ========================================================================== --
+_Categories.GroupFinders = {
+  type = "group",
+  name = "Group finders",
+  order = 4,
+  args = {
+    groupFinders = {
+      type = "select",
+      name = "Select a group finder",
+      values = function()
+        local t = {}
+        for name in GroupFinderAddon:GetIterator() do
+          t[name] = name
+        end
+        return t
+      end,
+      get = function()
+        local _, name = GroupFinderAddon:GetSelected()
+        return name
+      end,
+      set = function(_, value)
+        GroupFinderAddon:SetSelected(value)
+      end
+    }
+  }
+}
+
+
+
 -- ========================================================================== --
 -- == BLOCK CATEGORY
 -- ========================================================================== --

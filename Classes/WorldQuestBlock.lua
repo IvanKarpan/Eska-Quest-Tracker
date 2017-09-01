@@ -66,7 +66,7 @@ class "WorldQuestBlock" inherit "Block"
 
       if index == 1 then
         worldQuest.frame:SetPoint("TOPLEFT", 0, -40)
-        worldQuest.frame:SetPoint("TOPRIGHT", 20, -40)
+        worldQuest.frame:SetPoint("TOPRIGHT", 0, -40)
       else
         worldQuest.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -5)
         worldQuest.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")

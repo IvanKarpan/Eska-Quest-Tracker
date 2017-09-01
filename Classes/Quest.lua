@@ -8,7 +8,7 @@ Scorpio                "EskaQuestTracker.Classes.Quest"                       ""
 namespace "EQT"
 --============================================================================--
 class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
-  _QuestCache = setmetatable( {}, { __mode = "k" } )
+  _QuestCache = setmetatable( {}, { __mode = "v" } )
   event "OnDistanceChanged"
   event "IsOnMapChanged"
   ------------------------------------------------------------------------------
@@ -130,6 +130,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     end
   end
 
+  --[[
   __Static__() property "showID" {
     GET = function(self) return _DB.Quest.showID end,
     SET = function(self, showID) _DB.Quest.showID = showID ; Quest:RefreshAll() end
@@ -143,7 +144,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   __Static__() property "showOnlyQuestsInZone" {
     GET = function() return _DB.Quest.showOnlyQuestsInZone end,
     SET = function(self, showInZone) _DB.Quest.showOnlyInQuestsInZone = showInZone end,
-  }
+  }--]]
 
 
   function RegisterFramesForThemeAPI(self)
@@ -184,10 +185,27 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     headerFrame:SetPoint("TOPRIGHT")
     headerFrame:SetPoint("TOPLEFT")
     headerFrame:SetHeight(21) -- 14
+    headerFrame:RegisterForClicks("RightButtonUp", "LeftButtonUp")
 
     -- Script
-    headerFrame:SetScript("OnClick", function()
-      QuestLogPopupDetailFrame_Show(GetQuestLogIndexByID(self.id))
+    headerFrame:SetScript("OnClick", function(_, button, down)
+      if button == "LeftButton" then
+        QuestLogPopupDetailFrame_Show(GetQuestLogIndexByID(self.id))
+      elseif button == "RightButton" then
+        if _Addon.MenuContext:IsShown() then
+          _Addon.MenuContext:Hide()
+        else
+          _Addon.MenuContext:Show()
+          _Addon.MenuContext:AnchorTo(headerFrame)
+          _Addon.MenuContext:Clear()
+          _Addon.MenuContext:AddItem("Create a group", nil, function() GroupFinder:CreateGroup(self.id) end)
+          _Addon.MenuContext:AddItem("Join a group", nil, function() GroupFinder:JoinGroup(self.id) end)
+          _Addon.MenuContext:AddItem(MenuItemSeparator())
+          _Addon.MenuContext:AddItem("Leave the group", nil, GroupFinder.LeaveGroup)
+          --_Addon.MenuContext:AddItem(MenuItemSeparator())
+          --_Addon.MenuContext:AddItem("Help", nil, function() print("Put a Help handler here !") end)
+        end
+      end
     end)
 
     local headerText = headerFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -240,15 +258,13 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 endclass "Quest"
 Quest:InstallOptions()
 Theme.RegisterRefreshHandler("quest", Quest.RefreshAll)
+
 --============================================================================--
 -- OnLoad Handler
 --============================================================================--
 function OnLoad(self)
-  -- DB
-  _DB:SetDefault("Quest", {
-    showID = false,
-    ShowLevel = true,
-  })
+  Options:Register("quest-show-id", false)
+  Options:Register("quest-show-level", true)
 
   -- Register this class in the object manager
   _ObjectManager:Register(Quest)

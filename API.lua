@@ -22,7 +22,7 @@ bit_rshift = bit.rshift
 --------------------------------------------------------------------------------
 --                         Config                                             --
 --------------------------------------------------------------------------------
-__Final__()
+--[[__Final__()
 interface "Config"
   function GetOption(self, option)
     if not _DB and not _DB.options then
@@ -43,11 +43,256 @@ interface "Config"
 
     _DB.options[option] = value
   end
-endinterface "Config"
+endinterface "Config"--]]
+
+-- EQT.Config:GetOption()
+-- EQT.Config:SetOption()
+-- EQT.Config:RegisterOption()
+-- EQT.Config:SelectProfile()
+-- EQT.Config:UseSpecDB()
+-- EQT.Config:UseGlobalDB()
+-- EQT.Config:UseCharacterDB()
+
+-- [Config] [Use Character DB, Use Spec DB, Use Global DB
+-- charactersDB[name] = "spec" | "character"
+
+
+-- Refresh:Group()
+-- Refresj
+--------------------------------------------------------------------------------
+--                       Callbakc Handler Classes                             --
+--------------------------------------------------------------------------------
+
+class "CallbackHandler"
+  property "func" { TYPE = Callable + String }
+
+  function __call(self, ...)
+    self.func(...)
+  end
+
+  __Arguments__ { Callable + String }
+  function CallbackHandler(self, func)
+    self.func = func
+  end
+
+endclass "CallbackHandler"
+
+class "CallbackObjectHandler" inherit "CallbackHandler"
+  property "obj" { TYPE = Class + Table}
+
+  function __call(self, ...)
+    if type(self.func) == "string" then
+      local f = self.obj[self.func]
+      if f then
+        f(self, ...)
+      end
+    else
+      self.func(self.obj, ...)
+    end
+  end
+
+  __Arguments__ { Class + Table, Callable + String }
+  function CallbackObjectHandler(self, obj, func)
+    self.obj = obj
+
+    Super(self, func)
+  end
+
+endclass "CallbackObjectHandler"
+
+class "CallbackPropertyHandler" inherit "CallbackObjectHandler"
+  function __call(self, value)
+    if self.obj[self.func] then
+      self.obj[self.func] = value
+    end
+  end
+
+  __Arguments__ { Class + Table, String }
+  function CallbackPropertyHandler(self, obj, property)
+    Super(self, obj, property)
+  end
+endclass "CallbackPropertyHandler"
+
+
+class "CallbackHandlers"
+  CALLBACK_HANDLERS = Dictionary()
+  CALLBACK_HANDLERS_GROUPS = Dictionary()
+
+  __Static__() __Arguments__ { Class, String, CallbackHandler, { Type = String, Nilable = true, IsList = true }}
+  function Register(self, id, handler, ...)
+    local numGroup = select("#", ...)
+    for i = 1, numGroup do
+      local groupName = select(i, ...)
+      if not CALLBACK_HANDLERS_GROUPS[groupName] then
+        local handlers = setmetatable( {}, { __mode = "v" })
+        handlers[id] = handler
+        CALLBACK_HANDLERS_GROUPS[groupName] = handlers
+      else
+        CALLBACK_HANDLERS_GROUPS[groupName][id] = handler
+      end
+    end
+
+    CALLBACK_HANDLERS[id] = handler
+  end
+
+
+  __Static__() __Arguments__ { Class, { Type = String, Nilable = true, IsList = true } }
+  function CallGroup(self, ...)
+    local numGroup = select("#", ...)
+    for i = 1, numGroup do
+      local groupName = select(i, ...)
+      local handlers = CALLBACK_HANDLERS_GROUPS[groupName]
+      if handlers then
+        for id, handler in pairs(handlers) do
+          handler()
+        end
+      end
+    end
+  end
+
+  function CallAll(self)
+
+  end
+
+  __Static__() __Arguments__ { Class, String, { Type = Any, Nilable = true, IsList = true } }
+  function Call(self, id, ...)
+    local handler = CALLBACK_HANDLERS[id]
+    if handler then
+      handler(...)
+    end
+  end
+
+endclass "CallbackHandlers"
+
+--------------------------------------------------------------------------------
+--                         Database                                           --
+--------------------------------------------------------------------------------
+
+
+
+class "Database"
+
+  CURRENT_TABLE = nil
+
+
+  class "Migration"
+        function Up(self)
+            -- Migrate the DB to version 8 (>=1.0.1)
+        end
+
+        function Down(self)
+            -- Downgrade the DB to version
+        end
+
+  endclass "Migration"
+
+  __Static__() __Arguments__{ Class, Any, Argument(Any, true) }
+  function SetValue(self, index, value)
+    CURRENT_TABLE[index] = value
+  end
+
+  __Static__() __Arguments__ { Class, Any }
+  function GetValue(self, index)
+    return CURRENT_TABLE[index]
+  end
+
+--[[  __Static__() __Arguments__{ Class, { Type = String, Nilable = true, IsList = true } }
+  function SelectTable(self, ...)
+      local count = select("#", ...)
+
+      if not CURRENT_TABLE then
+        CURRENT_TABLE = self:Get()
+      end
+      local tb = CURRENT_TABLE
+      for i = 1, count do
+        local indexTable = select(i, ...)
+          if not tb[indexTable] then
+            tb[indexTable] = {}
+          end
+
+          tb = tb[indexTable]
+      end
+      CURRENT_TABLE = tb
+  end--]]
+  __Static__() __Arguments__{ Class, { Type = String, Nilable = true, IsList = true } }
+  function SelectTable(self, ...)
+    return self:SelectTable(true, ...)
+  end
+
+  __Static__() __Arguments__ { Class, Boolean, { Type = String, Nilable = true, IsList = true } }
+  function SelectTable(self, mustCreateTables, ...)
+    local count = select("#", ...)
+
+    if not CURRENT_TABLE then
+      CURRENT_TABLE = self:Get()
+    end
+    local tb = CURRENT_TABLE
+    for i = 1, count do
+      local indexTable = select(i, ...)
+        if not tb[indexTable] then
+          if mustCreateTables then
+            tb[indexTable] = {}
+          else
+            return false
+          end
+        end
+
+        tb = tb[indexTable]
+    end
+    CURRENT_TABLE = tb
+
+    return true
+  end
+
+  __Static__() __Arguments__{ Class }
+  function SelectRoot(self)
+    CURRENT_TABLE = self:Get()
+  end
+
+  __Static__() __Arguments__{ Class }
+  function SelectRootChar(self)
+    CURRENT_TABLE = self:GetChar()
+  end
+
+  __Static__() __Arguments__ { Class }
+  function SelectRootSpec(self)
+    CURRENT_TABLE = self:GetSpec()
+  end
+
+  __Static__() __Arguments__ { Class, Number }
+  function SetVersion(self, version)
+    if self:Get() then
+      self:Get().dbVersion = version
+    end
+  end
+
+  __Static__() __Arguments__ { Class }
+  function GetVersion(self)
+    if self:Get() then return self:Get().dbVersion end
+  end
+
+  __Static__() __Arguments__ { Class }
+  function Get(self)
+    return _DB
+  end
+
+  __Static__() __Arguments__ { Class }
+  function GetChar(self)
+    return _DB.Char
+  end
+
+  __Static__() __Arguments__ { Class }
+  function GetSpec(self)
+    return _DB.Char.Spec
+  end
+
+
+endclass "Database"
 
 --------------------------------------------------------------------------------
 --                         Options                                            --
 --------------------------------------------------------------------------------
+--[[
 __Final__()
 interface "Options"
   _KEYWORDS = Dictionary()
@@ -84,6 +329,192 @@ interface "Options"
     return _KEYWORDS.Values:ToList():Sort("a,b=>a.target<b.target"):GetIterator()
   end
 endinterface "Options"
+--]]
+
+
+
+class "Option"
+  property "id" { Type = String }
+  property "default" { Type = Any }
+  property "func" { Type = Callable + String }
+
+  function __call(self, ...)
+    if self.func then
+      if type(self.func) == "string" then
+        CallbackHandlers:Call(self.func, ...)
+      else
+        self.func(...)
+      end
+    end
+  end
+
+  __Arguments__ { String,  Any, Argument(Callable + String, true, nil) }
+  function Option(self, id,  default, func)
+    self.id = id
+    self.default = default
+    self.func = func
+  end
+
+endclass "Option"
+
+
+class "Options"
+_KEYWORDS = Dictionary()
+
+OPTIONS = Dictionary()
+
+-- @REVIEW Do that during the theme API update and create OptionRecipe!
+__Flags__()
+enum "ThemeKeywordType" {
+  FRAME = 1,
+  TEXT = 2,
+  TEXTURE = 4,
+}
+
+-- @REVIEW Do that during the theme API update and create OptionRecipe!
+struct "ThemeKeyword"
+  target = String
+
+  __Default__( ThemeKeywordType.FRAME )
+  type = ThemeKeywordType
+
+  __Default__("0094FF")
+  flagColorStr = String
+
+endstruct "ThemeKeyword"
+
+-- @REVIEW Do that during the theme API update and create OptionRecipe!
+__Static__()
+function AddAvailableThemeKeywords(...)
+
+  --print(self, ...)
+  for i = 1, select('#', ...) do
+    local keyword = select(i, ...)
+    if not _KEYWORDS[keyword.target] then
+      _KEYWORDS[keyword.target] = keyword
+    end
+  end
+end
+
+-- @REVIEW Do that during the theme API update and create OptionRecipe!
+__Static__()
+function GetAvailableThemeKeywords()
+  return _KEYWORDS.Values:ToList():Sort("a,b=>a.target<b.target"):GetIterator()
+end
+
+__Static__() __Arguments__ { Class }
+function SelectCurrentProfile(self)
+  -- Get the current profile for this character
+  local dbUsed = self:GetCurrentProfile()
+
+  if dbUsed == "spec" then
+    Database:SelectRootSpec()
+  elseif dbUsed == "char" then
+    Database:SelectRootChar()
+  else
+    Database:SelectRoot()
+  end
+end
+
+
+__Static__() __Arguments__ { Class, String }
+function Get(self, option)
+  -- select the current profile (global, char or spec)
+  self:SelectCurrentProfile()
+
+  if Database:SelectTable(false, "options") then
+    local value = Database:GetValue(option)
+    if value ~= nil then
+      return value
+    end
+  end
+
+  if OPTIONS[option] then
+    return OPTIONS[option].default
+  end
+end
+
+__Static__() __Arguments__ { Class, String }
+function Exists(self, option)
+    -- select the current profile (global, char or spec)
+    self:SelectCurrentProfile()
+
+    if Database:SelectTable(false, "options") then
+      local value = Database:GetValue(option)
+      if value then
+        return true
+      end
+    end
+    return false
+end
+
+__Static__() __Arguments__ { Class, String, Argument(Any, true, nil), Argument(Boolean, true, true)}
+function Set(self, option, value, useHandler)
+  -- select the current profile (global, char or spec)
+  self:SelectCurrentProfile()
+
+  Database:SelectTable("options")
+  Database:SetValue(option, value)
+
+  -- Call the handler if needed
+  if useHandler then
+    local opt = OPTIONS[option]
+    if opt then
+      opt(value)
+    end
+  end
+end
+
+
+__Static__() __Arguments__ { Class, String, Any, Argument(Callable + String, true, nil) }
+function Register(self, option, default, func)
+  self:Register(Option(option, default, func))
+end
+
+__Static__() __Arguments__ { Class, Option }
+function Register(self, option)
+    OPTIONS[option.id] = option
+end
+
+__Static__() __Arguments__ { Class, Argument(String, true, "global") }
+function SelectProfile(self, profile)
+  Database:SelectRoot()
+  Database:SelectTable("dbUsed")
+
+  local name, realm = UnitFullName("player")
+  name = realm .. "-" .. name
+
+  Database:SetValue(name, profile)
+end
+
+__Static__() __Arguments__ { Class }
+function GetCurrentProfile(self)
+  Database:SelectRoot()
+  if Database:SelectTable(false, "dbUsed") then
+    local name  = UnitFullName("player")
+    local realm = GetRealmName()
+    name = realm .. "-" .. name
+    local dbUsed = Database:GetValue(name)
+    if dbUsed then
+      return dbUsed
+    end
+  end
+  return "global"
+end
+
+
+__Arguments__ { Class, String }
+function ResetOption(self, id)
+    self:Set(id, nil)
+end
+
+function ResetAllOptions(self)
+
+end
+
+
+endclass "Options"
+
 
 --------------------------------------------------------------------------------
 --                   Serializable container                                   --
@@ -314,6 +745,33 @@ interface "API"
   function RemoveThemePropertyFlags(self, target)
     return target:gsub("%[.*%]", "")
   end
+
+
+
+
+  class "Config"
+    _DEFAULT_VALUES = {}
+
+    function GetOption(self, option)
+
+    end
+
+    function SetOption(self, option)
+
+    end
+
+    __Static__() __Arguments__ { String }
+    function SelectDatabase(self, db)
+
+    end
+
+    function RegisterOption(self, option)
+      -- name
+      -- default =
+      -- refresh callback
+    end
+
+  endclass "Config"
 endinterface "API"
 --------------------------------------------------------------------------------
 --                   Base Frame class                                         --
@@ -1070,7 +1528,7 @@ class "Theme" extend "ISerializable"
     local funcID  = target.."-"..script
     local funcStr = self.scripts[target] and self.scripts[target][property]
 
-    print("GetScript", funcID, funcStr)
+    --print("GetScript", funcID, funcStr)
 
     -- if we don't find it, check if the parent script exists
     if not funcStr then

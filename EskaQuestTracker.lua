@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.2.4"
+Scorpio                   "EskaQuestTracker"                             "1.3.0"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -37,6 +37,7 @@ _CURRENT_TRACKER_WIDTH = 270
 _CURRENT_TRACKER_RATIO_WIDTH = _CURRENT_TRACKER_WIDTH / _DEFAULT_TRACKER_WIDTH
 -- ========================================================================== --
 _THEMES = ObjectArray(Theme)
+-- _MenuContext = MenuContext()
 
 -- !IMPORTANT
 -- Don't set stuffs related to DB (this causes error if the user doesn't have the save variables created)
@@ -44,27 +45,48 @@ _THEMES = ObjectArray(Theme)
 function OnLoad(self)
   -- Create and init the DB
   _DB = SVManager("EskaQuestTrackerDB")
-  _DB:SetDefault({
-    currentTheme = "Eska"
-  })
+
+  Options:Register("replace-blizzard-objective-tracker", true)
+  Options:Register("theme-selected", "Eska")
+
+  self:CheckDBMigration()
+
+  _DB:SetDefault{dbVersion = 1 }
 
   -- Create the blocks table in order to register them.
   self.blocks = Dictionary()
 
-
-  _DB:SetDefault({ replaceBlizzardObjectiveTracker = true })
-  self:SelectTheme(_DB.currentTheme)
-
-
-  local itemBar = ItemBar()
+  self:SelectTheme(Options:Get("theme-selected"))
 
 end
 
 function OnEnable(self)
-  BLIZZARD_TRACKER_VISIBLITY_CHANGED(not _DB.replaceBlizzardObjectiveTracker)
+  BLIZZARD_TRACKER_VISIBLITY_CHANGED(not Options:Get("replace-blizzard-objective-tracker"))
 
   -- From now, all themes property changes will refresh the targeted frame.
   Theme.refreshOnPropertyChanged = true
+end
+
+function CheckDBMigration()
+  if not _DB.dbVersion and _DB.replaceBlizzardObjectiveTracker then
+    if _DB.Tracker then
+      if _DB.Tracker.xPos  ~= nil then Options:Set("tracker-xPos", _DB.Tracker.xPos, false) end
+      if _DB.Tracker.yPos ~= nil then Options:Set("tracker-yPos", _DB.Tracker.yPos, false)  end
+      if _DB.Tracker.height ~= nil then Options:Set("tracker-height", _DB.Tracker.height, false) end
+      if _DB.Tracker.width ~= nil then Options:Set("tracker-width", _DB.Tracker.width, false) end
+      if _DB.Tracker.locked ~= nil then Options:Set("tracker-locked", _DB.Tracker.locked, false) end
+      _DB.Tracker = nil
+    end
+
+    if _DB.Quest then
+      if _DB.Quest.showID ~= nil then Options:Set("quest-show-id", _DB.Quest.showID, false) end
+      if _DB.Quest.ShowLevel ~= nil then Options:Set("quest-show-level", _DB.Quest.ShowLevel, false) end
+      _DB.Quest = nil
+    end
+
+    Options:Set("theme-selected", _DB.currentTheme, false) ; _DB.currentTheme = nil
+    Options:Set("replace-blizzard-objective-tracker", _DB.replaceBlizzardObjectiveTracker, false) ; _DB.replaceBlizzardObjectiveTracker = nil
+  end
 end
 
 function RegisterBlock(self, block)
@@ -159,7 +181,8 @@ function SelectTheme(self, name)
 
   if theme then
     _CURRENT_THEME = theme
-    _DB.currentTheme = name
+    Options:Set("theme-selected", name)
+
     Theme.RefreshGroups()
   end
 end

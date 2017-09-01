@@ -48,13 +48,13 @@ class "ObjectiveTracker" inherit "Frame"
   --      moving works.                                                       --
   ------------------------------------------------------------------------------
   _Addon.ObjectiveTrackerMouseDown = function(_, button)
-    if button == "LeftButton" and not ObjectiveTracker.locked and _Obj then
+    if button == "LeftButton" and not Options:Get("tracker-locked") and _Obj then
         _Obj.frame:StartMoving()
     end
   end
 
   _Addon.ObjectiveTrackerMouseUp = function(_, button)
-    if button == "LeftButton" and not ObjectiveTracker.locked and _Obj then
+    if button == "LeftButton" and not Options:Get("tracker-locked") and _Obj then
       _Obj.frame:StopMovingOrSizing()
 
       local x = _Obj.frame:GetLeft()
@@ -81,8 +81,8 @@ class "ObjectiveTracker" inherit "Frame"
     self.frame:ClearAllPoints()
     self.frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)
     if saveInDB then
-      _DB.Tracker.xPos = x
-      _DB.Tracker.yPos = y
+      Options:Set("tracker-xPos", x, false)
+      Options:Set("tracker-yPos", y, false)
     end
   end
 
@@ -92,6 +92,13 @@ class "ObjectiveTracker" inherit "Frame"
     Theme.SkinFrame(self.scrollbar)
     Theme.SkinTexture(self.scrollbar.thumb)
 
+  end
+
+  __Static__()
+  function RefreshAll()
+    if _Obj then
+      _Obj:Refresh()
+    end
   end
 
   function RegisterFramesForThemeAPI(self)
@@ -109,7 +116,7 @@ class "ObjectiveTracker" inherit "Frame"
   property "isScrollbarShown" { TYPE = Boolean, DEFAULT = true, HANDLER = SetScrollbarVisibility }
   property "contentHeight" { TYPE = Number, DEFAULT = 50, HANDLER = SetContentHeight }
   -- the width used by the tracker
-  __Static__() property "width" {
+  --[[__Static__() property "width" {
     TYPE = Number,
     SET = function(self, width) _DB.Tracker.width = width ; _Obj.width = width
     end,
@@ -118,7 +125,8 @@ class "ObjectiveTracker" inherit "Frame"
   -- The height used by the tracker
   __Static__() property "height" {
     TYPE = Number,
-    SET = function(self, height) _DB.Tracker.height = height ; _Obj.height = height end,
+    -- SET = function(self, height) _DB.Tracker.height = height ; _Obj.height = height end,
+    SET = function(self, height) _Obj.height = height end,
     GET = function(self) return _DB.Tracker.height end,
   }
 
@@ -138,7 +146,7 @@ class "ObjectiveTracker" inherit "Frame"
     TYPE = Table,
     SET = function(self, color) _DB.Tracker.backdropBorderColor = color ; _Obj.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a) end,
     GET = function() return _DB.Tracker.backdropBorderColor end,
-  }
+  }--]]
   -- Theme
   property "tID" { DEFAULT = "tracker" }
 
@@ -154,19 +162,25 @@ class "ObjectiveTracker" inherit "Frame"
 
     frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
     frame:SetFrameStrata("LOW")
-    frame:SetSize(ObjectiveTracker.width, ObjectiveTracker.height)
+    --frame:SetSize(ObjectiveTracker.width, ObjectiveTracker.height)
+    frame:SetSize(Options:Get("tracker-width"), Options:Get("tracker-height"))
     -- Restore the position contained in the DB if exists
-    if _DB.Tracker.xPos and _DB.Tracker.yPos then
-      self:SetPosition(_DB.Tracker.xPos, _DB.Tracker.yPos, false)
+    if Options:Exists("tracker-xPos") and Options:Exists("tracker-yPos") then
+      self:SetPosition(Options:Get("tracker-xPos"), Options:Get("tracker-yPos"), false)
     else
       frame:SetPoint("CENTER")
     end
+
+
+
+    -- Restore the position contained in the DB if exists
+
     -- Drag and move functions
     frame:SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
     frame:SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
 
 
-    self:SetLocked(ObjectiveTracker.locked)
+    self:SetLocked(Options:Get("tracker-locked"))
 
     local scrollFrame = CreateFrame("ScrollFrame", "EQT-ObjectiveTrackerFrameScrollFrame", frame, "UIPanelScrollFrameTemplate")
     scrollFrame:SetAllPoints()
@@ -244,7 +258,6 @@ class "ObjectiveTracker" inherit "Frame"
         self.isScrollbarShown = false
       end
     end
-
   end
 
   -- Say to options the keywords availables
@@ -253,19 +266,22 @@ class "ObjectiveTracker" inherit "Frame"
     Options.ThemeKeyword("tracker.scrollbar", Options.ThemeKeywordType.FRAME),
     Options.ThemeKeyword("tracker.scrollbar.thumb", Options.ThemeKeywordType.TEXTURE)
   )
+
 endclass "ObjectiveTracker"
 
-
-
--- Set the default values for the DB
 function OnLoad(self)
-  _DB:SetDefault("Tracker", {
-    width = 325,
-    height = 300,
-    locked = false,
+  --_DB:SetDefault("Tracker", {
+    --width = 325,
+    --height = 300,
+    --locked = false,
     --backdropColor = { r = 0, g = 0, b = 0, a = 0.5 },
     --backdropBorderColor = { r = 0, g = 0, b = 0},
-  })
+  --})
+  -- Options
+  Options:Register("tracker-height", 300, "tracker/setHeight")
+  Options:Register("tracker-width", 325, "tracker/setWidth")
+  Options:Register("tracker-locked", false, "tracker/setLocked")
+
     -- Create and init the objetive tracker that will contains all the blocks (quests, scenario, keystone, ...)
   local tracker = ObjectiveTracker()
   -- Init some vars from db
@@ -277,4 +293,10 @@ function OnLoad(self)
 
   -- Assign it as addon tracker
   _Addon.ObjectiveTracker = tracker
+
+  -- Callback handlers
+  CallbackHandlers:Register("tracker/refresher", CallbackHandler(ObjectiveTracker.RefreshAll), "refresher")
+  CallbackHandlers:Register("tracker/setLocked", CallbackObjectHandler(tracker, ObjectiveTracker.SetLocked))
+  CallbackHandlers:Register("tracker/setHeight", CallbackPropertyHandler(tracker, "height"))
+  CallbackHandlers:Register("tracker/setWidth", CallbackPropertyHandler(tracker, "width"))
 end
