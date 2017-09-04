@@ -189,6 +189,10 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
     -- Script
     headerFrame:SetScript("OnClick", function(_, button, down)
+      if not self:MustBeInteractive(headerFrame) then
+        return
+      end
+
       if button == "LeftButton" then
         QuestLogPopupDetailFrame_Show(GetQuestLogIndexByID(self.id))
       elseif button == "RightButton" then
@@ -202,8 +206,8 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
           _Addon.MenuContext:AddItem("Join a group", nil, function() GroupFinder:JoinGroup(self.id) end)
           _Addon.MenuContext:AddItem(MenuItemSeparator())
           _Addon.MenuContext:AddItem("Leave the group", nil, GroupFinder.LeaveGroup)
-          --_Addon.MenuContext:AddItem(MenuItemSeparator())
-          --_Addon.MenuContext:AddItem("Help", nil, function() print("Put a Help handler here !") end)
+          _Addon.MenuContext:AddItem(MenuItemSeparator())
+          _Addon.MenuContext:AddItem("Help", nil, function() print("Put a Help handler here !") end).disabled = true
         end
       end
     end)

@@ -7,7 +7,6 @@ Scorpio           "EskaQuestTracker.Widgets.MenuContext"                      ""
 --============================================================================--
 namespace "EQT"
 --============================================================================--
-_ARROW_TEXTURE = [[Interface\AddOns\EskaQuestTracker\Media\Textures\MenuContext-Arrow]]
 
 class "BaseMenuItem" inherit "Frame" extend "IReusable"
 
@@ -29,7 +28,6 @@ class "BaseMenuItem" inherit "Frame" extend "IReusable"
   end
 
 
-
 endclass "BaseMenuItem"
 
 class "MenuItem" inherit "BaseMenuItem"
@@ -45,7 +43,15 @@ class "MenuItem" inherit "BaseMenuItem"
       if new == nil then
         self.btn:RegisterForClicks(nil)
       end
-      self.btn:SetScript("OnClick", function() new(); _Addon.MenuContext:Hide() end)
+      self.btn:SetScript("OnClick", function() if not self.disabled then new(); _Addon.MenuContext:Hide() end end)
+    elseif prop == "disabled" then
+      if not new then
+        self.frame:SetTextColor(1, 1, 1)
+        self.frame:SetBackdropColor(0, 0, 0, 0)
+      else
+        self.label:SetTextColor(0.4, 0.4, 0.4)
+        --self.frame:SetBackdropColor(0.35, 0.35, 0.35, 0.5)
+      end
     end
   end
 
@@ -68,6 +74,7 @@ class "MenuItem" inherit "BaseMenuItem"
   property "icon" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps }
   property "text" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps }
   property "onClick" { TYPE = Callable, DEFAULT = nil, HANDLER = UpdateProps }
+  property "disabled" { TYPE = Boolean, DEFAULT = false, HANDLER = UpdateProps }
 
   function MenuItem(self)
     Super(self)
@@ -93,12 +100,16 @@ class "MenuItem" inherit "BaseMenuItem"
     self.label = label
 
     btn:SetScript("OnEnter", function(btn)
-      self.frame:SetBackdropColor(0, 148/255, 1, 0.5)
-      label:SetTextColor(1, 216/255, 0)
+      if not self.disabled then
+        self.frame:SetBackdropColor(0, 148/255, 1, 0.5)
+        label:SetTextColor(1, 216/255, 0)
+      end
     end)
     btn:SetScript("OnLeave", function(btn)
-      self.frame:SetBackdropColor(0, 0, 0, 0)
-      label:SetTextColor(1, 1, 1)
+      if not self.disabled then
+        self.frame:SetBackdropColor(0, 0, 0, 0)
+        label:SetTextColor(1, 1, 1)
+      end
     end)
 
     self.baseHeight = 24
@@ -195,6 +206,8 @@ class "MenuContext" inherit "Frame"
     item.icon = icon
     item.onClick = onClick
     This.AddItem(self, item)
+
+    return item
   end
 
   function GetItem(self, id)
@@ -259,7 +272,7 @@ class "MenuContext" inherit "Frame"
     --arrow:SetTexture([[Interface\AddOns\EskaQuestTracker\Media\Textures\Arrow]])
     --arrow:SetPoint("TOP", frame, "BOTTOM", 0, 4)
 
-    arrow:SetTexture([[Interface\AddOns\EskaQuestTracker\Media\Textures\Arrow3]])
+    arrow:SetTexture([[Interface\AddOns\EskaQuestTracker\Media\Textures\MenuContext-Arrow]])
     -- arrow:SetPoint("LEFT", frame, "RIGHT", -5, 40)
     arrow:SetPoint("CENTER", UIParent, "CENTER", 350, 350)
     arrow:SetSize(24, 24)
@@ -283,6 +296,38 @@ class "MenuContext" inherit "Frame"
     -- frame:SetSize(125, 150)
     frame:SetPoint("RIGHT", arrow, "LEFT")
 
+    --frame:SetScript("OnLeave", function() print("OnLeave") end)
+    --frame:SetScript("OnEnter", function() print("OnEnter") end)
+
+
+    frame:SetScript("OnShow", function()
+      frame:SetScript("OnUpdate", function()
+        if not self.destFrame then return end
+
+        local offsetLeft = 0
+        local offsetRight = 0
+
+        if self.orientation == "RIGHT" then
+          offsetRight = self.destFrame:GetLeft() - frame:GetRight()
+        elseif self.orientation == "LEFT" then
+          offsetLeft = self.destFrame:GetRight() - frame:GetLeft()
+        end
+
+        local isParentMouseOver = false
+        if self.destFrame:GetParent() then
+          isParentMouseOver = self.destFrame:GetParent():IsMouseOver()
+        end
+
+        if not frame:IsMouseOver(0, 0, offsetLeft, offsetRight) and not self.destFrame:IsMouseOver() and not isParentMouseOver then
+          self:Hide()
+        end
+      end)
+     end)
+
+     frame:SetScript("OnHide", function()
+       frame:SetScript("OnUpdate", nil)
+     end)
+
     --frame:SetMovable(true)
     --frame:EnableMouse(true)
     --frame:RegisterForDrag("LeftButton")
@@ -297,7 +342,7 @@ class "MenuContext" inherit "Frame"
 
     self.items = List()
 
-    --self:UpdateArrowOrientation()
+    self:UpdateArrowOrientation()
     self.orientation = Options:Get("menu-context-orientation")
   end
 

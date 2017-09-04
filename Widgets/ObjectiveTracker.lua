@@ -47,14 +47,22 @@ class "ObjectiveTracker" inherit "Frame"
   --      Some frames can need to get theses handler in order to Tracker      --
   --      moving works.                                                       --
   ------------------------------------------------------------------------------
-  _Addon.ObjectiveTrackerMouseDown = function(_, button)
+  _Addon.ObjectiveTrackerMouseDown = function(f, button)
     if button == "LeftButton" and not Options:Get("tracker-locked") and _Obj then
+      if not _Obj:MustBeInteractive(f) then
+        return
+      end
+
         _Obj.frame:StartMoving()
     end
   end
 
-  _Addon.ObjectiveTrackerMouseUp = function(_, button)
+  _Addon.ObjectiveTrackerMouseUp = function(f, button)
     if button == "LeftButton" and not Options:Get("tracker-locked") and _Obj then
+      if not _Obj:MustBeInteractive(f) then
+        return
+      end
+
       _Obj.frame:StopMovingOrSizing()
 
       local x = _Obj.frame:GetLeft()
@@ -209,10 +217,11 @@ class "ObjectiveTracker" inherit "Frame"
     thumb:SetWidth(8)
 
     -- content
-    local content = CreateFrame("Frame")
+    local content = CreateFrame("Frame", "EQT-ObjectiveTrackerFrameContent")
     --content:SetBackdrop(_Backdrops.Common)
     --content:SetBackdropBorderColor(0.1, 0.1, 0.1, 0)
-    --content:SetBackdropColor(0, 0, 0, 0.15)
+    --content:SetBackdropBorderColor(1, 0.1, 0.1, 1)
+    --content:SetBackdropColor(0, 0, 0, 0)
 
     scrollFrame:SetScrollChild(content)
     content:SetHeight(self.contentHeight)

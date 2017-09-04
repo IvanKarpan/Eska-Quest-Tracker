@@ -878,6 +878,59 @@ class "Frame"
     return self.frame:IsShown()
   end
 
+
+  __Arguments__ { Argument(Table, true)}
+  function MustBeInteractive(self, frame)
+
+    if not frame then
+      frame = self.frame
+    end
+    --[[]]
+    --local xTop = frame:GetLeft()
+    local yTop = frame:GetTop()
+
+    --local xBot = frame:GetRight()
+    local yBot = frame:GetBottom()
+
+    if yTop == nil or yBot == nil then
+      return false
+    end
+
+    local scrollFrame = _G["EQT-ObjectiveTrackerFrameScrollFrame"]
+
+
+    if not scrollFrame or not frame then
+      return false
+    end
+
+    -- if the frame is completely included in the tracker, it can be interactive
+    if yTop <= scrollFrame:GetTop() and yBot >= scrollFrame:GetBottom() then
+      return true
+    end
+
+    -- if the frame is completely out of tracker, it can't be interactive
+    if (yTop > scrollFrame:GetTop() and yBot > scrollFrame:GetTop()) or (yTop < scrollFrame:GetBottom() and yBot < scrollFrame:GetBottom()) then
+      return false
+    end
+
+    local offsetTop = 0
+    local offsetBot = 0
+
+    -- Top check & compute
+    if yTop > scrollFrame:GetTop() and (yBot <= scrollFrame:GetTop() and yBot >= scrollFrame:GetBottom()) then
+      offsetTop =  scrollFrame:GetTop() - yTop
+    end
+
+    -- Bottom check & compute
+    if yBot < scrollFrame:GetBottom() and (yTop >= scrollFrame:GetBottom() and yTop <= scrollFrame:GetTop()) then
+      offsetBot = scrollFrame:GetBottom() - yBot
+    end
+
+
+    return frame:IsMouseOver(offsetTop, offsetBot, 0, 0)
+
+  end
+
   __Static__() function RefreshAll()
     for obj in pairs(_FrameCache) do
       if obj.Refresh then
@@ -1014,17 +1067,27 @@ class "Theme" extend "ISerializable"
     end
 
     if _Addon:GetCurrentTheme() and _Addon:GetCurrentTheme():HasFlag(frame.themeClassID, "hover", true) then
+      local function FrameOnHover(f)
+        if EQT.Frame:MustBeInteractive(f) then
+          Theme.SkinFrame(frame, nil, "hover")
+        else
+          Theme.SkinFrame(frame)
+        end
+      end
+
       if not frame:GetScript("OnEnter") then
-          frame:SetScript("OnEnter", function()
-            Theme.SkinFrame(frame, nil, "hover")
-          end)
+        frame:SetScript("OnEnter", function()
+          frame:SetScript("OnUpdate", FrameOnHover)
+        end)
       end
 
       if not frame:GetScript("OnLeave") then
         frame:SetScript("OnLeave", function()
+          frame:SetScript("OnUpdate", nil)
           Theme.SkinFrame(frame)
         end)
       end
+
 
       if not frame:GetScript("OnMouseDown") and not frame:GetScript("OnMouseUp") then
         frame:SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
