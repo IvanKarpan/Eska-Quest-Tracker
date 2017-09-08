@@ -48,6 +48,10 @@ class "ItemButton" inherit "Frame" extend "IReusable"
     self.frame:ClearAllPoints()
   end
 
+  function SetCooldown(self, start, duration)
+    self.frame.cooldown:SetCooldown(start, duration)
+  end
+
 
   __Static__() property "index" {
     Default = 1,
@@ -72,10 +76,13 @@ class "ItemButton" inherit "Frame" extend "IReusable"
     texture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     frame.texture = texture
 
+    local cooldown = CreateFrame("cooldown", nil, frame, "CooldownFrameTemplate")
+    cooldown:SetAllPoints(texture)
+    frame.cooldown = cooldown
+
     frame:SetScript("OnLeave", function(btn) GameTooltip:Hide() end)
 
-
-
+    ItemButton.index = ItemButton.index + 1
   end
 endclass "ItemButton"
 

@@ -139,3 +139,25 @@ end
 function OnEnable(self)
   _Addon.ItemBar.frame:SetPoint("TOPRIGHT", _Addon.ObjectiveTracker.frame, "TOPLEFT", -5, -20)
 end
+
+
+-- Update the items cooldown
+
+__SystemEvent__()
+function BAG_UPDATE_COOLDOWN(...)
+    if not _Addon.ItemBar then
+      return
+    end
+
+    for questID, itemButton in _Addon.ItemBar.items:GetIterator() do
+      local start, duration, enable = GetQuestLogSpecialItemCooldown(GetQuestLogIndexByID(questID))
+      if start then
+        CooldownFrame_Set(itemButton.frame.cooldown, start, duration, enable)
+        if duration > 0 and enable == 0 then
+          itemButton.frame.texture:SetVertexColor(0.4, 0.4, 0.4)
+        else
+          itemButton.frame.texture:SetVertexColor(1, 1, 1)
+        end
+      end
+    end
+end
