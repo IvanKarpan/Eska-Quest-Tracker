@@ -44,11 +44,13 @@ end
 
 __EnableAndDisableOnCondition__ "PLAYER_ENTERING_WORLD" "SCENARIO_POI_UPDATE" "SCENARIO_UPDATE"
 function EnableAndDisableOn(self)
+  -- Prevent the scenario module to be loaded in dungeon
+  local inInstance, type = IsInInstance()
+  if inInstance and (type == "party") then
+    return false
+  end
 
-  -- local true, "scenario", IsInInstance()
-  --return IsInScenario()
-  local _, type = IsInInstance()
-  return type == "scenario"
+  return IsInScenario()
 end
 
 
