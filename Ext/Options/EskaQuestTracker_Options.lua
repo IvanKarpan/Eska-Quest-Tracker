@@ -252,6 +252,13 @@ _Categories.Tracker = {
             }
           }
       },
+      showScrollbar = {
+          type = "toggle",
+          name = "Show scrollbar",
+          order = 5,
+          get = function() return Options:Get("tracker-show-scrollbar") end,
+          set = function(_, value) Options:Set("tracker-show-scrollbar", value) end,
+      },
       blizzardTracker = {
         type = "group",
         name = "Blizzard objective tracker",

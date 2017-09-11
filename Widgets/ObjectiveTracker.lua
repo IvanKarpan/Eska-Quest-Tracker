@@ -13,34 +13,81 @@ class "ObjectiveTracker" inherit "Frame"
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
   local function SetContentHeight(self, new, old, prop)
-
     -- Update the content size
     self.content:SetHeight(new)
 
-    -- check if the scrollbar is needed or not
-    local parentHeight = self.scrollFrame:GetHeight()
-    if new >= parentHeight then
-      self.isScrollbarShown = true
-    else
-      self.isScrollbarShown = false
-    end
-
+    -- Update the scroll bar visibility
+    self:UpdateScrollbarVisibility()
   end
 
-  local function SetScrollbarVisibility(self, new, old)
-    self.scrollFrame:ClearAllPoints()
-    self.scrollFrame:SetPoint("TOPLEFT")
+  local function ObjectiveTracker_OnScrollRangeChanged(self, xrange, yrange)
+  	local name = self:GetName();
+  	local scrollbar = self.ScrollBar or _G[name.."ScrollBar"];
+  	if ( not yrange ) then
+  		yrange = self:GetVerticalScrollRange();
+  	end
 
-    if new then
-      self.scrollbar:Show()
-      self.scrollFrame:SetPoint("BOTTOMRIGHT", self.scrollbar, "BOTTOMLEFT")
-    else
-      self.scrollbar:Hide()
-      self.scrollFrame:SetPoint("BOTTOMRIGHT")
-    end
+  	-- Accounting for very small ranges
+  	yrange = floor(yrange);
 
-    -- Update the content size
-    self.content:SetWidth(self.scrollFrame:GetWidth())
+  	local value = min(scrollbar:GetValue(), yrange);
+  	scrollbar:SetMinMaxValues(0, yrange);
+  	scrollbar:SetValue(value);
+
+  	local scrollDownButton = scrollbar.ScrollDownButton or _G[scrollbar:GetName().."ScrollDownButton"];
+  	local scrollUpButton = scrollbar.ScrollUpButton or _G[scrollbar:GetName().."ScrollUpButton"];
+  	local thumbTexture = scrollbar.ThumbTexture or _G[scrollbar:GetName().."ThumbTexture"];
+
+  	if ( yrange == 0 ) then
+  		if ( self.scrollBarHideable ) then
+  			scrollbar:Hide();
+  			scrollDownButton:Hide();
+  			scrollUpButton:Hide();
+  			thumbTexture:Hide();
+  		else
+  			scrollDownButton:Disable();
+  			scrollUpButton:Disable();
+  			scrollDownButton:Show();
+  			scrollUpButton:Show();
+  			if ( not self.noScrollThumb ) then
+  				thumbTexture:Show();
+  			end
+  		end
+  	else
+  		scrollDownButton:Show();
+  		scrollUpButton:Show();
+  		--scrollbar:Show();
+  		if ( not self.noScrollThumb ) then
+  			thumbTexture:Show();
+  		end
+  		-- The 0.005 is to account for precision errors
+  		if ( yrange - value > 0.005 ) then
+  			scrollDownButton:Enable();
+  		else
+  			scrollDownButton:Disable();
+  		end
+  	end
+
+  	-- Hide/show scrollframe borders
+  	local top = self.Top or name and _G[name.."Top"];
+  	local bottom = self.Bottom or name and _G[name.."Bottom"];
+  	local middle = self.Middle or name and _G[name.."Middle"];
+  	if ( top and bottom and self.scrollBarHideable ) then
+  		if ( self:GetVerticalScrollRange() == 0 ) then
+  			top:Hide();
+  			bottom:Hide();
+  		else
+  			top:Show();
+  			bottom:Show();
+  		end
+  	end
+  	if ( middle and self.scrollBarHideable ) then
+  		if ( self:GetVerticalScrollRange() == 0 ) then
+  			middle:Hide();
+  		else
+  			middle:Show();
+  		end
+  	end
   end
   ------------------------------------------------------------------------------
   --                         Global Handlers                                  --
@@ -94,6 +141,35 @@ class "ObjectiveTracker" inherit "Frame"
     end
   end
 
+
+  function SetScrollbarVisible(self, visible)
+    self.scrollFrame:ClearAllPoints()
+    self.scrollFrame:SetPoint("TOPLEFT")
+
+    if visible then
+      self.scrollbar:Show()
+      self.scrollFrame:SetPoint("BOTTOMRIGHT", self.scrollbar, "BOTTOMLEFT")
+    else
+      self.scrollbar:Hide()
+      self.scrollFrame:SetPoint("BOTTOMRIGHT")
+    end
+
+    -- Update the content size
+    self.content:SetWidth(self.scrollFrame:GetWidth())
+  end
+
+
+  function UpdateScrollbarVisibility(self)
+    -- check if the scrollbar is needed or not
+    local parentHeight = self.scrollFrame:GetHeight()
+    local isNeeded = self.contentHeight >= parentHeight
+    if isNeeded and Options:Get("tracker-show-scrollbar") then
+      self:SetScrollbarVisible(true)
+    else
+      self:SetScrollbarVisible(false)
+    end
+  end
+
   function Refresh(self)
     Theme.SkinFrame(self.frame)
 
@@ -121,41 +197,7 @@ class "ObjectiveTracker" inherit "Frame"
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
-  property "isScrollbarShown" { TYPE = Boolean, DEFAULT = true, HANDLER = SetScrollbarVisibility }
   property "contentHeight" { TYPE = Number, DEFAULT = 50, HANDLER = SetContentHeight }
-  -- the width used by the tracker
-  --[[__Static__() property "width" {
-    TYPE = Number,
-    SET = function(self, width) _DB.Tracker.width = width ; _Obj.width = width
-    end,
-    GET = function(self) return _DB.Tracker.width end,
-  }
-  -- The height used by the tracker
-  __Static__() property "height" {
-    TYPE = Number,
-    -- SET = function(self, height) _DB.Tracker.height = height ; _Obj.height = height end,
-    SET = function(self, height) _Obj.height = height end,
-    GET = function(self) return _DB.Tracker.height end,
-  }
-
-  __Static__() property "locked" {
-    TYPE = Boolean,
-    SET = function(self, locked) _DB.Tracker.locked = locked ; _Obj:SetLocked(locked) end,
-    GET = function(self) return _DB.Tracker.locked end
-  }
-
-  __Static__() property "backgroundColor" {
-    TYPE = Table,
-    SET = function(self, color)  _DB.Tracker.backdropColor = color ; _Obj.frame:SetBackdropColor(color.r, color.g, color.b, color.a) end,
-    GET = function() return _DB.Tracker.backdropColor end,
-  }
-
-  __Static__() property "borderColor" {
-    TYPE = Table,
-    SET = function(self, color) _DB.Tracker.backdropBorderColor = color ; _Obj.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a) end,
-    GET = function() return _DB.Tracker.backdropBorderColor end,
-  }--]]
-  -- Theme
   property "tID" { DEFAULT = "tracker" }
 
   ------------------------------------------------------------------------------
@@ -179,10 +221,6 @@ class "ObjectiveTracker" inherit "Frame"
       frame:SetPoint("CENTER")
     end
 
-
-
-    -- Restore the position contained in the DB if exists
-
     -- Drag and move functions
     frame:SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
     frame:SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
@@ -192,6 +230,7 @@ class "ObjectiveTracker" inherit "Frame"
 
     local scrollFrame = CreateFrame("ScrollFrame", "EQT-ObjectiveTrackerFrameScrollFrame", frame, "UIPanelScrollFrameTemplate")
     scrollFrame:SetAllPoints()
+    scrollFrame:SetScript("OnScrollRangeChanged", ObjectiveTracker_OnScrollRangeChanged)
 
     -- Hide the scroll bar and its buttons
     local scrollbarName = scrollFrame:GetName()
@@ -238,34 +277,16 @@ class "ObjectiveTracker" inherit "Frame"
 
     _Obj = self
 
-    -- OnWidthChanged event handler
     function self:OnWidthChanged(new, old)
-      self.frame:SetWidth(new)
-
-      -- Update scroll frame Anchor
-      self.scrollFrame:ClearAllPoints()
-      self.scrollFrame:SetPoint("TOPLEFT")
-
-      if self.isScrollbarShown then
-        self.scrollFrame:SetPoint("BOTTOMRIGHT", self.scrollbar, "BOTTOMLEFT")
-      else
-        self.scrollFrame:SetPoint("BOTTOMRIGHT")
-      end
-
-      self.content:SetWidth(self.scrollFrame:GetWidth())
+      self:UpdateScrollbarVisibility()
     end
 
     -- OnHeightChanged event hander
     function self:OnHeightChanged(new, old)
       self.frame:SetHeight(new)
 
-      -- check if the scrollbar is needed or not
-      local parentHeight = self.scrollFrame:GetHeight()
-      if self.contentHeight >= parentHeight then
-        self.isScrollbarShown = true
-      else
-        self.isScrollbarShown = false
-      end
+      -- Update the scroll bar visibility
+      self:UpdateScrollbarVisibility()
     end
   end
 
@@ -279,17 +300,11 @@ class "ObjectiveTracker" inherit "Frame"
 endclass "ObjectiveTracker"
 
 function OnLoad(self)
-  --_DB:SetDefault("Tracker", {
-    --width = 325,
-    --height = 300,
-    --locked = false,
-    --backdropColor = { r = 0, g = 0, b = 0, a = 0.5 },
-    --backdropBorderColor = { r = 0, g = 0, b = 0},
-  --})
   -- Options
   Options:Register("tracker-height", 300, "tracker/setHeight")
   Options:Register("tracker-width", 325, "tracker/setWidth")
   Options:Register("tracker-locked", false, "tracker/setLocked")
+  Options:Register("tracker-show-scrollbar", true, "tracker/showScrollbar")
 
     -- Create and init the objetive tracker that will contains all the blocks (quests, scenario, keystone, ...)
   local tracker = ObjectiveTracker()
@@ -308,4 +323,5 @@ function OnLoad(self)
   CallbackHandlers:Register("tracker/setLocked", CallbackObjectHandler(tracker, ObjectiveTracker.SetLocked))
   CallbackHandlers:Register("tracker/setHeight", CallbackPropertyHandler(tracker, "height"))
   CallbackHandlers:Register("tracker/setWidth", CallbackPropertyHandler(tracker, "width"))
+  CallbackHandlers:Register("tracker/showScrollbar", CallbackObjectHandler(tracker, ObjectiveTracker.UpdateScrollbarVisibility))
 end

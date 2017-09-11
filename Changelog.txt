@@ -1,3 +1,8 @@
+[1.3.6]
+- NEW: Added an option to hide the scrollbar in the tracker category.
+NOTE: If you use the Transparence theme, i advise you to hide the scrollbar to avoid some width issues with the tracker when
+the scrolling system become active or inactive.
+
 [1.3.5]
 - FIX: An issue where the scenario module isn't loaded in the invasion scenarios.
 
