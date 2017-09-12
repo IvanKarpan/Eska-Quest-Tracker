@@ -168,18 +168,6 @@ class "QuestBlock" inherit "Block"
     end,
     GET = function(self) return _DB.Quests.filteringByZone end
   }
-
-  __Static__() property "useSortMethods" {
-    TYPE = Boolean,
-    GET = function(self) return _DB.Quest.sortByDistance end
-  }
-
-  __Static__() property "sortByDistance" {
-    SET = function(self, sortedByDistance)
-      _DB.Quests.sortByDistance = sortByDistance
-    end,
-    GET = function(self) return _DB.Quests.sortByDistance end
-  }
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------

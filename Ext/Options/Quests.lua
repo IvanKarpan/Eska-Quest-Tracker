@@ -32,6 +32,14 @@ _Categories.Quests = {
           width = "full",
           get = function() return QuestBlock.showOnlyQuestsInZone end,
           set = function(_, filteringByZone) QuestBlock.showOnlyQuestsInZone = filteringByZone end,
+        },
+        sortQuestsByDistance = {
+          type = "toggle",
+          name = "Sort the quests by distance",
+          order = 4,
+          width = "full",
+          get = function() return Options:Get("sort-quests-by-distance") end,
+          set = function(_, value) Options:Set("sort-quests-by-distance", value) end,
         }
       }
     }

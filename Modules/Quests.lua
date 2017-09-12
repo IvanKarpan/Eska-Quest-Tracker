@@ -26,11 +26,12 @@ QUESTS_CACHE  = {}
 -- ========================================================================== --
 function OnLoad(self)
   _DB:SetDefault("Quests", {
-    sortByDistance = true,
     filteringByZone = false,
   })
-
-
+  -- Register the options
+  Options:Register("sort-quests-by-distance", true, "quests/sortingByDistance")
+  -- Register the callbacks for options
+  CallbackHandlers:Register("quests/sortingByDistance", CallbackHandler(function(enabled) if enabled then self:UpdateDistance() end end))
 end
 
 __Thread__()
@@ -304,7 +305,7 @@ do
 
   __Thread__()
   function UpdateDistance()
-    while QuestBlock.sortByDistance do
+    while Options:Get("sort-quests-by-distance") do
       for index, quest in _QuestBlock.quests:GetIterator() do
         -- If the quest is a legion assault, set it in first.
         if IsLegionAssaultQuest(quest.id) then

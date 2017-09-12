@@ -1,5 +1,6 @@
 [1.3.6]
-- NEW: Added an option to hide the scrollbar in the tracker category.
+- NEW: Added an option to disable the quest sorting by distance (quests category).
+- NEW: Added an option to hide the scrollbar (tracker category).
 NOTE: If you use the Transparence theme, i advise you to hide the scrollbar to avoid some width issues with the tracker when
 the scrolling system become active or inactive.
 
