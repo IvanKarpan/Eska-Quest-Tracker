@@ -194,7 +194,8 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       end
 
       if button == "LeftButton" then
-        QuestLogPopupDetailFrame_Show(GetQuestLogIndexByID(self.id))
+        ShowQuestLog();
+        QuestMapFrame_ShowQuestDetails(self.id);
       elseif button == "RightButton" then
         if _Addon.MenuContext:IsShown() then
           _Addon.MenuContext:Hide()
@@ -206,6 +207,22 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
           _Addon.MenuContext:AddItem("Join a group", nil, function() GroupFinder:JoinGroup(self.id) end)
           _Addon.MenuContext:AddItem(MenuItemSeparator())
           _Addon.MenuContext:AddItem("Leave the group", nil, GroupFinder.LeaveGroup)
+          _Addon.MenuContext:AddItem(MenuItemSeparator())
+          if not QuestUtils_IsQuestWorldQuest(self.id) then
+            if GetSuperTrackedQuestID() == self.id then
+              _Addon.MenuContext:AddItem("Stop tracking", nil, function() SetSuperTrackedQuestID(0); QuestSuperTracking_ChooseClosestQuest() end)
+            else
+              _Addon.MenuContext:AddItem("Track", nil, function() SetSuperTrackedQuestID(self.id) end)
+            end
+          end
+          _Addon.MenuContext:AddItem("Show details", nil, function()
+            local questLogIndex = GetQuestLogIndexByID(self.id);
+            if ( IsQuestComplete(self.id) and GetQuestLogIsAutoComplete(questLogIndex) ) then
+              ShowQuestComplete(questLogIndex);
+            else
+              QuestLogPopupDetailFrame_Show(questLogIndex)
+            end
+          end)
           _Addon.MenuContext:AddItem(MenuItemSeparator())
           _Addon.MenuContext:AddItem("Help", nil, function() print("Put a Help handler here !") end).disabled = true
         end

@@ -47,6 +47,11 @@ function OnEnable(self)
   self:UpdateDistance()
   EQT_SHOW_ONLY_QUESTS_IN_ZONE()
   UPDATE_BLOCK_VISIBILITY()
+
+  -- [FIX] Super track the closest quest for the players having not the blizzad objective quest.
+  if GetSuperTrackedQuestID() == 0 then
+    QuestSuperTracking_ChooseClosestQuest()
+  end
 end
 
 function OnDisable(self)
