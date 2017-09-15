@@ -283,7 +283,7 @@ _Categories.Tracker = {
 _Categories.MenuContext = {
   type = "group",
   name = "Menu context",
-  order = 3,
+  order = 4,
   args = {
     menuContext = {
       type = "select",
@@ -301,6 +301,74 @@ _Categories.MenuContext = {
   }
 }
 
+-- ========================================================================== --
+-- == ITEM BAR CATEGORY
+-- ========================================================================== --
+_Categories.ItemBar = {
+  type = "group",
+  name = "Item bar",
+  order = 3,
+  args = {
+    position = {
+      type = "select",
+      name = "Position",
+      order = 1,
+      values = function()
+        local t = {
+          ["TOPLEFT"] = "Top Left",
+          ["TOPRIGHT"] = "Top Right",
+          ["BOTTOMLEFT"] = "Bottom Left",
+          ["BOTTOMRIGHT"] = "Bottom Right"
+        }
+        return t
+      end,
+      get = function() return Options:Get("item-bar-position") end,
+      set = function(_, value) Options:Set("item-bar-position", value) end
+    },
+    directionGrowth = {
+      type = "select",
+      name = "Direction growth",
+      order = 2,
+      values = function()
+        local t = {
+          ["RIGHT"] = "Left",
+          ["LEFT"] = "Right",
+          ["UP"] = "Up",
+          ["DOWN"] = "Down",
+        }
+        return t
+      end,
+      get = function() return Options:Get("item-bar-direction-growth") end,
+      set = function(_, value) Options:Set("item-bar-direction-growth", value) end
+    },
+    offsetPos = {
+      type = "group",
+      name = "Position offset",
+      inline = true,
+      order = 3,
+      args = {
+        x = {
+          type = "range",
+          name = "x",
+          min = -200,
+          max = 200,
+          step = 1,
+          get = function() return Options:Get("item-bar-offset-x") end,
+          set = function(_, value) Options:Set("item-bar-offset-x", value) end
+        },
+        y = {
+          type = "range",
+          name = "y",
+          min = -200,
+          max = 200,
+          step = 1,
+          get = function() return Options:Get("item-bar-offset-y") end,
+          set = function(_, value) Options:Set("item-bar-offset-y", value) end,
+        }
+      }
+    }
+  }
+}
 
 -- ========================================================================== --
 -- == GROUP FINDER CATEGORY
@@ -308,7 +376,7 @@ _Categories.MenuContext = {
 _Categories.GroupFinders = {
   type = "group",
   name = "Group finders",
-  order = 4,
+  order = 5,
   args = {
     groupFinders = {
       type = "select",
