@@ -72,7 +72,7 @@ class "GroupFinderAddon"
     local currentGFA = Database:GetValue("currentGroupFinderAddon")
 
     local firstName = ""
-    local firstObject = ""
+    local firstObject
     for name, groupFinder in self:GetIterator() do
       firstObject = groupFinder
       firstName = name

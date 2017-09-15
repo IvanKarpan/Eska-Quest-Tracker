@@ -54,22 +54,26 @@ class "ItemBar" inherit "Frame"
     end)
   end
 
-
   function Draw(self)
     local previousFrame
     local height = 0
     local width = 0
     local index = 0
 
-    --[[
-    -- @TODO Do the directionnal growth
-    local directionGrowth = ItemBar.directionGrowth
-    if directionGrowth == "DOWN" or directionGrowth == "UP" then
+    local inversePoint = {
+      ["TOP"] = "BOTTOM",
+      ["BOTTOM"] = "TOP",
+      ["RIGHT"] = "LEFT",
+      ["LEFT"] = "RIGHT"
+    }
 
-    elseif directionGrowth == "LEFT" or directionGrowth == "RIGHT" then
 
+    local directionGrowth = Options:Get("item-bar-direction-growth")
+    if directionGrowth == "DOWN" then
+      directionGrowth = "BOTTOM"
+    elseif directionGrowth == "UP" then
+      directionGrowth = "TOP"
     end
-    --]]
 
       for id, questItem in self.items:GetIterator() do
         index = index + 1
@@ -78,11 +82,11 @@ class "ItemBar" inherit "Frame"
         questItem:SetParent(self.frame)
         questItem.frame:Show()
         if index == 1 then
-          questItem.frame:SetPoint("TOP")
+          questItem.frame:SetPoint(inversePoint[directionGrowth])
           questItem.height = self.width - 2
           questItem.width = self.width - 2
         else
-          questItem.frame:SetPoint("TOP", previousFrame, "BOTTOM", 0, -2)
+          questItem.frame:SetPoint(inversePoint[directionGrowth], previousFrame, directionGrowth, 0, -2)
           questItem.height = self.width - 2
           questItem.width = self.width - 2
         end
@@ -128,21 +132,69 @@ class "ItemBar" inherit "Frame"
 
 endclass "ItemBar"
 
+
+local function GetAnchorPoint(position, directionGrowth)
+  local anchorPoints = {
+    ["TOPLEFT"] = {
+      ["HORIZONTAL"] = "BOTTOMLEFT",
+      ["VERTICAL"] = "TOPRIGHT",
+    },
+    ["TOPRIGHT"] = {
+      ["HORIZONTAL"] = "BOTTOMRIGHT",
+      ["VERTICAL"] = "TOPLEFT",
+    },
+    ["BOTTOMLEFT"] = {
+      ["HORIZONTAL"] = "TOPLEFT",
+      ["VERTICAL"] = "BOTTOMRIGHT",
+    },
+    ["BOTTOMRIGHT"] = {
+      ["HORIZONTAL"] = "TOPRIGHT",
+      ["VERTICAL"] = "BOTTOMLEFT",
+    }
+  }
+
+  if directionGrowth == "UP" or directionGrowth == "DOWN" then
+    return anchorPoints[position]["VERTICAL"]
+  elseif directionGrowth == "RIGHT" or directionGrowth == "LEFT" then
+    return anchorPoints[position]["HORIZONTAL"]
+  end
+end
+
 function OnLoad(self)
   local itemBar = ItemBar()
   _Addon.ItemBar = itemBar
+
+
+  Options:Register("item-bar-position", "TOPLEFT", "itemBar/UpdateAllPosition")
+  Options:Register("item-bar-direction-growth", "DOWN", "itemBar/UpdateAllPosition")
+  Options:Register("item-bar-offset-x", -5, "itemBar/UpdateAllPosition")
+  Options:Register("item-bar-offset-y", -20, "itemBar/UpdateAllPosition")
+
+  CallbackHandlers:Register("itemBar/UpdateAllPosition", CallbackHandler(function()
+    local position = Options:Get("item-bar-position")
+    local offsetX = Options:Get("item-bar-offset-x")
+    local offsetY = Options:Get("item-bar-offset-y")
+    local directionGrowth = Options:Get("item-bar-direction-growth")
+    _Addon.ItemBar.frame:ClearAllPoints()
+    _Addon.ItemBar.frame:SetPoint(GetAnchorPoint(position, directionGrowth), _Addon.ObjectiveTracker.frame, position, offsetX, offsetY)
+    _Addon.ItemBar:Draw()
+  end))
 
   -- _Addon.ItemBar.frame:SetPoint("TOPRIGHT", _Addon.ObjectiveTracker, "TOPLEFT")
 
 end
 
 function OnEnable(self)
-  _Addon.ItemBar.frame:SetPoint("TOPRIGHT", _Addon.ObjectiveTracker.frame, "TOPLEFT", -5, -20)
+  local position = Options:Get("item-bar-position")
+  local offsetX = Options:Get("item-bar-offset-x")
+  local offsetY = Options:Get("item-bar-offset-y")
+  local directionGrowth = Options:Get("item-bar-direction-growth")
+  --_Addon.ItemBar.frame:SetPoint("TOPRIGHT", _Addon.ObjectiveTracker.frame, "TOPLEFT", -5, -20)
+  _Addon.ItemBar.frame:SetPoint(GetAnchorPoint(position, directionGrowth), _Addon.ObjectiveTracker.frame, position, offsetX, offsetY)
 end
 
 
 -- Update the items cooldown
-
 __SystemEvent__()
 function BAG_UPDATE_COOLDOWN(...)
     if not _Addon.ItemBar then
