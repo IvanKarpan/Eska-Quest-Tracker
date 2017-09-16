@@ -1,3 +1,7 @@
+[1.3.8]
+  - FIX: An issue where the quest level isn't displayed when it should be.
+  - NEW: Added an option to use the difficulty color for quest level (enabled by default).
+
 [1.3.7]
   - NEW: Added new options for changing the item bar position and its direction growth.
   - FIX: An error lua triggered when group finder actions are used and that no addon of this type is enabled.

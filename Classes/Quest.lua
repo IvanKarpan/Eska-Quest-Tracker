@@ -19,6 +19,10 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       Theme.SkinText(self.frame.headerName, new)
     elseif prop == "level" then
       Theme.SkinText(self.frame.headerLevel, new)
+      if Options:Get("quest-color-level-by-difficulty") then
+        local color = GetQuestDifficultyColor(new)
+        self.frame.headerLevel:SetTextColor(color.r, color.g, color.b)
+      end
     elseif prop == "distance" then
       self.OnDistanceChanged(self, new)
     end
@@ -68,26 +72,32 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
   function ShowLevel(self)
     self.frame.headerLevel:Show()
+    self.frame.headerName:SetPoint("RIGHT", self.frame.headerLevel, "LEFT")
   end
 
   function HideLevel(self)
     self.frame.headerLevel:Hide()
+    self.frame.headerName:SetPoint("RIGHT")
   end
 
 
   function Refresh(self)
     Theme.SkinFrame(self.frame)
     Theme.SkinFrame(self.frame.header)
-
     Theme.SkinText(self.frame.headerName, self.name)
-    Theme.SkinText(self.frame.headerLevel, self.level)
 
-    if Quest.showLevel then
+
+    if Options:Get("quest-show-level") then
       self:ShowLevel()
+      Theme.SkinText(self.frame.headerLevel, self.level)
+
+      if Options:Get("quest-color-level-by-difficulty") then
+        local color = GetQuestDifficultyColor(self.level)
+        self.frame.headerLevel:SetTextColor(color.r, color.g, color.b)
+      end
     else
       self:HideLevel()
     end
-
   end
 
   function Reset(self)
@@ -285,7 +295,11 @@ Theme.RegisterRefreshHandler("quest", Quest.RefreshAll)
 --============================================================================--
 function OnLoad(self)
   Options:Register("quest-show-id", false)
-  Options:Register("quest-show-level", true)
+  Options:Register("quest-show-level", true, "quest/refresh")
+  Options:Register("quest-color-level-by-difficulty", true, "quest/refresh")
+
+
+  CallbackHandlers:Register("quest/refresh", CallbackHandler(Quest.RefreshAll), "refresher")
 
   -- Register this class in the object manager
   _ObjectManager:Register(Quest)
