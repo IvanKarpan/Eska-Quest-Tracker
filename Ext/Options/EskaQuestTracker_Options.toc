@@ -15,4 +15,5 @@ Scenario.lua
 WorldQuests.lua
 Dungeon.lua
 Keystone.lua
+Achievements.lua
 Themes.lua

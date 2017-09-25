@@ -305,10 +305,42 @@ endclass "Objective"
 Objective:InstallOptions()
 Theme.RegisterRefreshHandler("objective", Objective.RefreshAll)
 
+class "DottedObjective" inherit "Frame" extend "IReusable"
+	_DottedObjectiveCache = setmetatable( {}, { __mode = "k"})
+	function DottedObjective(self)
+		Super(self)
+
+		local frame = CreateFrame("Frame")
+		frame:SetHeight(8)
+
+		local text = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+		text:SetFont(text:GetFont(), 18)
+		text:SetText("...")
+		text:SetAllPoints()
+		text:SetJustifyH("CENTER")
+		text:SetJustifyV("BOTTOM")
+
+		frame.text = text
+
+		self.frame = frame
+		self.height = 8
+		self.baseHeight = self.height
+
+		_DottedObjectiveCache[self] = true
+	end
+
+	function Reset(self)
+		self:ClearAllPoints()
+		self:SetParent(nil)
+		self:Hide()
+	end
+endclass "DottedObjective"
+
 --============================================================================--
 -- OnLoad Handler
 --============================================================================--
 function OnLoad(self)
 	-- Register this class in the object manager
 	_ObjectManager:Register(Objective)
+	_ObjectManager:Register(DottedObjective)
 end

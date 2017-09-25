@@ -10,7 +10,7 @@ namespace "EQT"
 EskaTheme = Theme()
 EskaTheme.name    = "Eska"
 EskaTheme.author  = "Skamer"
-EskaTheme.version = "1.2.3"
+EskaTheme.version = "1.4.0"
 EskaTheme.stage   = "Release"
 _Addon:RegisterTheme(EskaTheme)
 -- ========================================================================== --
@@ -149,8 +149,14 @@ EskaTheme:SetProperty("questHeader.name", "text-font", "PT Sans Narrow Bold")
 EskaTheme:SetProperty("questHeader.name", "text-color", { r = 1, g = 0.38, b = 0 })
 EskaTheme:SetProperty("questHeader.name", "text-transform", "uppercase")
 EskaTheme:SetProperty("questHeader.name", "text-offsetX", 10)
--- EskaTheme:SetScript("questHeader.*", "OnEnter", [[
--- function(f)
---   f:SetBackdropColor(0.35, 0.89, 0.6)
---end
--- ]])
+-- ========================================================================== --
+-- == Achievement properties
+-- ========================================================================== --
+EskaTheme:SetProperty("achievement.*", "text-font", "DejaVuSansCondensed Bold")
+EskaTheme:SetProperty("achievement.*", "text-size", 10)
+EskaTheme:SetProperty("achievement.*", "text-transform", "none")
+EskaTheme:SetProperty("achievement.*", "text-color", { r = 1.0, g = 191/255, b = 0})
+EskaTheme:SetProperty("achievement", "background-color", { r = 0, g = 0, b = 0, a = 0.3})
+EskaTheme:SetProperty("achievement.header", "background-color", { r = 0, g = 0, b = 0, a = 0.4 })
+EskaTheme:SetProperty("achievement.header[@hover]", "background-color", { r = 0, g = 148/255, b = 1, a = 0.4 })
+EskaTheme:SetProperty("achievement.icon", "background-color", { r = 0, g = 0, b = 0})

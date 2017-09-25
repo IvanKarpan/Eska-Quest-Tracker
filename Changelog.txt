@@ -1,34 +1,5 @@
-[1.3.8]
-  - FIX: An issue where the quest level isn't displayed when it should be.
-  - NEW: Added an option to use the difficulty color for quest level (enabled by default).
-
-[1.3.7]
-  - NEW: Added new options for changing the item bar position and its direction growth.
-  - FIX: An error lua triggered when group finder actions are used and that no addon of this type is enabled.
-
-[1.3.6]
-- NEW: Added an option to disable the quest sorting by distance (quests category).
-- NEW: Added an option to hide the scrollbar (tracker category).
-- NEW: Added two new actions: "Track/Stop Tracking" and "Show details" in the quest menu context. When you stop tracking a quest, the closest one will be automatically tracked.
-- CHANGE: The left click on a quest will now display the quest map (allowing to see directly the zone where the objectives are and the details). The old behavior
-has been moved to "Show details" action in the menu context.
-- FIX: An issue where the closest quest isn't tracked (shown by a yellow arrow on the minimap) at the first loading when the blizzard objective tracker is completely disabled.
-NOTE: If you use the Transparence theme, i advise you to hide the scrollbar to avoid some width issues with the tracker when
-the scrolling system become active or inactive.
-
-[1.3.5]
-- FIX: An issue where the scenario module isn't loaded in the invasion scenarios.
-
-[1.3.4]
-- FIX: The quest item buttons should now display their cooldown timer.
-
-[1.3.3]
-* tagged as release
-
-- NEW: Integrated the group finder addons in the tracker (compatible with WorldQuestGroupFinder, WorldQuestGroupAssistant and WorldQuestTracker).
-Right click on a quest/world quest name to open the menu context, allowing you to access to their features.
-- FIX: An issue where the width of world quest has a value higher than it should be.
-- FIX: An issue where the quests are always clickable even when they are hidden by the scrolling system.
-- The system handling the settings has been reworked.
-
-More info on the new features: https://wow.curseforge.com/projects/eska-quest-tracker/pages/patch-changes-overview/13
+[1.4.0]
+- NEW: Implemented the achievement tracker.
+- NEW: Added the options related to achievements.
+- Updated Eska & Transparence themes to include achievements.
+- API: Added __EnablingOnCondition__ attribute for modules.

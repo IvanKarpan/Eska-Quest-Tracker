@@ -10,7 +10,7 @@ namespace "EQT"
 TransparenceTheme = Theme()
 TransparenceTheme.name     = "Transparence"
 TransparenceTheme.author   = "Skamer"
-TransparenceTheme.version  = "1.2.3"
+TransparenceTheme.version  = "1.4.0"
 TransparenceTheme.stage    = "Release"
 _Addon:RegisterTheme(TransparenceTheme)
 -- ========================================================================== --
@@ -139,3 +139,14 @@ TransparenceTheme:SetProperty("questHeader.name", "text-font", "PT Sans Narrow B
 TransparenceTheme:SetProperty("questHeader.name", "text-color", { r = 1, g = 0.38, b = 0 })
 TransparenceTheme:SetProperty("questHeader.name", "text-transform", "uppercase")
 TransparenceTheme:SetProperty("questHeader.name", "text-offsetX", 10)
+-- ========================================================================== --
+-- == Achievement properties
+-- ========================================================================== --
+TransparenceTheme:SetProperty("achievement.*", "text-font", "DejaVuSansCondensed Bold")
+TransparenceTheme:SetProperty("achievement.*", "text-size", 10)
+TransparenceTheme:SetProperty("achievement.*", "text-transform", "none")
+TransparenceTheme:SetProperty("achievement.*", "text-color", { r = 1.0, g = 191/255, b = 0})
+TransparenceTheme:SetProperty("achievement", "background-color", { r = 0, g = 0, b = 0, a = 0.3})
+TransparenceTheme:SetProperty("achievement.header", "background-color", { r = 0, g = 0, b = 0, a = 0.4 })
+TransparenceTheme:SetProperty("achievement.header[@hover]", "background-color", { r = 0, g = 148/255, b = 1, a = 0.4 })
+TransparenceTheme:SetProperty("achievement.icon", "background-color", { r = 1, g = 233/255, b = 127/255})

@@ -168,21 +168,57 @@ class "MenuContext" inherit "Frame"
     self.frame:ClearAllPoints()
     self.frame:SetPoint(p.fromPoint, self.arrow, p.toPoint, p.offsetX, p.offsetY)
 
-    if self.destFrame then
-      self:AnchorTo(self.destFrame)
-    end
+    self:UpdateAnchorPoint()
   end
 
+  __Arguments__ { Argument(Table) }
   function AnchorTo(self, frame)
-    self.arrow:ClearAllPoints()
+    return self:AnchorTo(frame, frame, frame, frame)
+  end
 
-    local relativePoint = _ARROW_POINTS[self.orientation].toPoint
+  __Arguments__ { Argument(Table), Argument(Table), Argument(Table, true), Argument(Table, true) }
+  function AnchorTo(self, frameWhenRight, frameWhenLeft, frameWhenTop, frameWhenBottom)
+    self:SetAnchorFrame("RIGHT", frameWhenRight)
+    self:SetAnchorFrame("LEFT", frameWhenLeft)
+    self:SetAnchorFrame("TOP", frameWhenTop)
+    self:SetAnchorFrame("BOTTOM", frameWhenBottom)
 
-    self.arrow:SetPoint(self.orientation, frame, relativePoint)
+    return self
+  end
 
-    if not self.destFrame or self.destFrame ~= frame then
-      self.destFrame = frame
+
+  __Arguments__ { String, Argument(Table, true)}
+  function SetAnchorFrame(self, orientation, frame)
+    self.anchorFrames[orientation] = frame
+  end
+
+  __Arguments__ {}
+  function ClearAnchorFrames(self)
+    self:SetAnchorFrame("RIGHT", nil)
+    self:SetAnchorFrame("LEFT", nil)
+    self:SetAnchorFrame("TOP", nil)
+    self:SetAnchorFrame("BOTTOM", nil)
+    return self
+  end
+
+  __Arguments__ {}
+  function UpdateAnchorPoint(self)
+    local frame = self.anchorFrames[self.orientation]
+    if not frame then
+      if self.anchorFrames["RIGHT"] then
+        frame = self.anchorFrames["RIGHT"]
+      elseif self.anchorFrames["LEFT"] then
+        frame = self.anchorFrames["LEFT"]
+      end
     end
+
+    if not frame then
+      return
+    end
+
+    self.arrow:ClearAllPoints()
+    local relativePoint = _ARROW_POINTS[self.orientation].toPoint
+    self.arrow:SetPoint(self.orientation, frame, relativePoint)
   end
 
   __Arguments__ { BaseMenuItem }
@@ -260,8 +296,6 @@ class "MenuContext" inherit "Frame"
   end
 
   property "orientation" { TYPE = String, DEFAULT = "RIGHT",  HANDLER = UpdateProps }
-
-
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -341,6 +375,7 @@ class "MenuContext" inherit "Frame"
     self.height = self.baseHeight
 
     self.items = List()
+    self.anchorFrames = {}
 
     self:UpdateArrowOrientation()
     self.orientation = Options:Get("menu-context-orientation")

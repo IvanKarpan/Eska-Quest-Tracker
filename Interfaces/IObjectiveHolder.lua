@@ -51,6 +51,38 @@ interface "IObjectiveHolder"
     return self.objectives[index]
   end
 
+  function ShowDotted(self)
+    if not self.dotted then
+      self.dotted = _ObjectManager:Get(DottedObjective)
+    end
+
+    if self.numObjectives > 0 then
+      local obj = self.objectives[self.numObjectives]
+      self.dotted:SetParent(self.frame)
+      self.dotted.frame:SetPoint("TOPLEFT", obj.frame, "BOTTOMLEFT")
+      self.dotted.frame:SetPoint("TOPRIGHT", obj.frame, "BOTTOMRIGHT")
+    end
+
+      self.dotted:Show()
+      self.height = self.height + self.dotted.height
+  end
+
+  function HideDotted(self)
+    if not self.dotted then
+      return
+    end
+
+    if not self.dotted:IsShown() then
+      return
+    end
+
+
+    self.dotted:Hide()
+    self.height = self.height - self.dotted.height
+    self.dotted.isReusable = true
+    self.dotted = nil
+  end
+
 function DrawObjectives(self, f, custom)
     if not f then return end
 
@@ -69,10 +101,13 @@ function DrawObjectives(self, f, custom)
         objective.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT")
         objective.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
       end
-
       height = height + objective.height
       previousFrame = objective.frame
     end
+    if self.dotted and self.dotted:IsShown() then
+      height = height + self.dotted.height
+    end
+
     self.height = self.baseHeight + height -- +  5
 end
 

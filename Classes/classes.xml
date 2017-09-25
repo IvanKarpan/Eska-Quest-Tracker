@@ -13,4 +13,5 @@
   <Script file="Dungeon.lua"/>
   <Script file="Keystone.lua"/>
   <Script file="BonusObjectives.lua"/>
+  <Script file="Achievement.lua"/>
 </Ui>

@@ -211,7 +211,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
           _Addon.MenuContext:Hide()
         else
           _Addon.MenuContext:Show()
-          _Addon.MenuContext:AnchorTo(headerFrame)
+          _Addon.MenuContext:ClearAnchorFrames():AnchorTo(headerFrame):UpdateAnchorPoint()
           _Addon.MenuContext:Clear()
           _Addon.MenuContext:AddItem("Create a group", nil, function() GroupFinder:CreateGroup(self.id) end)
           _Addon.MenuContext:AddItem("Join a group", nil, function() GroupFinder:JoinGroup(self.id) end)
