@@ -1,5 +1,5 @@
 -- ========================================================================== --
--- 										 EskaQuestTracker                                       --
+-- 										    EskaQuestTracker                                    --
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
@@ -20,13 +20,7 @@ function OnLoad(self)
   Options:Register("achievement-show-description", true, "achievements/updateAll")
 
   -- Callback
-  CallbackHandlers:Register("achievements/updateAll", CallbackHandler(function()
-    local trackedAchievements = { GetTrackedAchievements() }
-    for i = 1, #trackedAchievements do
-      local achievementID = trackedAchievements[i]
-      _M:UpdateAll()
-    end
-  end))
+  CallbackHandlers:Register("achievements/updateAll", CallbackHandler(function() _M:UpdateAll() end))
 end
 
 function OnEnable(self)
