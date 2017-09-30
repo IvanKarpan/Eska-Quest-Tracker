@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.4.1"
+Scorpio                   "EskaQuestTracker"                             "1.4.2"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -17,7 +17,7 @@ Warn                = Log:SetPrefix(4, "|cffffff00[EQT:Warn]|r", true)
 Error               = Log:SetPrefix(5, "|cffff0000[EQT:Error]|r", true)
 Fatal               = Log:SetPrefix(6, "|cff8b0000[EQT:Fatal]|r", true)
 
-Log.LogLevel        = 2
+Log.LogLevel        = 3
 
 Log:AddHandler(print)
 -- =========================[[ ObjectManager ]]============================== --

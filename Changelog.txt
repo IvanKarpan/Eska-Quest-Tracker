@@ -1,10 +1,11 @@
-[1.4.1]
-- NEW: Added an icon on the minimap to access to some commands like hiding/showing the
-tracker or opening the configuration window.
-- The options are now loaded on demand so it will no longer use memory for nothing.
+[1.4.2]
 
-[1.4.0]
-- NEW: Implemented the achievement tracker.
+* tagged as beta
+
+- NEW: Added an icon anchored on the minimap to access to some basic commands like hiding/showing
+the tracker or opening the configuration window.
+- NEW: Implemented the achievements tracker.
 - NEW: Added the options related to achievements.
 - Updated Eska & Transparence themes to include achievements.
+- The options are now loaded on demand so it will no longer use memory for nothing.
 - API: Added __EnablingOnCondition__ attribute for modules.
