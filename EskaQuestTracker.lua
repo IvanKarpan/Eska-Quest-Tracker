@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.4.0"
+Scorpio                   "EskaQuestTracker"                             "1.4.1"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -17,27 +17,31 @@ Warn                = Log:SetPrefix(4, "|cffffff00[EQT:Warn]|r", true)
 Error               = Log:SetPrefix(5, "|cffff0000[EQT:Error]|r", true)
 Fatal               = Log:SetPrefix(6, "|cff8b0000[EQT:Fatal]|r", true)
 
-Log.LogLevel        = 3
+Log.LogLevel        = 2
 
 Log:AddHandler(print)
 -- =========================[[ ObjectManager ]]============================== --
 _ObjectManager       = ObjectManager()
 -- =========================[[ LibSharedMedia ]]============================= --
 _LibSharedMedia      = LibStub("LibSharedMedia-3.0")
--- ========================[[ Addon version ]]------------------------------------ ==
+-- ======================[[ LibDataBroker & Minimap ]]======================= --
+_LibDataBroker       = LibStub("LibDataBroker-1.1")
+_LibDBIcon           = LibStub("LibDBIcon-1.0")
+-- ========================[[ Addon version ]]------------------------------- ==
 _EQT_VERSION         = GetAddOnMetadata("EskaQuestTracker", "Version")
 _EQT_STAGE           = GetAddOnMetadata("EskaQuestTracker", "X-Stage")
 -- =========================[[ Dependencies Version ]]======================= --
 _SCORPIO_VERSION     = tonumber(GetAddOnMetadata("Scorpio", "Version"):match("%d+$"))
 _PLOOP_VERSION       = tonumber(GetAddOnMetadata("PLoop", "Version"):match("%d+$"))
 -- ========================================================================== --
-_DEFAULT_TRACKER_WIDTH = 270 -- @NOTE IMPORTANT : don't edit this value (could cause some ui size and position issues)
+_DEFAULT_TRACKER_WIDTH       = 270 -- @NOTE IMPORTANT : don't edit this value (could cause some ui size and position issues)
 -- Values set by the users from options
-_CURRENT_TRACKER_WIDTH = 270
+_CURRENT_TRACKER_WIDTH       = 270
 _CURRENT_TRACKER_RATIO_WIDTH = _CURRENT_TRACKER_WIDTH / _DEFAULT_TRACKER_WIDTH
+_EQT_ICON                    = [[Interface\AddOns\EskaQuestTracker\Media\icon]]
 -- ========================================================================== --
 _THEMES = ObjectArray(Theme)
--- _MenuContext = MenuContext()
+-- ========================================================================== --
 
 -- !IMPORTANT
 -- Don't set stuffs related to DB (this causes error if the user doesn't have the save variables created)
@@ -58,6 +62,8 @@ function OnLoad(self)
 
   self:SelectTheme(Options:Get("theme-selected"))
 
+  -- Setup the minimap button
+  self:SetupMinimapButton()
 end
 
 function OnEnable(self)
@@ -65,6 +71,37 @@ function OnEnable(self)
 
   -- From now, all themes property changes will refresh the targeted frame.
   Theme.refreshOnPropertyChanged = true
+end
+
+function SetupMinimapButton(self)
+  -- Left click to hide/show the tracker
+  local LDBTooltipLeftClickText = "|cff00ffffClick|r to show/hide the tracker"
+  -- Right click to open configuration
+  local LDBTooltipRightClickText = "|cff00ffffRight Click|r to open the configuration window"
+
+  local LDBObject = _LibDataBroker:NewDataObject("EskaQuestTracker", {
+    type = "launcher",
+    icon = _EQT_ICON,
+    OnClick = function(_, button, down)
+      if button == "LeftButton" then
+        if self.ObjectiveTracker:IsShown() then
+          self.ObjectiveTracker:Hide()
+        else
+          self.ObjectiveTracker:Show()
+        end
+      elseif button == "RightButton" then
+        OpenOptions()
+      end
+    end,
+    OnTooltipShow = function(tooltip)
+      tooltip:AddDoubleLine("Eska Quest Tracker", _EQT_VERSION, 1, 106/255, 0, 1, 1, 1)
+      tooltip:AddLine(" ")
+      tooltip:AddLine(LDBTooltipLeftClickText)
+      tooltip:AddLine(LDBTooltipRightClickText)
+    end,
+  })
+
+  _LibDBIcon:Register("EskaQuestTracker", LDBObject, _DB)
 end
 
 function CheckDBMigration()
@@ -231,6 +268,20 @@ function ResetDB()
   _DB:Reset()
   Info("The settings has been reset. |cff00ff00Do /reload to apply the changes.|r")
 end
+
+__SlashCmd__ "eqt" "config" "- open the options"
+__SlashCmd__ "eqt" "open" "- open the options"
+__SlashCmd__ "eqt" "option" "- open the options"
+function OpenOptions(self)
+  if not IsAddOnLoaded("EskaQuestTracker_Options") then
+    local loaded, reason = LoadAddOn("EskaQuestTracker_Options")
+    if not loaded then return end
+  end
+
+    local options = _M:GetModule("Options")
+    options:Open()
+end
+
 
 -- ========================================================================== --
 -- == Register the fonts

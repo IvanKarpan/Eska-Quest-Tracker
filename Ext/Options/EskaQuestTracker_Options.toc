@@ -4,6 +4,7 @@
 ## Notes: Eska Quest Tracker Options
 ## RequiredDeps: EskaQuestTracker
 ## OptionalDeps: Ace3, LibDDI-1.0
+## LoadOnDemand: 1
 
 embeds.xml
 OptionBuilder.lua
