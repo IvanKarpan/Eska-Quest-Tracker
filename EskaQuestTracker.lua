@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.4.3"
+Scorpio                   "EskaQuestTracker"                             "1.4.4"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -56,6 +56,7 @@ function OnLoad(self)
   self:CheckDBMigration()
 
   _DB:SetDefault{dbVersion = 1 }
+  _DB:SetDefault{ minimap = { hide = false }}
 
   -- Create the blocks table in order to register them.
   self.blocks = Dictionary()
@@ -101,7 +102,7 @@ function SetupMinimapButton(self)
     end,
   })
 
-  _LibDBIcon:Register("EskaQuestTracker", LDBObject, _DB)
+  _LibDBIcon:Register("EskaQuestTracker", LDBObject, _DB.minimap)
 end
 
 function CheckDBMigration()
@@ -123,6 +124,11 @@ function CheckDBMigration()
 
     Options:Set("theme-selected", _DB.currentTheme, false) ; _DB.currentTheme = nil
     Options:Set("replace-blizzard-objective-tracker", _DB.replaceBlizzardObjectiveTracker, false) ; _DB.replaceBlizzardObjectiveTracker = nil
+  end
+
+  -- @TODO Remove this migration hotfix in the 1.5 version
+  if _DB.minimapPos then
+    _DB.minimapPos = nil
   end
 end
 

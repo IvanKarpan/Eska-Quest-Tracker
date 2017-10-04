@@ -155,6 +155,27 @@ _Settings = {
           fontSize = "medium",
           order = 32,
           name = string.format("----- |cffff6a00Scorpio|r |cff00ff00v%d|r", _SCORPIO_VERSION)
+        },
+        optSeparator = {
+          type = "description",
+          name = "\n" .. "|cffffd800Global options|r",
+          fontSize = "large",
+          order = 40,
+          width = "full",
+        },
+        enableMinimap = {
+          type = "toggle",
+          name = "Enable minimap icon",
+          order = 41,
+          get = function() return not _DB.minimap.hide end,
+          set = function(_, enable)
+            if enable then
+              _LibDBIcon:Show("EskaQuestTracker")
+            else
+              _LibDBIcon:Hide("EskaQuestTracker")
+            end
+            _DB.minimap.hide = not enable
+          end
         }
       }
     }

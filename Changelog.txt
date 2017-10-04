@@ -1,5 +1,7 @@
-[1.4.3]
+[1.4.4]
+- NEW: Added an option to enable/disable the minimap icon.
 
+[1.4.3]
 * tagged as release
 
 - NEW: Added an icon anchored on the minimap to access to some basic commands like hiding/showing
