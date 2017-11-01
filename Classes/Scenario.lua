@@ -14,11 +14,11 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
-      Theme.SkinText(self.frame.name, new)
+      Theme:SkinText(self.frame.name, new)
     elseif prop == "currentStage" or prop == "numStages" then
-      Theme.SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
+      Theme:SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
     elseif prop == "stageName" then
-      Theme.SkinText(self.frame.stageName, new)
+      Theme:SkinText(self.frame.stageName, new)
     end
   end
   ------------------------------------------------------------------------------
@@ -29,12 +29,12 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     if callSuper then
       Super.Refresh(self)
     end
-    Theme.SkinFrame(self.frame.stage)
+    Theme:SkinFrame(self.frame.stage)
 
     -- Text
-    Theme.SkinText(self.frame.name, self.name)
-    Theme.SkinText(self.frame.stageName, self.stageName)
-    Theme.SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
+    Theme:SkinText(self.frame.name, self.name)
+    Theme:SkinText(self.frame.stageName, self.stageName)
+    Theme:SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
   end
 
   function GetBonusObjective(self, index)
@@ -66,11 +66,11 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterFrame(class._THEME_CLASS_ID..".stage", self.frame.stage)
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".stage", self.frame.stage)
     -- Text
-    Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
-    Theme.RegisterText(class._THEME_CLASS_ID..".stageName", self.frame.stageName)
-    Theme.RegisterText(class._THEME_CLASS_ID..".stageCounter", self.frame.stageCounter)
+    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
+    Theme:RegisterText(class._THEME_CLASS_ID..".stageName", self.frame.stageName)
+    Theme:RegisterText(class._THEME_CLASS_ID..".stageCounter", self.frame.stageCounter)
   end
 
   __Static__()

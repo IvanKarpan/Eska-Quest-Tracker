@@ -20,46 +20,6 @@ bit_rshift = bit.rshift
 --============================================================================--
 
 --------------------------------------------------------------------------------
---                         Config                                             --
---------------------------------------------------------------------------------
---[[__Final__()
-interface "Config"
-  function GetOption(self, option)
-    if not _DB and not _DB.options then
-      -- TODO written a error code
-      return
-    end
-
-    return _DB.options[option]
-  end
-
-  function SetOption(self, option, value)
-    if not _DB then
-      -- TODO written an error code
-      return
-    end
-
-    if not _DB.option then _DB.options = {} end
-
-    _DB.options[option] = value
-  end
-endinterface "Config"--]]
-
--- EQT.Config:GetOption()
--- EQT.Config:SetOption()
--- EQT.Config:RegisterOption()
--- EQT.Config:SelectProfile()
--- EQT.Config:UseSpecDB()
--- EQT.Config:UseGlobalDB()
--- EQT.Config:UseCharacterDB()
-
--- [Config] [Use Character DB, Use Spec DB, Use Global DB
--- charactersDB[name] = "spec" | "character"
-
-
--- Refresh:Group()
--- Refresj
---------------------------------------------------------------------------------
 --                       Callbakc Handler Classes                             --
 --------------------------------------------------------------------------------
 
@@ -189,6 +149,7 @@ class "Database"
   __Static__() __Arguments__{ Class, Any, Argument(Any, true) }
   function SetValue(self, index, value)
     CURRENT_TABLE[index] = value
+
   end
 
   __Static__() __Arguments__ { Class, Any }
@@ -196,24 +157,23 @@ class "Database"
     return CURRENT_TABLE[index]
   end
 
---[[  __Static__() __Arguments__{ Class, { Type = String, Nilable = true, IsList = true } }
-  function SelectTable(self, ...)
-      local count = select("#", ...)
 
-      if not CURRENT_TABLE then
-        CURRENT_TABLE = self:Get()
-      end
-      local tb = CURRENT_TABLE
-      for i = 1, count do
-        local indexTable = select(i, ...)
-          if not tb[indexTable] then
-            tb[indexTable] = {}
+  __Arguments__ { Class }
+  __Static__() function Clean()
+    local function ClearEmptyTables(t)
+      for k,v in pairs(t) do
+        if type(v) == "table" then
+          ClearEmptyTables(v)
+          if next(v) == nil then
+            t[k] = nil
           end
-
-          tb = tb[indexTable]
+        end
       end
-      CURRENT_TABLE = tb
-  end--]]
+    end
+
+      ClearEmptyTables(EskaQuestTrackerDB)
+  end
+
   __Static__() __Arguments__{ Class, { Type = String, Nilable = true, IsList = true } }
   function SelectTable(self, ...)
     return self:SelectTable(true, ...)
@@ -292,47 +252,6 @@ endclass "Database"
 --------------------------------------------------------------------------------
 --                         Options                                            --
 --------------------------------------------------------------------------------
---[[
-__Final__()
-interface "Options"
-  _KEYWORDS = Dictionary()
-
-  __Flags__()
-  enum "ThemeKeywordType" {
-    FRAME = 1,
-    TEXT = 2,
-    TEXTURE = 4,
-  }
-
-  struct "ThemeKeyword"
-    target = String
-
-    __Default__( ThemeKeywordType.FRAME )
-    type = ThemeKeywordType
-
-    __Default__("0094FF")
-    flagColorStr = String
-
-  endstruct "ThemeKeyword"
-
-  function AddAvailableThemeKeywords(...)
-    --print(self, ...)
-    for i = 1, select('#', ...) do
-      local keyword = select(i, ...)
-      if not _KEYWORDS[keyword.target] then
-        _KEYWORDS[keyword.target] = keyword
-      end
-    end
-  end
-
-  function GetAvailableThemeKeywords()
-    return _KEYWORDS.Values:ToList():Sort("a,b=>a.target<b.target"):GetIterator()
-  end
-endinterface "Options"
---]]
-
-
-
 class "Option"
   property "id" { Type = String }
   property "default" { Type = Any }
@@ -387,7 +306,6 @@ endstruct "ThemeKeyword"
 __Static__()
 function AddAvailableThemeKeywords(...)
 
-  --print(self, ...)
   for i = 1, select('#', ...) do
     local keyword = select(i, ...)
     if not _KEYWORDS[keyword.target] then
@@ -514,7 +432,6 @@ end
 
 
 endclass "Options"
-
 
 --------------------------------------------------------------------------------
 --                   Serializable container                                   --
@@ -723,7 +640,6 @@ interface "API"
       return
     end
 
-    -- print(target, property, value)
 
     self:SetThemeProperty(target, property, value)
 
@@ -957,230 +873,149 @@ class "Frame"
 endclass "Frame"
 
 --------------------------------------------------------------------------------
---                          Theme System                                      --
+--                          THEME SYSTEM                                      --
 --------------------------------------------------------------------------------
-__Serializable__()
-class "Theme" extend "ISerializable"
-  _REGISTERED_FRAMES = {}
-  _REFRESH_HANDLER = Dictionary()
-  _KEYWORDS = List()
-
-
-  __Static__() function SetAvailableKeywords(...)
-    for i = 1, select('#', ...) do
-      local keyword = select(i, ...)
-      if not _KEYWORDS:Contains(keyword) then
-        _KEYWORDS:Insert(keyword)
-      end
-    end
-  end
-
-  __Static__() function RegisterRefreshHandler(id, handler)
-    local handlers
-    if not _REFRESH_HANDLER[id] then
-      handlers = {}
-      _REFRESH_HANDLER[id] = handlers
-    else
-      handlers = _REFRESH_HANDLER[id]
-    end
-    tinsert(handlers, handler)
-  end
-
-  __Static__() function RefreshGroup(id)
-    if _REFRESH_HANDLER[id] then
-      local handlers = _REFRESH_HANDLER[id]
-      for _, handler in ipairs(handlers) do
-        handler()
-      end
-    end
-  end
-
-  __Static__() function RefreshGroups()
-    Frame:RefreshAll()
-  end
-
-  __Arguments__ { String, Table, Argument(String, true), Argument(String, true, "FRAME")}
-  __Static__() function RegisterFrame(keyword, frame, inherit, type)
+__Serializable__() class "Theme" extend "ISerializable"
+_REGISTERED_FRAMES = {}
+_ELEMENTS_LINK = {}
+  ------------------------------------------------------------------------------
+  --                       Register Methods                                   --
+  ------------------------------------------------------------------------------
+  __Arguments__ { Class, String, Table, Argument(String, true), Argument(String, true, "FRAME")}
+  __Static__() function RegisterFrame(self, elementID, frame, inheritElementID, type)
     if not frame then
       return
     end
 
-    if not type then
-      type = "FRAME"
-    end
-
-    local frames = _REGISTERED_FRAMES[keyword]
+    local frames = _REGISTERED_FRAMES[elementID]
     if not frames then
-      frames = setmetatable( {}, { __mode = "k"})
-      _REGISTERED_FRAMES[keyword] = frames
+      frames = setmetatable({}, { __mode = "k"})
+      _REGISTERED_FRAMES[elementID] = frames
     end
 
     if frames[frame] then return end
 
     frames[frame] = true
-    frame.themeClassID = keyword
+    frame.elementID = elementID
     frame.type = type
 
-    if inherit then
-      frame.inheritTID = inherit
+    if inheritElementID then
+      frame.inheritElementID = inheritElementID
     end
 
-
     if frame.text then
-      frame.text.themeClassID = keyword
+      frame.text.elementID = elementID
       frame.text.type = "TEXT"
-      if inherit then
-        frame.text.inheritTID = inherit
+      if inheritElementID then
+        frame.text.inheritElementID = inheritElementID
       end
     end
 
     if frame.texture then
-      frame.texture.themeClassID = keyword
+      frame.texture.elementID = elementID
       frame.texture.type = "TEXTURE"
       if inherit then
-        frame.texture.inheritTID = inherit
+        frame.texture.inheritElementID = inheritElementID
       end
     end
 
-    Theme.InstallScript(frame)
+    Theme:InstallScript(frame)
   end
 
-
-  __Static__() function GetKeywords()
-    return _KEYWORDS:GetIterator()
+  __Arguments__ { Class, String, Table, Argument(String, true) }
+  __Static__() function RegisterTexture(self, elementID, frame, inheritElementID)
+    Theme:RegisterFrame(elementID, frame, inheritElementID, "TEXTURE")
   end
 
-  __Arguments__ { String, Table, Argument(String, true) }
-  __Static__() function RegisterTexture(keyword, frame, inherit)
-    Theme.RegisterFrame(keyword, frame, inherit, "TEXTURE")
+  __Arguments__ { Class, String, Table, Argument(String, true)}
+  __Static__() function RegisterText(self, elementID, frame, inheritElementID)
+    Theme:RegisterFrame(elementID, frame, inheritElementID, "TEXT")
   end
 
-  __Arguments__ { String, Table, Argument(String, true) }
-  __Static__() function RegisterText(keyword, frame, inherit)
-    Theme.RegisterFrame(keyword, frame, inherit, "TEXT")
-  end
-
-  __Arguments__ { Table }
-  __Static__() function InstallScript(frame)
-    if not frame.GetScript or not frame.SetScript then
-      return
-    end
-
-    if _Addon:GetCurrentTheme() and _Addon:GetCurrentTheme():HasFlag(frame.themeClassID, "hover", true) then
-      local function FrameOnHover(f)
-        if EQT.Frame:MustBeInteractive(f) then
-          Theme.SkinFrame(frame, nil, "hover")
-        else
-          Theme.SkinFrame(frame)
-        end
-      end
-
-      if not frame:GetScript("OnEnter") then
-        frame:SetScript("OnEnter", function()
-          frame:SetScript("OnUpdate", FrameOnHover)
-        end)
-      end
-
-      if not frame:GetScript("OnLeave") then
-        frame:SetScript("OnLeave", function()
-          frame:SetScript("OnUpdate", nil)
-          Theme.SkinFrame(frame)
-        end)
-      end
-
-
-      if not frame:GetScript("OnMouseDown") and not frame:GetScript("OnMouseUp") then
-        frame:SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
-        frame:SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
-      end
-
+  __Arguments__ { Class, String, String }
+  __Static__() function RegisterFont(self, fontID, fontFile)
+    if _LibSharedMedia then
+      _LibSharedMedia:Register("font", fontID, fontFile)
     end
   end
 
-  __Arguments__ { Table }
-  __Static__() function UnregisterFrame(self, frame)
+  ------------------------------------------------------------------------------
+  --                     Skin Methods                                         --
+  ------------------------------------------------------------------------------
+  __Arguments__ { Class, Table, Argument(String, true), Argument(String, true) }
+  __Static__() function SkinFrame(self, frame, originText, state)
+    -- Get the selected theme
+    local theme = Themes:GetSelected()
 
-  end
+    if not theme then return end -- TODO Add error msg
+    if not frame then return end -- TODO Add error msg
+    if not frame.elementID then return end -- TODO Add error msg
 
-  __Arguments__ { { Type = String, Nilable = true, IsList = true } }
-  __Static__() function GetFlagsString(...)
-    local strFlags = ""
-    for i = 1, select("#", ...) do
-        v = select(i, ...)
-        if i == 1 then
-          strFlags = "@"..v
-        else
-          strFlags = strFlags..",@"..v
-        end
-    end
-    return strFlags
-  end
+    local elementID = frame.elementID
+    local inheritElementID = frame.inheritElementID
 
-  __Arguments__ { Table, { Type = String, Nilable = true, IsList = true}}
-  __Static__() function SkinTexture(texture, ...)
-    local theme = _Addon:GetCurrentTheme()
-
-    if not theme then return end -- TODO add error msg
-    if not texture then return end  -- TODO add error msg
-
-    local themeClassID = texture.themeClassID
-    local inheritTID = texture.inheritTID
-
-    if not themeClassID then return end -- TODO add error msg
-
-    local flags = Theme.GetFlagsString(...)
-    if flags ~= "" then
-      themeClassID = themeClassID.."["..flags.."]"
-      inheritTID = inheritTID and inheritTID.."["..flags.."]"
+    if state then
+      elementID = elementID.."["..state.."]"
     end
 
-    local color = theme:GetProperty(themeClassID, "vertex-color", inheritTID)
 
-    --if color then
-    texture:SetVertexColor(color.r, color.g, color.b, color.a )
-  --end
+    -- The frame is a normal frame
+    if frame.type == "FRAME" then
+      -- Backgorund color
+      local color
+      if frame.SetBackdropColor then
+        color = theme:GetElementProperty(elementID, "background-color", inheritElementID)
+        frame:SetBackdropColor(color.r, color.g, color.b, color.a)
+      end
 
+      if frame.SetBackdropBorderColor then
+        color = theme:GetElementProperty(elementID, "border-color", inheritElementID)
+        frame:SetBackdropBorderColor(color.r, color.g, color.g, color.a)
+      end
+
+      if frame.text then
+        Theme:SkinText(frame.text, originText, state)
+      end
+
+      if frame.texture then
+        Theme:SkinTexture(frame.texture, state)
+      end
+    end
   end
 
-    -- @NOTE: No arguments attribute because the systeme can't know who is who in the args
-    -- @TODO: Review the Skin arguments method in order to the arguements attribe can work.
-  __Static__() function SkinText(fontstring, originText, ...)
-    local theme = _Addon:GetCurrentTheme()
+  __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true) }
+  __Static__() function SkinText(self, fontstring, originText, state)
+    local theme = Themes:GetSelected()
 
     if not theme then return end -- TODO add error msg
     if not fontstring then return end  -- TODO add error msg
 
-    local themeClassID = fontstring.themeClassID
-    local inheritTID = fontstring.inheritTID
+    local elementID = fontstring.elementID
+    local inheritElementID = fontstring.inheritElementID
 
+    if not elementID then return end
 
-    if not themeClassID then return end -- TODO add error msg
-
-    local flags = Theme.GetFlagsString(...)
-    if flags ~= "" then
-      themeClassID = themeClassID.."["..flags.."]"
-      inheritTID = inheritTID and inheritTID.."["..flags.."]"
+    if state then
+      elementID = elementID.."["..state.."]"
     end
 
-    local size = theme:GetProperty(themeClassID, "text-size", inheritTID)
-    local font = _LibSharedMedia:Fetch("font", theme:GetProperty(themeClassID, "text-font", inheritTID))
-    local transform = theme:GetProperty(themeClassID, "text-transform", inheritTID)
+    local size = theme:GetElementProperty(elementID, "text-size", inheritElementID)
+    local font = _LibSharedMedia:Fetch("font", theme:GetElementProperty(elementID, "text-font", inheritElementID))
+    local transform = theme:GetElementProperty(elementID, "text-transform", inheritElementID)
     fontstring:SetFont(font, size, "OUTLINE")
 
-    local textColor = theme:GetProperty(themeClassID, "text-color", inheritTID)
-
-
+    local textColor = theme:GetElementProperty(elementID, "text-color", inheritElementID)
     fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
 
-
-    local location = theme:GetProperty(themeClassID, "text-location", inheritTID)
-    local offsetX = theme:GetProperty(themeClassID, "text-offsetX", inheritTID)
-    local offsetY = theme:GetProperty(themeClassID, "text-offsetY", inheritTID)
+    local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
+    local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
+    local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
 
     for i = 1, fontstring:GetNumPoints() do
       local point, relativeTo, relativePoint, xOffset, yOffset = fontstring:GetPoint(i)
       if i == 1 then
         fontstring:SetPoint(point, relativeTo, relativePoint, offsetX or xOffset, offsetY or yOffset)
+        break
       end
     end
 
@@ -1203,456 +1038,463 @@ class "Theme" extend "ISerializable"
     fontstring:SetText(txt)
   end
 
-  -- @NOTE: No arguments attribute because the systeme can't know who is who in the args
-  -- @TODO: Review the Skin arguments method in order to the arguements attribe can work.
-  __Static__() function SkinFrame(frame, originText, ...)
+  __Arguments__{ Class, Table, Argument(String, true) }
+  __Static__() function SkinTexture(self, texture, state)
+    local theme = Themes:GetSelected()
 
-    local theme = _Addon:GetCurrentTheme()
-    -- print("Current Theme", theme.name)
+    if not theme then return end -- TODO add error msg
+    if not texture then return end  -- TODO add error msg
 
-    if not theme then
-      return
+    local elementID = texture.elementID
+    local inheritElementID = texture.inheritElementID
+
+    if not elementID then return end
+
+    if state then
+      elementID = elementID.."["..state.."]"
     end
 
-    if not frame then
-      return
-    end
-
-    if not frame.themeClassID then
-      return
-    end
-
-    local themeClassID = frame.themeClassID
-    local inheritTID = frame.inheritTID
-
-    local flags = Theme.GetFlagsString(...)
-    if flags ~= "" then
-      themeClassID = themeClassID.."["..flags.."]"
-      inheritTID = inheritTID and inheritTID.."["..flags.."]"
-    end
-
-    -- The frame is a normal frame
-    if frame.type == "FRAME" then
-      -- Background color
-      local color
-      if frame.SetBackdropColor then
-        color = theme:GetProperty(themeClassID, "background-color", inheritTID)
-        --print("F", frame.themeClassID, color.r, color.g, color.b, color.a)
-        frame:SetBackdropColor(color.r, color.g, color.b, color.a)
-      end
-
-      if frame.SetBackdropBorderColor then
-        color = theme:GetProperty(themeClassID, "border-color", inheritTID)
-        frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
-      end
-
-      if frame.text then
-        Theme.SkinText(frame.text, originText, ...)
-      end
-
-      if frame.texture then
-        Theme.SkinTexture(frame.texture, ...)
-      end
-    end
+    local color = theme:GetElementProperty(elementID, "vertex-color", inheritElementID)
+    texture:SetVertexColor(color.r, color.g, color.b, color.a)
   end
 
-
-  _DEFAULT_PROPERTY_VALUES = {
-    ["background-color"] = { r = 0, g = 0, b = 0, a = 0 },
-    ["border-color"] = { r = 0, g = 0, b = 0, a = 0 },
-    ["offsetX"] = 0,
-    ["offsetY"] = 0,
-    ["text-size"] = 10,
-    ["text-font"] = "PT Sans Bold",
-    ["text-color"] = { r = 0, g = 0, b = 0},
-    ["text-transform"] = "none",
-    ["text-location"] = "CENTER",
-    ["text-offsetX"] = 0,
-    ["text-offsetY"] = 0,
-    ["vertex-color"] = { r = 1, g = 1, b = 1}
+  ------------------------------------------------------------------------------
+  --              Element Property Methods                                    --
+  ------------------------------------------------------------------------------
+  __Flags__()
+  enum "ElementFlags" {
+    INCLUDE_PARENT = 1,
+    INCLUDE_DATABASE = 2,
+    INCLUDE_DEFAULT_VALUES = 4,
+    INCLUDE_STATE = 8,
+    IGNORE_WITHOUT_STATE = 16
   }
 
-  _DEFAULT_CLASSES = setmetatable({}, { __mode = "v"})
+  __Arguments__ { String, String , String }
+  function SetElementLink(self, elementID, property, destElementID)
+    local links = self.links[elementID] or SDictionary()
+    links[property] = destElementID
 
-  -- Helper function
-  local function UnpackTargets(...)
-    local target = ""
-    local count = select("#", ...)
+    if not self.links[elementID] then
+      self.links[elementID] = links
+    end
+  end
 
-    for i = 1, count do
-      local val = select(i, ...)
-      if i == 1 and i == count then
-        return val, string.format("%s.*", val:gsub("(%[[\@%w]*\%])", ""))
-      elseif i == 1 then
-        target = val
-      elseif i == count then
-        local flags = val:match("[\[\|]([@,%w]*)") or ""
-        if flags ~= "" then
-           flags = "["..flags.."]"
+  __Arguments__ { String, String }
+  function GetElementLink(self, elementID, property)
+    return  self.links[elementID] and self.links[elementID][property]
+  end
+
+  __Arguments__ { String }
+  function ClearElementLinks(self, elementID)
+    local links = self.links[elementID]
+    if links then
+      for k,v in links:GetIterator() do links[k] = nil end
+      self.links[elementID] = nil
+      links = nil
+    end
+  end
+
+  __Arguments__ {}
+  function ClearAllElementLinks(self)
+    for elementID, links in self.links:GetIterator() do
+      for k,v in links:GetIterator() do links[k] = nil end
+      self.links[elementID] = nil
+      links = nil
+    end
+  end
+
+
+  function SetElementPropertyLink(self, elementID, property, destElementID)
+    elementID = elementID:gsub("%s+", "") -- Remove the space
+      -- Get the possible element Ids
+      local IDs =  { Theme:GetPossibleElementIDs(elementID) }
+      for _, id in ipairs(IDs) do
+        local elementProps = self.properties[id] or SDictionary()
+        elementProps[property] = value
+
+        if not self.properties[id] then
+          self.properties[id] = elementProps
         end
-        local checkAll = "*"..flags
+      end
 
-        return string.format("%s.%s", target, val),
-        val ~= checkAll and string.format("%s.*%s", target, flags) or nil,
-        string.format("%s%s", target, flags),
-        count
+  end
+
+  __Arguments__ { String, String, Argument(String, true), Argument(ElementFlags, true, 15) }
+  function GetElementProperty(self, elementID, property, inheritElementID, flags)
+      elementID = elementID:gsub("%s+", "") -- Remove the space
+
+      local value
+      if ValidateFlags(flags, ElementFlags.INCLUDE_DATABASE) then
+        value = self:GetElementPropertyFromDB(elementID, property)
+        if value then
+          return value
+        end
+      end
+
+      value = self.properties[elementID] and self.properties[elementID][property]
+      if value then
+        return value
+      end
+
+      if not ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+        if ValidateFlags(flags,ElementFlags.INCLUDE_DEFAULT_VALUES) then
+          return Theme:GetDefaultProperty(property)
+        end
+        return value
+      end
+
+      local elementLink = self:GetElementLink(elementID, property)
+      --local elementLink = nil
+      if elementLink then
+        value = self:GetElementPropertyFromDB(elementLink, property)
+        if value then
+          return value
+        end
+
+        value = self.properties[elementLink] and self.properties[elementLink][property]
+        if value then
+          return value
+        end
       else
-        target = target.."."..val
+        for _, id in Theme:GetReadingIDList(elementID, inheritElementID, flags):GetIterator() do
+            if ValidateFlags(flags, ElementFlags.INCLUDE_DATABASE) then
+              value = self:GetElementPropertyFromDB(id, property)
+              if value then
+                self:SetElementLink(elementID, property, id)
+                return value
+              end
+            end
+
+            value = self.properties[id] and self.properties[id][property]
+            if value then
+              self:SetElementLink(elementID, property, id)
+              return value
+            end
+        end
       end
-    end
+
+      if ValidateFlags(flags, ElementFlags.INCLUDE_DEFAULT_VALUES) then
+        return Theme:GetDefaultProperty(property)
+      end
   end
 
-  local function GetClassAmount(str)
-    local _, count = str:gsub("%.", "")
-    return count + 1
+  --[[__Arguments__ { String, String, Argument(String, true), Argument(ElementFlags, true, 15) }
+  function GetElementProperty(self, elementID, property, inheritElementID, flags)
+    elementID = elementID:gsub("%s+", "") -- Remove the space
+
+    local value
+    if ValidateFlags(flags, ElementFlags.INCLUDE_DATABASE) then
+      value = self:GetElementPropertyFromDB(elementID, property)
+      if value then
+        return value
+      end
+    end
+
+    value = self.properties[elementID] and self.properties[elementID][property]
+    if value then
+      return value
+    end
+
+    if not ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+      if ValidateFlags(flags, ElementFlags.INCLUDE_DEFAULT_VALUES) then
+        return Theme:GetDefaultProperty(property)
+      end
+      return value
+    end
+
+    for _, id in Theme:GetReadingIDList(elementID, inheritElementID, flags):GetIterator() do
+      if ValidateFlags(flags, ElementFlags.INCLUDE_DATABASE) then
+        value = self:GetElementPropertyFromDB(id, property)
+        if value then return value end
+      end
+
+      value = self.properties[id] and self.properties[id][property]
+      if value then return value end
+    end
+
+    if ValidateFlags(flags, ElementFlags.INCLUDE_DEFAULT_VALUES) then
+      return Theme:GetDefaultProperty(property)
+    end
+  end--]]
+
+
+
+  __Arguments__{ String, String, Argument(Any, true) }
+  function SetElementProperty(self, elementID, property, value)
+    -- NOTE Make the *
+    elementID = elementID:gsub("%s+", "") -- Remove the space
+      -- Get the possible element Ids
+      local IDs =  { Theme:GetPossibleElementIDs(elementID) }
+      for _, id in ipairs(IDs) do
+        local elementProps = self.properties[id] or SDictionary()
+        elementProps[property] = value
+
+        if not self.properties[id] then
+          self.properties[id] = elementProps
+        end
+      end
+
+      self:ClearAllElementLinks()
   end
 
-  function _GetProperty(self, target, property)
-    if _DB and _DB.Themes and _DB.Themes[self.name] then
-      local dbTheme = _DB.Themes[self.name]
-      --if dbTheme[target] and dbTheme[target][property] and  then
-        --return dbTheme[target][property]
-      --end
-      if dbTheme.properties and dbTheme.properties[target] and dbTheme.properties[target][property] then
-        return dbTheme.properties[target][property]
-      end
-    end
-
-    if self.properties[target] and self.properties[target][property] then
-      return self.properties[target][property]
-    end
-  end
-
-
-  __Arguments__{ String, String, Argument(String, true), Argument(Boolean, true, true) }
-  function GetProperty(self, target, property, inheritTarget, includeParent)
-    local val = self:_GetProperty(target, property)
-
-    if not includeParent then
-      return val
-    end
-
-    if val then
-      return val
-    else
-      local _, allTarget, parent, num = UnpackTargets(strsplit(".", target))
-
-      val = self:_GetProperty(allTarget, property)
-      if val then
-        return val
-      end
-
-      val = self:_GetProperty(inheritTarget, property)
-      if val then
-        return val
-      end
-
-      if parent then
-        return self:GetProperty(parent, property)
-      end
-
-      val = self:_GetProperty("*", property)
-      if val then
-        return val
-      end
-    end
-    return _DEFAULT_PROPERTY_VALUES[property]
-  end
-
-  __Arguments__{ String, String }
-  function GetDBProperty(self, target, property)
-    if _DB and _DB.Themes and _DB.Themes[self.name] then
-      local dbTheme = _DB.Themes[self.name]
-      if dbTheme.properties and dbTheme.properties[target] and dbTheme.properties[target][property] then
-        return dbTheme.properties[target][property]
-      end
-    end
-  end
-
---[[
-  __Arguments__{ String, String, Argument(String, true) }
-  function GetProperty(self, target, property, inheritTarget)
-    if self.properties[target] and self.properties[target][property] then
-      return self.properties[target][property]
-    else
-      local _, allTarget, parent, num = UnpackTargets(strsplit(".", target))
-
-      if allTarget and self.properties[allTarget] and self.properties[allTarget][property] then
-        return self.properties[allTarget][property]
-      end
-
-      if inheritTarget and self.properties[inheritTarget] and self.properties[inheritTarget][property] then
-        return self.properties[inheritTarget][property]
-      end
-
-      if parent then
-        return self:GetProperty(parent, property)
-      end
-
-      if self.properties["*"] and self.properties["*"][property] then
-        return self.properties["*"][property]
-      end
-    end
-    return _DEFAULT_PROPERTY_VALUES[property]
-  end
-
-  -]]
-
-  __Arguments__{ String }
-  function GetProperty(self, property)
-    return This.GetProperty(self, "*", property)
+  __Arguments__ { String, Any }
+  function SetElementProperty(self, property, value)
+    This.SetElementProperty(self, "*", property, value)
   end
 
 
 
-  __Arguments__{ String, String, Argument(Boolean, true, false)}
-  function HasProperty(self, target, property, includeParent)
+  -- ElementFlags (3) = INCLUDE_PARENT (1) + INCLUDE_DATABASE (2)
+  __Arguments__{ String, String, Argument(String, true), Argument(ElementFlags, true, 3)}
+  function ElementHasState(self, elementID, state, inheritElementID, flags)
+    flags = flags + ElementFlags.IGNORE_WITHOUT_STATE + ElementFlags.INCLUDE_STATE
+    elementID = string.format("%s[%s]", elementID, state)
 
-    if self.properties[target] and self.properties[t] then
+    --[[
+    for _, id in Theme:GetReadingIDList(elementID, inheritElementID, flags):GetIterator() do
+      if ValidateFlags(flags, INCLUDE_DATABASE) and self:ElementExistsFromDB(id) then
+        return true
+      end
+
+      if self.properties[id] then return true end
+    end
+    --]]
+
+    return false
+  end
+
+  __Arguments__ { Class, String }
+  __Static__() function GetDefaultProperty(self, property)
+      local defaults = {
+        ["background-color"] = { r = 0, g = 0, b = 0, a = 0 },
+        ["border-color"] = { r = 0, g = 0, b = 0, a = 0 },
+        ["offsetX"] = 0,
+        ["offsetY"] = 0,
+        ["text-size"] = 10,
+        ["text-font"] = "PT Sans Bold",
+        ["text-color"] = { r = 0, g = 0, b = 0},
+        ["text-transform"] = "none",
+        ["text-location"] = "CENTER",
+        ["text-offsetX"] = 0,
+        ["text-offsetY"] = 0,
+        ["vertex-color"] = { r = 1, g = 1, b = 1}
+      }
+
+      return defaults[property]
+  end
+
+  __Arguments__ { String, String }
+  function GetElementPropertyFromDB(self, elementID, property)
+    Database:SelectRoot()
+
+    if Database:SelectTable(false, "themes", self.name, "properties", elementID) then
+      return Database:GetValue(property)
+    end
+  end
+
+  __Arguments__ { String, String, Argument(Any, true)}
+  function SetElementPropertyToDB(self, elementID, property, value)
+    Database:SelectRoot()
+
+    if Database:SelectTable(true, "themes", self.name, "properties", elementID) then
+      Database:SetValue(property, value )
+    end
+  end
+
+  __Arguments__ { String }
+  function ElementExistsFromDB(self, elementID)
+    Database:SelectRoot()
+
+    if Database:SelectTable(false, "themes", self.name, "properties", elementID) then
       return true
-    end
-
-    if includeParent then
-      local isBlock = target:find("block")
-      if isBlock then
-        local _, name, _ = strsplit(".", target, 3)
-
-        local t = string.format("block.%s.*", name)
-        if self.properties[t] and self.properties[t][property] then
-          return true
-        end
-
-        t = string.format("block.%s", name)
-        if self.properties[t] and self.properties[t][property] then
-          return true
-        end
-
-        t = "block.*"
-        if self.properties[t] and self.properties[t][property] then
-          return true
-        end
-      else
-        local className, _ = strsplit(".", target, 2)
-
-        t = string.format("%s.*", className)
-        if self.properties[t] and self.properties[t][property] then
-          return true
-        end
-      end
     end
 
     return false
   end
 
-  function HasFlag(self, class, flag, includeParent)
-    flag = "@"..flag
-    local target = string.format("%s[%s]", class, flag)
-    if self.properties[target] then
-      return true
+  ------------------------------------------------------------------------------
+  --                        Helper Methods                                    --
+  ------------------------------------------------------------------------------
+  __Arguments__ { Class, Table }
+  __Static__() function InstallScript(self, frame)
+    if not frame.GetScript or not frame.SetScript then
+      return
     end
 
-    if includeParent then
-      local isBlock = class:find("block")
-      if isBlock then
-        local _, name, _ = strsplit(".", class, 3)
+    local theme = Themes:GetSelected()
+    if not theme or not theme:ElementHasState(frame.elementID, "hover") then return end
 
-        local t = string.format("block.%s.*[%s]", name, flag)
-        if self.properties[t] then
-          return true
-        end
-
-        t = string.format("block.%s[%s]", name, flag)
-        if self.properties[t] then
-          return true
-        end
-
-        t = "block.*"
-        t = string.format("block.*[%s]", flag)
-        if self.properties[t] then
-          return true
-        end
+    local function FrameOnHover(f)
+      if Frame:MustBeInteractive(f) then
+        Theme:SkinFrame(frame, nil, "hover")
       else
-        local className, _ = strsplit(".", class, 2)
-
-        t = string.format("%s.*[%s]", className, flag)
-        if self.properties[t] then
-          return true
-        end
+        Theme:SkinFrame(frame)
       end
     end
 
-    return false
-  end
+    if not frame:GetScript("OnEnter") then
+      frame:SetScript("OnEnter", function()
+        frame:SetScript("OnUpdate", FrameOnHover)
+      end)
+    end
 
-
-  function _SetProperty(self, target, property, value, saveInDB)
-    local properties
-    if saveInDB then
-      if not _DB.Themes then _DB.Themes = {} end
-
-      if not _DB.Themes[self.name] then
-        _DB.Themes[self.name] = {}
-        _DB.Themes[self.name].properties = {}
-      end
-
-      properties = _DB.Themes[self.name].properties
-    else
-      properties = self.properties
+    if not frame:GetScript("OnLeave") then
+      frame:SetScript("OnLeave", function()
+        frame:SetScript("OnUpdate", nil)
+        Theme:SkinFrame(frame)
+      end)
     end
 
 
-    local targetProps = properties[target] and properties[target] or SDictionary()
-    targetProps[property] = value
-
-    if not properties[target] then
-      properties[target] = targetProps
+    if not frame:GetScript("OnMouseDown") and not frame:GetScript("OnMouseUp") then
+      frame:SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
+      frame:SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
     end
-
   end
 
-  function _ParseFlags(self, fstr)
-    local flags = {}
-    for flag in string.gmatch(fstr, "[\[\|]([@,%w]*)") do
-      tinsert(flags, flag)
-    end
-    return flags
-  end
+  -- ElementFlags (9)  = INCLUDE_PARENT (1) + INCLUDE_STATE (8)
+  __Arguments__ { Class, String, Argument(String, true), Argument(ElementFlags, true, 9)}
+  __Static__() function GetReadingIDList(self, elementID, inheritElementID, flags)
+    local rawElementID, states = self:RemoveStates(elementID)
+    local categories = { strsplit(".", rawElementID) }
+    local list = List()
 
-
-  __Arguments__{ String, String, Argument(Any, true), Argument(Boolean, true, false) }
-  function SetProperty(self, target, property, value, saveInDB)
-    if target == "*" then
-      self:_SetProperty(target, property, value, saveInDB)
-    else
-      local class, fstr = strsplit(".", target)
-      if not fstr then
-        self:_SetProperty(target, property, value, saveInDB)
-        return
-      end
-
-      local flags = self:_ParseFlags(fstr)
-      if #flags > 0 then
-        _, _, fstr = fstr:find("(%w*)[\[]")
-        for _, flag in pairs(flags) do
-          target = string.format("%s.%s[%s]", class, fstr, flag)
-          self:_SetProperty(target, property, value, saveInDB)
-        end
-      else
-        self:_SetProperty(target, property, value, saveInDB)
+    local parentIDNum
+    if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+      if inheritElementID then
+        parentIDNum = #{ strsplit(".", inheritElementID) }
       end
     end
-  end
 
-  __Arguments__{ String, Any }
-  function SetProperty(self, property, value)
-    This.SetProperty(self, "*", property, value)
-  end
 
-  function _SetScript(self,  target, script, funcStr)
-    local targetScripts = self.scripts[target] and self.scripts[target] or SDictionary()
-    targetScripts[script] = funcStr
-
-    if not self.scripts[target] then
-      self.scripts[target] = targetScripts
-    end
-  end
-
-  __Arguments__{ String, String, String }
-  function SetScript(self, target, script, funcStr)
-      if target == "*" then
-        self:_SetScript(target, script, funcStr)
-      else
-        local class, fstr = strsplit(".", target)
-        if not fstr then
-          return
+    -- We start to create the list without state
+    local currentID = ""
+    if not ValidateFlags(flags, ElementFlags.IGNORE_WITHOUT_STATE) then
+      if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+        list:Insert("*")
+      end
+      for index, category in ipairs(categories) do
+        if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+          if parentIDNum and parentIDNum == index then
+            list:Insert(inheritElementID)
+          end
         end
 
-        local flags = self:_ParseFlags(fstr)
-        if #flags > 0 then
-          _, _, fstr = fstr:find("(%w*)[\[]")
-          for _, flag in pairs(flags) do
-            target = string.format("%s.%s[%s]", class, fstr, flag)
-            self:_SetScript(target, script, funcStr)
+        if index ~= #categories then
+          if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+            list:Insert(currentID..category..".*")
           end
         else
-          self:_SetScript(target, script, funcStr)
+          list:Insert(currentID..category)
         end
-      end
-  end
-
-  __Arguments__{ String, String }
-  function SetScript(self, script, funcStr)
-    This.SetScript(self, "*", script , funcStr)
-  end
-
-  __Arguments__{ String, String }
-  function GetScript(self, target, script)
-    -- tracker.name-OnHover
-    local funcID  = target.."-"..script
-    local funcStr = self.scripts[target] and self.scripts[target][property]
-
-    --print("GetScript", funcID, funcStr)
-
-    -- if we don't find it, check if the parent script exists
-    if not funcStr then
-      local class = strsplit(".", target)
-      target = class..".*"
-      if self.scripts[target] and self.scripts[target][script] then
-        funcStr = self.scripts[target][script]
-        funcID = class.."-"..script
-      elseif self.scripts["*"] and self.scripts["*"][script] then
-        funcStr = self.scripts["*"][script]
-        funcID = "*-"..script
-      else
-        return
+        currentID = currentID .. category .. "."
       end
     end
 
-    if self.functionCache[funcID] then
-      return self.functionCache[funcID]
+    -- Then we do the same things with the state if exists
+    if ValidateFlags(flags, ElementFlags.INCLUDE_STATE) then
+      if states then
+        currentID = ""
+        if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+          list:Insert("*"..states)
+        end
+        for index, category in ipairs(categories) do
+          if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+            if parentIDNum and parentIDNum == index then
+              list:Insert(inheritElementID..states)
+            end
+          end
+
+          if index ~= #categories then
+            if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+              list:Insert(currentID..category..".*"..states)
+            end
+          else
+            list:Insert(currentID..category..states)
+          end
+          currentID = currentID .. category .. "."
+
+        end
+      end
+    end
+    return list:Range(-1, 1, -1):ToList()
+  end
+
+  __Arguments__ { Class, String, Argument(Boolean, true, false)}
+  __Static__() function GetElementNameFromString(self, str, includeFlags)
+
+    local categories = {strsplit(".", str) }
+    if includeFlags then
+      return categories[#categories]
     else
-      local loadedFunction, errorString = loadstring("return " .. funcStr)
-      if errorString then
-        print(errorString)
-      else
-        local success, func = pcall(assert(loadedFunction))
-        if success then
-          self.functionCache[funcStr] = func
-          return func
+      local elementName = categories[#categories]
+      local elementName = elementName:gsub("(%[[@,|%w]*%])", "")
+      return elementName
+    end
+  end
+
+  __Arguments__ { Class, String}
+  __Static__() function RemoveStates(self, str)
+    local states = str:match("(%[[,|%w]*%])")
+    local str =  str:gsub("(%[[,|%w]*%])", "")
+    return str, states
+  end
+
+  __Arguments__ { Class, String }
+  __Static__() function GetPossibleElementIDs(self, str)
+    local elementID, states = self:RemoveStates(str)
+    if states then
+      local possibleStates =  { self:GetPossibleStates(states) }
+      local list = {}
+      for _, s in ipairs(possibleStates) do
+        tinsert(list, string.format("%s[%s]", elementID, s))
+      end
+      return unpack(list)
+    else
+      return elementID
+    end
+  end
+
+
+  __Arguments__ { Class, String }
+  __Static__() function GetPossibleStates(self, str)
+    -- Build the list
+    local andList = {}
+    local andSplit = { strsplit(",", str) }
+    for _, orList in ipairs(andSplit) do
+      local list = {}
+      local orSplit = { strsplit("|", orList) }
+      for _, state in ipairs(orSplit) do
+        state = state:gsub("([%c%p%s]*)", "") -- clear space and @ character
+        tinsert(list, state)
+      end
+      tinsert(andList, list)
+    end
+
+    -- helper function (recurcive)
+    local function GetList(i)
+      local l = {}
+      if andList[i+1] then
+        local childStates = { GetList(i+1) }
+        for _, state in ipairs(andList[i]) do
+          for _, childState in ipairs(childStates) do
+            tinsert(l, state..","..childState)
+          end
         end
+        return unpack(l)
+      else
+        return unpack(andList[i])
       end
     end
-  end
 
-  __Arguments__{ String, String }
-  function RegisterFont(self, fontID, fontFile)
-    if _LibSharedMedia then
-      _LibSharedMedia:Register("font", fontID, fontFile)
-    end
-  end
-
-  function SetOption(self, option, value)
-    self.options[option] = value
-  end
-
-  function GetOption(self, option)
-    return self.options[option]
+    return GetList(1)
   end
 
   property "author" { TYPE = String }
   property "version" { TYPE = String }
-  property "name" { TYPE = String }
-  property "stage" { TYPE = String }
-  property "func" { TYPE = String }
-  --property "properties" { TYPE = SDictionary }
-
-  -- Avoid to refresh the frames when the addons has been not finished its loading.
-  __Static__()  property "refreshOnPropertyChanged" { DEFAULT = false }
-
-  __Static__()
-  function _RegisterClass(self, id, class)
-    _DEFAULT_CLASSES[id] = class
-  end
+  property "name" {  TYPE = String }
+  property "stage" { TYPE = String, DEFAULT = "release"}
 
   function Serialize(self, info)
     info:SetValue("name", self.name, String)
@@ -1664,6 +1506,7 @@ class "Theme" extend "ISerializable"
     info:SetValue("properties", self.properties, SDictionary)
     info:SetValue("scripts", self.scripts, SDictionary)
     info:SetValue("options", self.options, SDictionary)
+
   end
 
   __Arguments__{}
@@ -1671,22 +1514,78 @@ class "Theme" extend "ISerializable"
     self.properties = SDictionary()
     self.scripts = SDictionary()
     self.options = SDictionary()
-    self.functionCache = {}
-  end
 
-  __Arguments__{ SerializationInfo }
-  function Theme(self, info)
-
-    self.name = info:GetValue("name", String)
-    self.author = info:GetValue("author", String)
-    self.version = info:GetValue("version", String)
-    self.stage = info:GetValue("stage", String)
-    --self.frameProperties = info:GetValue("frameProperties", Table)
-    self.properties = info:GetValue("properties", SDictionary)
-    self.func = info:GetValue("func", String)
-    self.scripts = info:GetValue("scripts", SDictionary)
-    self.options = info:GetValue("options", SDictionary)
-
+    self.links = SDictionary() -- used as cache to improve get performance
   end
 
 endclass "Theme"
+
+class "Themes"
+  _CURRENT_THEME = nil
+  _THEMES = Dictionary()
+
+  __Static__() __Arguments__ { Class, Theme }
+  function Register(self, theme)
+    if not _THEMES[theme.name] then
+      _THEMES[theme.name] = theme
+    end
+
+    if not _CURRENT_THEME then
+      _CURRENT_THEME = theme
+    end
+  end
+
+  __Static__() __Arguments__ { Class, String }
+  function Select(self, themeName)
+    local theme = _THEMES[themeName]
+    if theme then
+      _CURRENT_THEME = theme
+      Options:Set("theme-selected", themeName)
+
+      -- TODO Does the refrehsed
+      -- CallbackHandlers:CallGroup("refresher")
+      CallbackHandlers:CallGroup("refresher")
+    end
+  end
+
+  __Static__() __Arguments__ { Class }
+  function GetSelected(self)
+    -- In case where no theme has been selected
+    if not _CURRENT_THEME then
+      -- Check in the DB if the user has selected a theme
+      local selected = Options:Get("theme-selected")
+      -- The user has slected a theme
+      if selected then
+        _CURRENT_THEME = self:Get(selected)
+        -- If the selected theme isn't available, return the first
+        if not _CURRENT_THEME then
+          _CURRENT_THEME = self:GetFirst()
+        end
+      else
+        _CURRENT_THEME = self:GetFirst()
+      end
+    end
+
+    return _CURRENT_THEME
+  end
+
+  __Static__() __Arguments__ { Class }
+  function GetIterator(self)
+    return _THEMES:GetIterator()
+  end
+
+  __Static__() __Arguments__ { Class, String }
+  function Get(self, name)
+    for _, theme in _THEMES:GetIterator() do
+      if theme.name == name then
+        return theme
+      end
+    end
+  end
+
+  __Static__() __Arguments__  { Class, String }
+  function GetFirst(self)
+    for _, theme in _THEMES:GetIterator() do return theme end
+  end
+
+endclass "Themes"

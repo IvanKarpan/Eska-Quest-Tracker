@@ -171,10 +171,10 @@ class "ObjectiveTracker" inherit "Frame"
   end
 
   function Refresh(self)
-    Theme.SkinFrame(self.frame)
+    Theme:SkinFrame(self.frame)
 
-    Theme.SkinFrame(self.scrollbar)
-    Theme.SkinTexture(self.scrollbar.thumb)
+    Theme:SkinFrame(self.scrollbar)
+    Theme:SkinTexture(self.scrollbar.thumb)
 
   end
 
@@ -186,12 +186,9 @@ class "ObjectiveTracker" inherit "Frame"
   end
 
   function RegisterFramesForThemeAPI(self)
-    Theme.RegisterFrame(self.tID, self.frame)
-
-    Theme.RegisterFrame(self.tID..".scrollbar", self.scrollbar)
-    Theme.RegisterTexture(self.tID..".scrollbar.thumb", self.scrollbar.thumb)
-
-    Theme.RegisterRefreshHandler(self.tID, function() self:Refresh() end)
+    Theme:RegisterFrame("tracker.frame", self.frame)
+    Theme:RegisterFrame("tracker.scrollbar", self.scrollbar)
+    Theme:RegisterTexture("tracker.scrollbar.thumb", self.scrollbar.thumb)
   end
 
   ------------------------------------------------------------------------------

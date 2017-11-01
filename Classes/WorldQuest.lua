@@ -48,7 +48,7 @@ class "WorldQuest" inherit "Quest"
 endclass "WorldQuest"
 
 WorldQuest:InstallOptions()
-Theme.RegisterRefreshHandler("worldQuest", WorldQuest.RefreshAll)
+--Theme.RegisterRefreshHandler("worldQuest", WorldQuest.RefreshAll)
 
 
 function OnLoad(self)

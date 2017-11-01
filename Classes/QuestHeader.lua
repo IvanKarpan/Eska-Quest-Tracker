@@ -14,7 +14,7 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
   local function SetName(self, new, old, prop)
-    Theme.SkinText(self.frame.name, new)
+    Theme:SkinText(self.frame.name, new)
   end
   ------------------------------------------------------------------------------
   --                                   Methods                                --
@@ -115,8 +115,8 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
 
 
   function Refresh(self)
-    Theme.SkinFrame(self.frame)
-    Theme.SkinText(self.frame.name, self.name)
+    Theme:SkinFrame(self.frame)
+    Theme:SkinText(self.frame.name, self.name)
   end
 
   __Static__() function RefreshAll()
@@ -129,8 +129,8 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterFrame(class._THEME_CLASS_ID, self.frame)
-    Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
+    Theme:RegisterFrame(class._THEME_CLASS_ID, self.frame)
+    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
   end
 
   __Static__()
@@ -191,7 +191,7 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   end
 endclass "QuestHeader"
 QuestHeader:InstallOptions()
-Theme.RegisterRefreshHandler("questHeader", QuestHeader.RefreshAll)
+-- Theme.RegisterRefreshHandler("questHeader", QuestHeader.RefreshAll)
 --============================================================================--
 -- OnLoad Handler
 --============================================================================--

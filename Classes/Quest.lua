@@ -16,9 +16,9 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
-      Theme.SkinText(self.frame.headerName, new)
+      Theme:SkinText(self.frame.headerName, new)
     elseif prop == "level" then
-      Theme.SkinText(self.frame.headerLevel, new)
+      Theme:SkinText(self.frame.headerLevel, new)
       if Options:Get("quest-color-level-by-difficulty") then
         local color = GetQuestDifficultyColor(new)
         self.frame.headerLevel:SetTextColor(color.r, color.g, color.b)
@@ -82,14 +82,14 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
 
   function Refresh(self)
-    Theme.SkinFrame(self.frame)
-    Theme.SkinFrame(self.frame.header)
-    Theme.SkinText(self.frame.headerName, self.name)
+    Theme:SkinFrame(self.frame)
+    Theme:SkinFrame(self.frame.header)
+    Theme:SkinText(self.frame.headerName, self.name)
 
 
     if Options:Get("quest-show-level") then
       self:ShowLevel()
-      Theme.SkinText(self.frame.headerLevel, self.level)
+      Theme:SkinText(self.frame.headerLevel, self.level)
 
       if Options:Get("quest-color-level-by-difficulty") then
         local color = GetQuestDifficultyColor(self.level)
@@ -160,11 +160,11 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterFrame(class._THEME_CLASS_ID, self.frame)
-    Theme.RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header)
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".frame", self.frame)
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header)
 
-    Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.headerName)
-    Theme.RegisterText(class._THEME_CLASS_ID..".level", self.frame.headerLevel)
+    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.headerName)
+    Theme:RegisterText(class._THEME_CLASS_ID..".level", self.frame.headerLevel)
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
@@ -288,7 +288,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
 endclass "Quest"
 Quest:InstallOptions()
-Theme.RegisterRefreshHandler("quest", Quest.RefreshAll)
+--Theme.RegisterRefreshHandler("quest", Quest.RefreshAll)
 
 --============================================================================--
 -- OnLoad Handler

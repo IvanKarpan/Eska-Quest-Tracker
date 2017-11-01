@@ -7,7 +7,7 @@ Scorpio            "EskaQuestTracker.Options.Achievements"                     "
 -- ========================================================================== --
 namespace "EQT"
 -- ========================================================================== --
-_Categories.Achievements = {
+--[[_Categories.Achievements = {
   type = "group",
   name = "Achievements",
   order = 3,
@@ -41,4 +41,32 @@ _Categories.Achievements = {
       set = function(_, value) Options:Set("achievement-show-description", value) end
     },
   }
-}
+} --]]
+
+function OnLoad(self)
+  self:RegisterCategory("Achievements", "Achievements", 30, BuildAchievementsCategory)
+end
+
+function BuildAchievementsCategory(content)
+  -- [OPTIONS] Hide Criteria completed
+  local hideCriteriaCompleted = _AceGUI:Create("CheckBox")
+  hideCriteriaCompleted:SetLabel("Hide completed Criteria")
+  hideCriteriaCompleted:SetValue(Options:Get("achievement-hide-criteria-completed"))
+  hideCriteriaCompleted:SetCallback("OnValueChanged", function(_, _, hide) Options:Set("achievement-hide-criteria-completed", hide) end)
+  content:AddChild(hideCriteriaCompleted)
+
+  -- [OPTIONS] Max Criteria displayed
+  local maxCriteriaDisplayed = _AceGUI:Create("Slider")
+  maxCriteriaDisplayed:SetLabel("Max criteria displayed")
+  maxCriteriaDisplayed:SetValue(Options:Get("achievement-max-criteria-displayed"))
+  maxCriteriaDisplayed:SetSliderValues(0, 20, 1)
+  maxCriteriaDisplayed:SetCallback("OnValueChanged", function(_, _, amount) Options:Set("achievement-max-criteria-displayed", amount) end)
+  content:AddChild(maxCriteriaDisplayed)
+
+  -- [OPTIONS] Show description
+  local showDesc = _AceGUI:Create("CheckBox")
+  showDesc:SetLabel("Show Description")
+  showDesc:SetValue(Options:Get("achievement-show-description"))
+  showDesc:SetCallback("OnValueChanged", function(_, _, show) Options:Set("achievement-show-description", show) end)
+  content:AddChild(showDesc)
+end

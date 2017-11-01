@@ -14,7 +14,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
-      Theme.SkinText(self.frame.name, new)
+      Theme:SkinText(self.frame.name, new)
     elseif prop == "texture" then
       self.frame.ftex.texture:SetTexture(new)
     end
@@ -47,8 +47,8 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
       Super.Refresh(self)
     end
 
-    Theme.SkinFrame(self.frame.ftex)
-    Theme.SkinText(self.frame.name, self.name)
+    Theme:SkinFrame(self.frame.ftex)
+    Theme:SkinText(self.frame.name, self.name)
   end
 
   __Static__()
@@ -62,8 +62,8 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterFrame(class._THEME_CLASS_ID..".icon", self.frame.ftex)
-    Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".icon", self.frame.ftex)
+    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
   end
 
   __Static__()

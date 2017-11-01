@@ -84,7 +84,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
   local function SetLevel(self, new)
     -- self.frame.level:SetText(string.format("LEVEL %i", new))
-    Theme.SkinText(self.frame.level, string.format("LEVEL %i", new))
+    Theme:SkinText(self.frame.level, string.format("LEVEL %i", new))
   end
 
   local function SetTimeLimit(self, new)
@@ -171,7 +171,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterText(class._THEME_CLASS_ID..".level", self.frame.level)
+    Theme:RegisterText(class._THEME_CLASS_ID..".level", self.frame.level)
   end
 
   __Static__()

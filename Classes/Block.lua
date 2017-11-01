@@ -14,16 +14,16 @@ class "Block" inherit "Frame"
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
   function SetText(self, new)
-    Theme.SkinText(self.frame.header.text, new)
+    Theme:SkinText(self.frame.header.text, new)
   end
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
   __Arguments__ {}
   function Refresh(self)
-    Theme.SkinFrame(self.frame)
-    Theme.SkinFrame(self.frame.header, self.text)
-    Theme.SkinTexture(self.frame.header.stripe)
+    Theme:SkinFrame(self.frame)
+    Theme:SkinFrame(self.frame.header, self.text)
+    Theme:SkinTexture(self.frame.header.stripe)
   end
 
 
@@ -31,9 +31,9 @@ class "Block" inherit "Frame"
   function RegisterFramesForThemeAPI(self, child)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterFrame(class._THEME_CLASS_ID, self.frame, "block")
-    Theme.RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header, "block.header")
-    Theme.RegisterTexture(class._THEME_CLASS_ID..".stripe", self.frame.header.stripe, "block.stripe")
+    Theme:RegisterFrame(class._THEME_CLASS_ID, self.frame, "block")
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header, "block.header")
+    Theme:RegisterTexture(class._THEME_CLASS_ID..".stripe", self.frame.header.stripe, "block.stripe")
   end
 
   -- Say to option the keyword available
@@ -121,26 +121,10 @@ class "Block" inherit "Frame"
   end
 endclass "Block"
 Block:InstallOptions()
-Theme.RegisterRefreshHandler("block", Block.RefreshAll)
+--Theme.RegisterRefreshHandler("block", Block.RefreshAll)
 -- ========================================================================== --
 -- == OnLoad Handler
 -- ========================================================================== --
 function OnLoad(self)
-  --[[_DB:SetDefault("Block", {
-    -- frame color
-    backdropColor = { r = 0, g = 0, b = 0, a = 0},
-    borderColor = { r = 0, g = 0, b = 0, a = 0 },
-    -- header Color
-    headerStripeColor = { r = 0, g = 0, b = 0, a = 0.5 },
-    headerBackdropColor = { r = 0, g = 0, b = 0, a = 0.5 },
-    headerBorderColor = { r = 0, g = 0, b = 0, a = 1},
-    -- header Text properties
-    headerTextSize = 17,
-    headerTextColor = { r = 0, g = 199/255, b = 1},
-    headerTextFont = "PT Sans Narrow Bold",
-    headerTextTransform = "uppercase",
-    headerTextOffsetX = 0,
-    headerTextOffsetY = 0,
-    headerTextLocation = "CENTER",
-  })--]]
+  CallbackHandlers:Register("block/refresher", CallbackHandler(Block.RefreshAll), "refresher")
 end

@@ -61,7 +61,7 @@ function OnLoad(self)
   -- Create the blocks table in order to register them.
   self.blocks = Dictionary()
 
-  self:SelectTheme(Options:Get("theme-selected"))
+  Themes:Select(Options:Get("theme-selected"))
 
   -- Setup the minimap button
   self:SetupMinimapButton()
@@ -72,6 +72,11 @@ function OnEnable(self)
 
   -- From now, all themes property changes will refresh the targeted frame.
   Theme.refreshOnPropertyChanged = true
+end
+
+function OnQuit(self)
+  -- Do a clean in the Database (remove empty tables) when the player log out
+  Database:Clean()
 end
 
 function SetupMinimapButton(self)
@@ -226,7 +231,7 @@ function SelectTheme(self, name)
     _CURRENT_THEME = theme
     Options:Set("theme-selected", name)
 
-    Theme.RefreshGroups()
+    --Theme.RefreshGroups()
   end
 end
 

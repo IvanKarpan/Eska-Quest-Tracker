@@ -3,11 +3,10 @@
 ## Author: Skamer
 ## Notes: Eska Quest Tracker
 ## SavedVariables: EskaQuestTrackerDB
-## Version: 1.4.4
-## X-Stage: Release
+## Version: 1.5.0
+## X-Stage: Alpha
 ## Dependencies: PLoop, Scorpio
 ## OptionalDeps: LibStub, LibSharedMedia-3.0
-
 embeds.xml
 
 API.lua
@@ -22,6 +21,4 @@ EskaQuestTracker.lua
 Loader.lua
 
 Themes\themes.xml
-
-
 Modules\modules.xml

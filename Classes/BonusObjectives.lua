@@ -45,7 +45,7 @@ class "BonusQuest" inherit "Quest"
   end
 endclass "BonusQuest"
 BonusQuest:InstallOptions()
-Theme.RegisterRefreshHandler("bonusQuest", BonusQuest.RefreshAll)
+--Theme.RegisterRefreshHandler("bonusQuest", BonusQuest.RefreshAll)
 
 
 class "BonusObjectives" inherit "Block"

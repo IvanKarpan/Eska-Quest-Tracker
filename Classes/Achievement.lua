@@ -14,7 +14,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
-      Theme.SkinText(self.frame.headerName, new)
+      Theme:SkinText(self.frame.headerName, new)
     elseif prop == "icon" then
       self.frame.ftex.texture:SetTexture(new)
     elseif prop == "desc" then
@@ -102,12 +102,12 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
 
   function Refresh(self)
-    Theme.SkinFrame(self.frame)
-    Theme.SkinFrame(self.frame.header)
+    Theme:SkinFrame(self.frame)
+    Theme:SkinFrame(self.frame.header)
 
-    Theme.SkinText(self.frame.headerName, self.name)
+    Theme:SkinText(self.frame.headerName, self.name)
 
-    Theme.SkinFrame(self.frame.ftex)
+    Theme:SkinFrame(self.frame.ftex)
 
   end
 
@@ -127,12 +127,12 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme.RegisterFrame(class._THEME_CLASS_ID, self.frame)
-    Theme.RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header)
+    Theme:RegisterFrame(class._THEME_CLASS_ID, self.frame)
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header)
 
-    Theme.RegisterText(class._THEME_CLASS_ID..".name", self.frame.headerName)
+    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.headerName)
 
-    Theme.RegisterFrame(class._THEME_CLASS_ID..".icon", self.frame.ftex)
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".icon", self.frame.ftex)
   end
 
   __Static__() function RefreshAll()

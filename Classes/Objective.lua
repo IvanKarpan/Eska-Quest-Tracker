@@ -170,15 +170,19 @@ class "Objective" inherit "Frame" extend "IReusable"
 
 	function Refresh(self)
 		local state = self.isCompleted and "completed" or "progress"
+		--local startTime = debugprofilestop()
 
-		Theme.SkinFrame(self.frame, nil, state)
-		Theme.SkinFrame(self.frame.square, nil, state)
+		Theme:SkinFrame(self.frame, nil, state)
+		Theme:SkinFrame(self.frame.square, nil, state)
 
 
 		-- @HACK Fix to position
 		self.frame.text:ClearAllPoints()
 		self.frame.text:SetPoint("TOPLEFT", self.frame.square, "TOPRIGHT", 5, 0)
 		self.frame.text:SetPoint("RIGHT")
+		--print(format("myFunction executed in %f ms", debugprofilestop()-startTime))
+
+
 	end
 
 	__Static__() function RefreshAll()
@@ -203,20 +207,20 @@ class "Objective" inherit "Frame" extend "IReusable"
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
 	local function SetText(self, new, old, prop)
-		Theme.SkinText(self.frame.text, new, self.isCompleted and "completed" or "progress")
+		Theme:SkinText(self.frame.text, new, self.isCompleted and "completed" or "progress")
 	end
 
 	local function SetCompleted(self, new, old, prop)
 		local state = new and "completed" or "progress"
-		Theme.SkinFrame(self.frame, self.text, state)
-		Theme.SkinFrame(self.frame.square, nil, state)
+		Theme:SkinFrame(self.frame, self.text, state)
+		Theme:SkinFrame(self.frame.square, nil, state)
 	end
 
 	function RegisterFramesForThemeAPI(self)
 		local classPrefix = "objective"
 
-		Theme.RegisterFrame(classPrefix, self.frame)
-		Theme.RegisterFrame(classPrefix..".square", self.frame.square)
+		Theme:RegisterFrame(classPrefix..".frame", self.frame)
+		Theme:RegisterFrame(classPrefix..".square", self.frame.square)
 	end
 
 	__Static__()
@@ -303,7 +307,7 @@ class "Objective" inherit "Frame" extend "IReusable"
   end
 endclass "Objective"
 Objective:InstallOptions()
-Theme.RegisterRefreshHandler("objective", Objective.RefreshAll)
+--Theme.RegisterRefreshHandler("objective", Objective.RefreshAll)
 
 class "DottedObjective" inherit "Frame" extend "IReusable"
 	_DottedObjectiveCache = setmetatable( {}, { __mode = "k"})
@@ -343,4 +347,7 @@ function OnLoad(self)
 	-- Register this class in the object manager
 	_ObjectManager:Register(Objective)
 	_ObjectManager:Register(DottedObjective)
+
+	-- Register the refresher
+	CallbackHandlers:Register("objective/refresher", CallbackHandler(Objective.RefreshAll), "refresher")
 end
