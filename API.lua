@@ -877,7 +877,6 @@ endclass "Frame"
 --------------------------------------------------------------------------------
 __Serializable__() class "Theme" extend "ISerializable"
 _REGISTERED_FRAMES = {}
-_ELEMENTS_LINK = {}
   ------------------------------------------------------------------------------
   --                       Register Methods                                   --
   ------------------------------------------------------------------------------
@@ -942,8 +941,20 @@ _ELEMENTS_LINK = {}
   ------------------------------------------------------------------------------
   --                     Skin Methods                                         --
   ------------------------------------------------------------------------------
-  __Arguments__ { Class, Table, Argument(String, true), Argument(String, true) }
-  __Static__() function SkinFrame(self, frame, originText, state)
+  __Flags__()
+  enum "SkinFlags" {
+    FRAME_BACKGROUND_COLOR = 1,
+    FRAME_BORDER_COLOR = 2,
+    TEXT_SIZE = 4,
+    TEXT_COLOR = 8,
+    TEXT_FONT = 16,
+    TEXT_TRANSFORM = 32,
+    TEXTURE_COLOR = 64,
+    -- ALL = 127
+  }
+
+  __Arguments__ { Class, Table, Argument(String, true), Argument(String, true), Argument(SkinFlags, true, 127) }
+  __Static__() function SkinFrame(self, frame, originText, state, flags)
     -- Get the selected theme
     local theme = Themes:GetSelected()
 
@@ -959,35 +970,36 @@ _ELEMENTS_LINK = {}
     end
 
 
+
     -- The frame is a normal frame
     if frame.type == "FRAME" then
       -- Backgorund color
       local color
-      if frame.SetBackdropColor then
+      if frame.SetBackdropColor and ValidateFlags(flags, SkinFlags.FRAME_BACKGROUND_COLOR) then
         color = theme:GetElementProperty(elementID, "background-color", inheritElementID)
         frame:SetBackdropColor(color.r, color.g, color.b, color.a)
       end
 
-      if frame.SetBackdropBorderColor then
+      if frame.SetBackdropBorderColor and ValidateFlags(flags, SkinFlags.FRAME_BORDER_COLOR) then
         color = theme:GetElementProperty(elementID, "border-color", inheritElementID)
         frame:SetBackdropBorderColor(color.r, color.g, color.g, color.a)
       end
 
       if frame.text then
-        Theme:SkinText(frame.text, originText, state)
+        Theme:SkinText(frame.text, originText, state, flags)
       end
 
       if frame.texture then
-        Theme:SkinTexture(frame.texture, state)
+        Theme:SkinTexture(frame.texture, state, flags)
       end
     end
   end
 
-  __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true) }
-  __Static__() function SkinText(self, fontstring, originText, state)
+  __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true), Argument(SkinFlags, true, 127) }
+  __Static__() function SkinText(self, fontstring, originText, state, flags)
     local theme = Themes:GetSelected()
 
-    if not theme then return end -- TODO add error msg
+    if not theme  then return end -- TODO add error msg
     if not fontstring then return end  -- TODO add error msg
 
     local elementID = fontstring.elementID
@@ -999,13 +1011,33 @@ _ELEMENTS_LINK = {}
       elementID = elementID.."["..state.."]"
     end
 
-    local size = theme:GetElementProperty(elementID, "text-size", inheritElementID)
-    local font = _LibSharedMedia:Fetch("font", theme:GetElementProperty(elementID, "text-font", inheritElementID))
-    local transform = theme:GetElementProperty(elementID, "text-transform", inheritElementID)
+
+    local font, size = fontstring:GetFont()
+    local textColor = {}
+    textColor.r, textColor.g, textColor.b, textColor.a = fontstring:GetTextColor()
+    if ValidateFlags(flags, SkinFlags.TEXT_SIZE) then
+      size = theme:GetElementProperty(elementID, "text-size", inheritElementID)
+    end
+
+    if ValidateFlags(flags, SkinFlags.TEXT_FONT) then
+      font = _LibSharedMedia:Fetch("font", theme:GetElementProperty(elementID, "text-font", inheritElementID))
+    end
     fontstring:SetFont(font, size, "OUTLINE")
 
-    local textColor = theme:GetElementProperty(elementID, "text-color", inheritElementID)
+    if ValidateFlags(flags, SkinFlags.TEXT_COLOR) then
+      textColor = theme:GetElementProperty(elementID, "text-color", inheritElementID)
+    end
     fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
+
+
+
+    --local size = theme:GetElementProperty(elementID, "text-size", inheritElementID)
+    --local font = _LibSharedMedia:Fetch("font", theme:GetElementProperty(elementID, "text-font", inheritElementID))
+    --local transform = theme:GetElementProperty(elementID, "text-transform", inheritElementID)
+    --fontstring:SetFont(font, size, "OUTLINE")
+
+    --local textColor = theme:GetElementProperty(elementID, "text-color", inheritElementID)
+    --fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
 
     local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
     local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
@@ -1029,17 +1061,20 @@ _ELEMENTS_LINK = {}
       txt = fontstring:GetText()
     end
 
-    if transform == "uppercase" then
-      txt = txt:upper()
-    elseif transform == "lowercase" then
-      txt = txt:lower()
+    if ValidateFlags(flags, SkinFlags.TEXT_TRANSFORM) then
+      local transform = theme:GetElementProperty(elementID, "text-transform", inheritElementID)
+      if transform == "uppercase" then
+        txt = txt:upper()
+      elseif transform == "lowercase" then
+        txt = txt:lower()
+      end
     end
 
     fontstring:SetText(txt)
   end
 
-  __Arguments__{ Class, Table, Argument(String, true) }
-  __Static__() function SkinTexture(self, texture, state)
+  __Arguments__{ Class, Table, Argument(String, true), Argument(SkinFlags, true, 127) }
+  __Static__() function SkinTexture(self, texture, state, flags)
     local theme = Themes:GetSelected()
 
     if not theme then return end -- TODO add error msg
@@ -1054,8 +1089,10 @@ _ELEMENTS_LINK = {}
       elementID = elementID.."["..state.."]"
     end
 
-    local color = theme:GetElementProperty(elementID, "vertex-color", inheritElementID)
-    texture:SetVertexColor(color.r, color.g, color.b, color.a)
+    if ValidateFlags(flags, SkinFlags.TEXTURE_COLOR) then
+      local color = theme:GetElementProperty(elementID, "vertex-color", inheritElementID)
+      texture:SetVertexColor(color.r, color.g, color.b, color.a)
+    end
   end
 
   ------------------------------------------------------------------------------
@@ -1145,7 +1182,6 @@ _ELEMENTS_LINK = {}
       end
 
       local elementLink = self:GetElementLink(elementID, property)
-      --local elementLink = nil
       if elementLink then
         value = self:GetElementPropertyFromDB(elementLink, property)
         if value then
@@ -1300,6 +1336,8 @@ _ELEMENTS_LINK = {}
     if Database:SelectTable(true, "themes", self.name, "properties", elementID) then
       Database:SetValue(property, value )
     end
+
+    self:ClearAllElementLinks()
   end
 
   __Arguments__ { String }

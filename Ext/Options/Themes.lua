@@ -8,7 +8,7 @@ Scorpio                "EskaQuestTracker.Options.Theme"                       ""
 namespace "EQT"
 import "System.Reflector"
 --============================================================================--
-_THEME_ELEMENTS_CATEGORY_SELECTED = "Blocks"
+_THEME_ELEMENTS_CATEGORY_SELECTED = "Tracker"
 _THEME_ELEMENT_SELECTED = "Frame"
 _THEME_SELECTED = ""
 
@@ -65,38 +65,69 @@ end
 
 
 function BuildTheme(self, content, themeID)
-  -- Clean the current content
+  -- Clear the current content
   content:ReleaseChildren()
+  --content:SetAutoAdjustHeight(true)
+  --content:SetLayout("Fill")
 
-  --[[local t = {
-    {
-      value = "Blocks",
-      text = "Blocks",
-      children = {
-        {
-          value = "Achievements",
-          text = "Achievements"
-        }
-      }
-    }
-  } --]]
-
+  local layout = _AceGUI:Create("SimpleGroup")
+  layout:SetLayout("Fill")
+  layout:SetFullHeight(true)
+  layout:SetFullWidth(true)
+  layout.frame:SetAllPoints(content.frame)
 
   local elementCategoriesTree = _AceGUI:Create("TreeGroup")
   elementCategoriesTree:SetTree(self:GetElementCategoriesTable())
-  elementCategoriesTree:SetLayout("List")
-  elementCategoriesTree:SetRelativeWidth(1.0)
-  elementCategoriesTree:SetRelativeWidth(1.0)
+  elementCategoriesTree:SetLayout("Fill")
+  elementCategoriesTree:SetFullWidth(true)
+  elementCategoriesTree:SetFullHeight(true)
+
+  layout:AddChild(elementCategoriesTree)
+
+
+    elementCategoriesTree:SetCallback("OnGroupSelected", function(_, _, uniquePath)
+      local categoryPath = self:ConvertToCategoryPath(uniquePath)
+      _THEME_ELEMENTS_CATEGORY_SELECTED = categoryPath
+      self:BuildThemeElements(elementCategoriesTree)
+    end)
+
+
+  content:AddChild(layout)
+
+  -- Select the default category or the previous selected
+    local categoryPath = self:ConvertToCategoryPath(_THEME_ELEMENTS_CATEGORY_SELECTED)
+    elementCategoriesTree:Select(_THEME_ELEMENTS_CATEGORY_SELECTED)
+    self:BuildThemeElements(elementCategoriesTree)
+
+end
+
+--[[
+function BuildTheme(self, content, themeID)
+  -- Clean the current content
+  content:ReleaseChildren()
+  --content:SetLayout("Fill")
+  content.frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+  content.frame:SetBackdropColor(1, 1, 0, 1)
+  content:SetAutoAdjustHeight(true)
+
+  local elementCategoriesTree = _AceGUI:Create("TreeGroup")
+  elementCategoriesTree:SetTree(self:GetElementCategoriesTable())
+  elementCategoriesTree:SetLayout("Fill")
+  elementCategoriesTree:SetFullWidth(true)
   elementCategoriesTree:SelectByValue("Blocks")
+  elementCategoriesTree:SetAutoAdjustHeight(true)
+  elementCategoriesTree.frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+  elementCategoriesTree.frame:SetBackdropColor(1, 0, 0, 1)
 
 
   elementCategoriesTree:SetCallback("OnGroupSelected", function(_, _, uniquePath)
     local categoryPath = self:ConvertToCategoryPath(uniquePath)
     _THEME_ELEMENTS_CATEGORY_SELECTED = categoryPath
     self:BuildThemeElements(elementCategoriesTree)
+    elementCategoriesTree:DoLayout()
   end)
 
-  --[[local selectedElement = _AceGUI:Create("DropdownGroup")
+  local selectedElement = _AceGUI:Create("DropdownGroup")
   selectedElement:SetTitle("Select an element")
   selectedElement:SetLayout("Flow")
   selectedElement:SetList(self:GetElementsByCategory(THEME_ELEMENTS_CATEGORY_SELECTED))
@@ -105,7 +136,7 @@ function BuildTheme(self, content, themeID)
 
   local label2 = _AceGUI:Create("EQT-ThemeButton")
   label2:SetRelativeWidth(0.5)
-  selectedElement:AddChild(label2)--]]
+  selectedElement:AddChild(label2)
   self:BuildThemeElements(elementCategoriesTree)
 
 
@@ -113,30 +144,54 @@ function BuildTheme(self, content, themeID)
 
 end
 
+--]]
+
 function BuildThemeElements(self, parent)
   -- Clean the parent content
   parent:ReleaseChildren()
 
+  local elementList = self:GetElementsByCategory(_THEME_ELEMENTS_CATEGORY_SELECTED)
+
+  local function GetElementIDByCategory(category)
+    for k, v in pairs(elementList) do
+      if v == category then
+        return k
+      end
+    end
+  end
+
   local selectedElement = _AceGUI:Create("DropdownGroup")
   selectedElement:SetTitle("Select an element")
   selectedElement:SetLayout("Flow")
-  selectedElement:SetGroupList(self:GetElementsByCategory(_THEME_ELEMENTS_CATEGORY_SELECTED))
-  selectedElement:SetRelativeWidth(1.0)
+  selectedElement:SetGroupList(elementList)
+  selectedElement:SetFullWidth(true)
+  --selectedElement:SetFullHeight(true)
   selectedElement:SetGroup("block.frame")
   selectedElement:SetCallback("OnGroupSelected", function(_, _, elementID)
+    _THEME_ELEMENT_SELECTED = elementList[elementID]
     local recipe = self:GetThemeElementRecipe(elementID)
     if recipe then
       recipe:Build(selectedElement)
     end
   end)
+
   parent:AddChild(selectedElement)
 
-  local label2 = _AceGUI:Create("EQT-ThemeButton")
-  label2:SetRelativeWidth(0.5)
-  parent:AddChild(label2)
+  -- Select the default element or the previous element
+  local selected = "Frame"
+  local elementID = GetElementIDByCategory(_THEME_ELEMENT_SELECTED)
+  if elementID then
+    selected = _THEME_ELEMENT_SELECTED
+  else
+    elementID = GetElementIDByCategory(selected)
+  end
 
+  local recipe = self:GetThemeElementRecipe(elementID)
+  if recipe then
+    recipe:Build(selectedElement)
+    selectedElement:SetGroup(elementID)
+  end
 end
-
 
 
 function GetThemeRecipe(self, themeID)
@@ -290,8 +345,6 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     -- Get the theme selected
     local theme = Themes:Get(_THEME_SELECTED)
 
-    print("Get Theme", theme)
-
     if not theme then return end
 
 
@@ -369,7 +422,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local function refresh()
             local color = theme:GetElementProperty(self.elementID, "background-color", self.inheritElementID)
             backgroundColor:SetColor(color.r, color.g, color.b, color.a)
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
           end
 
           if theme:GetElementPropertyFromDB(self.elementID, "background-color") then
@@ -379,13 +432,13 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           backgroundColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "background-color", refresh)
             theme:SetElementPropertyToDB(self.elementID, "background-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
           end)
 
           backgroundColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "background-color", refresh)
             theme:SetElementPropertyToDB(self.elementID, "background-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
           end)
         end
 
@@ -402,7 +455,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local function refresh()
             local color = theme:GetElementProperty(self.elementID, "border-color", self.inheritElementID)
             borderColor:SetColor(color.r, color.g, color.b, color.a)
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
           end
 
           if theme:GetElementPropertyFromDB(self.elementID, "border-color") then
@@ -412,13 +465,13 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           borderColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "border-color", refresh)
             theme:SetElementPropertyToDB(self.elementID, "border-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
           end)
 
           borderColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "border-color", refresh)
             theme:SetElementPropertyToDB(self.elementID, "border-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
           end)
         end
       end
@@ -446,7 +499,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local function refresh()
             local color = theme:GetElementProperty(self.elementID, "text-color", self.inheritElementID)
             textColor:SetColor(color.r, color.g, color.b, color.a)
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
           end
           if theme:GetElementPropertyFromDB(self.elementID, "text-color") then
             ShowReset(row, "text-color", refresh)
@@ -455,13 +508,13 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           textColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "text-color", refresh)
             theme:SetElementPropertyToDB(self.elementID, "text-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
           end)
 
           textColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "text-color", refresh)
             theme:SetElementPropertyToDB(self.elementID, "text-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
           end)
         end
 
@@ -476,7 +529,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           group:AddChild(row)
           local function refresh()
             textSize:SetValue(theme:GetElementProperty(self.elementID, "text-size", self.inheritElementID))
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
           end
 
           if theme:GetElementPropertyFromDB(self.elementID, "text-size") then
@@ -486,12 +539,12 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           textSize:SetCallback("OnValueChanged", function(_, _, size)
             ShowReset(row, "text-size", refresh)
             theme:SetElementPropertyToDB(self.elementID, "text-size", size)
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
            end)
            textSize:SetCallback("OnValueConfirmed", function(_, _, size)
              ShowReset(row, "text-size", refresh)
              theme:SetElementPropertyToDB(self.elementID, "text-size", size)
-             self:RefreshElements()
+             self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
             end)
         end
 
@@ -503,7 +556,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local row = CreateRow("Text Font", textFont)
           group:AddChild(row)
 
-          local function refresh() textFont:SetValue(GetFontIndex(theme:GetElementProperty(self.elementID, "text-font", self.inheritElementID))) ; self:RefreshElements() end
+          local function refresh() textFont:SetValue(GetFontIndex(theme:GetElementProperty(self.elementID, "text-font", self.inheritElementID))) ; self:RefreshElements(Theme.SkinFlags.TEXT_FONT) end
 
           if theme:GetElementPropertyFromDB(self.elementID, "text-font") then
             ShowReset(row, "text-font", refresh)
@@ -512,7 +565,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           textFont:SetCallback("OnValueChanged", function(_, _, value)
             ShowReset(row, "text-font", refresh)
             theme:SetElementPropertyToDB(self.elementID, "text-font", _Fonts[value])
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.TEXT_FONT)
           end)
         end
 
@@ -524,7 +577,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local row = CreateRow("Text Transform", textTransform)
           group:AddChild(row)
 
-          local function refresh() textTransform:SetValue(theme:GetElementProperty(self.elementID, "text-transform", self.inheritElementID)) ; self:RefreshElements() end
+          local function refresh() textTransform:SetValue(theme:GetElementProperty(self.elementID, "text-transform", self.inheritElementID)) ; self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM) end
 
           if theme:GetElementPropertyFromDB(self.elementID, "text-transform") then
             ShowReset(row, "text-transform", refresh)
@@ -533,7 +586,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           textTransform:SetCallback("OnValueChanged", function(_, _, transform)
             ShowReset(row, "text-transform", refresh)
             theme:SetElementPropertyToDB(self.elementID, "text-transform", transform)
-            self:RefreshElements()
+            self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM)
           end)
         end
       end
@@ -642,8 +695,8 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
   end
   --]]
 
-  __Arguments__ {}
-  function RefreshElements(self)
+  __Arguments__ {  Argument(Theme.SkinFlags, true, 127) }
+  function RefreshElements(self, flags)
     if self.refresherIsGroup then
       Continue(function()
         local startTime = debugprofilestop()
@@ -653,7 +706,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     else
       Continue(function()
         --   local startTime = debugprofilestop()
-        CallbackHandlers:Call(self.refresher)
+        CallbackHandlers:Call(self.refresher, flags)
         --print(format("myFunction executed in %f ms", debugprofilestop()-startTime))
       end)
     end
@@ -743,6 +796,24 @@ OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.frame", "Tracker
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.frame", "Blocks"):SetRefresher("block/refresher"))
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.header", "Blocks", "Header"):SetRefresher("block/refresher"))
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.stripe", "Blocks", "Stripe"):SetRefresher("block/refresher"))
+
+-- Block scenario
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.frame", "Blocks/Scenario", "Frame"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stage", "Blocks/Scenario", "Stage"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageName", "Blocks/Scenario", "Stage Name"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageCounter", "Blocks/Scenario", "Stage Counter"))
+
+-- Block dungeon
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.frame", "Blocks/Dungeon", "Frame"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.name", "Blocks/Dungeon", "Name"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.icon", "Blocks/Dungeon", "Icon"))
+
+-- Block dungeon
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.frame", "Blocks/Keystone", "Frame"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.name", "Blocks/Keystone", "Name"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.icon", "Blocks/Keystone", "Icon"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.level", "Blocks/Keystone", "Level"))
+
 
 -- Quest
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.frame", "Quest"))

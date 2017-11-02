@@ -41,6 +41,9 @@ GetFontIndex = function(font)
     end
   end
 end
+
+
+
 -- The frame containing the optiosn
 _ROOT_FRAME = nil
 -- We keeps the builder function for the categories.
@@ -82,8 +85,11 @@ function Open(self)
     table.sort(_TREE_CATEGORIES, function(a,b) return a.order < b.order end)
 
     _ROOT_FRAME = _AceGUI:Create("Frame")
+    _ROOT_FRAME:SetWidth(1024)
+    _ROOT_FRAME:SetHeight(600)
     _ROOT_FRAME:SetTitle("Eska Quest Tracker - Options")
     _ROOT_FRAME:SetLayout("Fill")
+    _ROOT_FRAME:SetAutoAdjustHeight(true)
 
     _ROOT_TREE_FRAME = _AceGUI:Create("TreeGroup")
 
@@ -101,6 +107,7 @@ function Open(self)
 
     _CONTENT = _AceGUI:Create("ScrollFrame")
     _CONTENT:SetLayout("List")
+    _CONTENT:SetFullHeight(true)
     scrollContainer:AddChild(_CONTENT)
 
     _ROOT_TREE_FRAME:SetCallback("OnGroupSelected", function(_, _, uniquePath)

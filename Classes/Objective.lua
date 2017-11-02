@@ -167,29 +167,28 @@ class "Objective" inherit "Frame" extend "IReusable"
 		end
 	end
 
-
-	function Refresh(self)
+	__Arguments__ { Argument(Theme.SkinFlags, true, 127)}
+	function Refresh(self, skinFlags)
 		local state = self.isCompleted and "completed" or "progress"
-		--local startTime = debugprofilestop()
 
-		Theme:SkinFrame(self.frame, nil, state)
-		Theme:SkinFrame(self.frame.square, nil, state)
-
+		Theme:SkinFrame(self.frame, nil, state, skinFlags)
+		Theme:SkinFrame(self.frame.square, nil, state, skinFlags)
 
 		-- @HACK Fix to position
 		self.frame.text:ClearAllPoints()
 		self.frame.text:SetPoint("TOPLEFT", self.frame.square, "TOPRIGHT", 5, 0)
 		self.frame.text:SetPoint("RIGHT")
-		--print(format("myFunction executed in %f ms", debugprofilestop()-startTime))
-
-
 	end
 
-	__Static__() function RefreshAll()
+
+	__Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+	__Static__() function RefreshAll(skinFlags)
+		--print("[Objective]", "RefreshAll/SkinFlags", skinFlags)
+		--local startTime = debugprofilestop()
 		for obj in pairs(_ObjectiveCache) do
-			obj:Refresh()
-			--print("RefreshAlll")
+			obj:Refresh(skinFlags)
 		end
+		--print(format("myFunction executed in %f ms", debugprofilestop()-startTime))
 	end
 
 	function Reset(self)
