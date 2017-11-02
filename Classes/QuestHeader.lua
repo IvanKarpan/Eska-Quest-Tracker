@@ -198,4 +198,6 @@ QuestHeader:InstallOptions()
 function OnLoad(self)
   -- Register this class in the object manager
   _ObjectManager:Register(QuestHeader)
+
+  CallbackHandlers:Register("questHeader/refresh", CallbackHandler(QuestHeader.RefreshAll), "refresher")
 end

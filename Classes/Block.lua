@@ -31,7 +31,7 @@ class "Block" inherit "Frame"
   function RegisterFramesForThemeAPI(self, child)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID, self.frame, "block")
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".frame", self.frame, "block.frame")
     Theme:RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header, "block.header")
     Theme:RegisterTexture(class._THEME_CLASS_ID..".stripe", self.frame.header.stripe, "block.stripe")
   end
@@ -47,7 +47,7 @@ class "Block" inherit "Frame"
     end
 
     Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix, Options.ThemeKeywordType.FRAME),
+      Options.ThemeKeyword(prefix..".frame", Options.ThemeKeywordType.FRAME),
       Options.ThemeKeyword(prefix..".header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
       Options.ThemeKeyword(prefix..".stripe", Options.ThemeKeywordType.TEXTURE)
     )

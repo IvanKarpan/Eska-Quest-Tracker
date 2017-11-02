@@ -1090,7 +1090,7 @@ _REGISTERED_FRAMES = {}
     end
 
     if ValidateFlags(flags, SkinFlags.TEXTURE_COLOR) then
-      local color = theme:GetElementProperty(elementID, "vertex-color", inheritElementID)
+      local color = theme:GetElementProperty(elementID, "texture-color", inheritElementID)
       texture:SetVertexColor(color.r, color.g, color.b, color.a)
     end
   end
@@ -1314,7 +1314,8 @@ _REGISTERED_FRAMES = {}
         ["text-location"] = "CENTER",
         ["text-offsetX"] = 0,
         ["text-offsetY"] = 0,
-        ["vertex-color"] = { r = 1, g = 1, b = 1}
+        ["vertex-color"] = { r = 1, g = 1, b = 1},
+        ["texture-color"] = { r = 1, g = 1, b = 1}
       }
 
       return defaults[property]

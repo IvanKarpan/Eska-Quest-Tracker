@@ -196,6 +196,7 @@ class "ObjectiveTracker" inherit "Frame"
   ------------------------------------------------------------------------------
   property "contentHeight" { TYPE = Number, DEFAULT = 50, HANDLER = SetContentHeight }
   property "tID" { DEFAULT = "tracker" }
+  __Static__() property "_prefix" { DEFAULT = "tracker" }
 
   ------------------------------------------------------------------------------
   --                            Constructors                                  --

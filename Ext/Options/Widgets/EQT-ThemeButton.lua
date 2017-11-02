@@ -35,10 +35,10 @@ local methods = {
     self:SetWidth(200)
   end,
   ["SetAuthor"] = function(self, Author)
-
+    self.author:SetText(author)
   end,
   ["SetName"] = function(self, name)
-
+    self.name:SetText(name)
   end,
 }
 

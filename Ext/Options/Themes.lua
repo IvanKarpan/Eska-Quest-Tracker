@@ -35,6 +35,7 @@ function BuildThemeCategory(content, ...)
 
     local label = _AceGUI:Create("EQT-ThemeButton")
     label:SetRelativeWidth(1.0)
+    label:SetName("Eska")
     label:SetCallback("OnClick", function(...)
       _THEME_SELECTED = "Eska"
      _M:BuildTheme(content)
@@ -42,6 +43,12 @@ function BuildThemeCategory(content, ...)
 
     local label2 = _AceGUI:Create("EQT-ThemeButton")
     label2:SetRelativeWidth(1.0)
+    label2:SetName("Transparence")
+    label2:SetCallback("OnClick", function(...)
+      _THEME_SELECTED = "Transparence"
+      _M:BuildTheme(content)
+    end)
+
     group:AddChild(label)
     group:AddChild(label2)
 
@@ -591,6 +598,44 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         end
       end
     end
+    do
+      local hasTextureColor = ValidateFlags(self.options, OptionFlags.TEXTURE_COLOR)
+      if hasTextureColor then
+        local group = CreateGroup("Texture properties")
+        parent:AddChild(group)
+
+        local textureColor = _AceGUI:Create("ColorPicker")
+        textureColor:SetHasAlpha(true)
+
+        local color = theme:GetElementProperty(self.elementID, "texture-color", self.inheritElementID)
+        textureColor:SetColor(color.r, color.g, color.b, color.a)
+
+        local row = CreateRow("Texture Color", textureColor)
+        group:AddChild(row)
+
+        local function refresh()
+          local color = theme:GetElementProperty(self.elementID, "texture-color", self.inheritElementID)
+          textureColor:SetColor(color.r, color.g, color.b, color.a)
+          self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
+        end
+
+        if theme:GetElementPropertyFromDB(self.elementID, "texture-color") then
+          ShowReset(row, "texture-color", refresh)
+        end
+
+        textureColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+          ShowReset(row, "texture-color", refresh)
+          theme:SetElementPropertyToDB(self.elementID, "texture-color", { r = r, g = g, b = b, a = a})
+          self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
+        end)
+
+        textureColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
+          ShowReset(row, "texture-color", refresh)
+          theme:SetElementPropertyToDB(self.elementID, "texture-color", { r = r, g = g, b = b, a = a})
+          self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
+        end)
+      end
+    end
   end
 
 --[[
@@ -701,7 +746,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
       Continue(function()
         local startTime = debugprofilestop()
         CallbackHandlers:CallGroup(self.refresher)
-         print(format("myFunction executed in %f ms", debugprofilestop()-startTime))
+         --print(format("myFunction executed in %f ms", debugprofilestop()-startTime))
       end)
     else
       Continue(function()
@@ -725,7 +770,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
   property "text" { TYPE = String }
   property "inheritedFromElement" { TYPE = String }
   property "category" { TYPE = String }
-  property "options" { TYPE = OptionFlags, DEFAULT = function() return ThemeElementRecipe.ALL_FRAME_OPTIONS + ThemeElementRecipe.ALL_TEXT_OPTIONS end }
+  property "options" { TYPE = OptionFlags, DEFAULT = function() return ThemeElementRecipe.ALL_FRAME_OPTIONS + ThemeElementRecipe.ALL_TEXT_OPTIONS + ThemeElementRecipe.ALL_TEXTURE_OPTIONS end }
   property "refresher" { TYPE = String, DEFAULT = "refresher"}
   property "refresherIsGroup" { TYPE = Boolean, DEFAULT = true}
 
@@ -791,37 +836,75 @@ OptionBuilder:AddThemeElementRecipe(trackerStripe) --]]
 
 -- Tracker
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.frame", "Tracker"):SetRefresher("tracker/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.scrollbar", "Tracker", "Scrollbar"):SetRefresher("tracker/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.scrollbar.thumb", "Tracker", "Scrollbar Thumb"):SetRefresher("tracker/refresher"))
 
 -- Blocks
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.frame", "Blocks"):SetRefresher("block/refresher"))
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.header", "Blocks", "Header"):SetRefresher("block/refresher"))
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.stripe", "Blocks", "Stripe"):SetRefresher("block/refresher"))
 
+-- Block quests
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.frame", "Blocks/Quests"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.header", "Blocks/Quests", "Header"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.stripe", "Blocks/Quests", "Stripe"):SetRefresher("block/refresher"))
+
 -- Block scenario
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.frame", "Blocks/Scenario", "Frame"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stage", "Blocks/Scenario", "Stage"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageName", "Blocks/Scenario", "Stage Name"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageCounter", "Blocks/Scenario", "Stage Counter"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.frame", "Blocks/Scenario", "Frame", "block.frame"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.header", "Blocks/Scenario", "Header", "block.header"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stripe", "Blocks/Scenario", "Stripe", "block.scenario"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stage", "Blocks/Scenario", "Stage"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageName", "Blocks/Scenario", "Stage Name"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageCounter", "Blocks/Scenario", "Stage Counter"):SetRefresher("block/refresher"))
 
 -- Block dungeon
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.frame", "Blocks/Dungeon", "Frame"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.name", "Blocks/Dungeon", "Name"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.icon", "Blocks/Dungeon", "Icon"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.frame", "Blocks/Dungeon", "Frame", "block.frame"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.header", "Blocks/Dungeon", "Header", "block.header"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.stripe", "Blocks/Dungeon", "Stripe", "block.stripe"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.name", "Blocks/Dungeon", "Name"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.icon", "Blocks/Dungeon", "Icon"):SetRefresher("block/refresher"))
 
--- Block dungeon
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.frame", "Blocks/Keystone", "Frame"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.name", "Blocks/Keystone", "Name"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.icon", "Blocks/Keystone", "Icon"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.level", "Blocks/Keystone", "Level"))
+-- Block keystone
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.frame", "Blocks/Keystone", "Frame", "block.frame"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.header", "Blocks/Keystone", "Header", "block.header"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.stripe", "Blocks/Keystone", "Stripe", "block.stripe"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.name", "Blocks/Keystone", "Name", "block.dungeon.name"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.icon", "Blocks/Keystone", "Icon", "block.dungeon.icon"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.level", "Blocks/Keystone", "Level"):SetRefresher("block/refresher"))
 
+-- Block Achievement
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.frame", "Blocks/Achievements", "Frame", "block.frame"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.header", "Blocks/Achievements", "Header", "block.header"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.stripe", "Blocks/Achievements", "Stripe", "block.stripe"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.name", "Blocks/Achievements", "Name"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.icon", "Blocks/Achievements", "Icon"):SetRefresher("block/refresher"))
+
+-- Block Bonus objective
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.frame", "Blocks/Bonus Objectives", "Frame", "block.frame"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.header", "Blocks/Bonus Objectives", "Header", "block.header"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.stripe", "Blocks/Bonus Objectives", "Stripe", "block.stripe"):SetRefresher("block/refresher"))
 
 -- Quest
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.frame", "Quest"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.header", "Quest", "Header"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.frame", "Quest"):SetRefresher("quest/refresh"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.header", "Quest", "Header"):SetRefresher("quest/refresh"))
+
+-- Bonus quest
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("bonusQuest.frame", "Bonus Quest", nil, "quest.frame"):SetRefresher("quest/refresh"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("bonusQuest.header", "Bonus Quest", "Header", "quest.header"):SetRefresher("quest/refresh"))
+
+-- World quest
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("worldQuest.frame", "World Quest", nil, "quest.frame"):SetRefresher("quest/refresh"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("worldQuest.header", "World Quest", "Header", "quest.header"):SetRefresher("quest/refresh"))
 
 -- Objective
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("objective.frame", "Objectives"):SetRefresher("objective/refresher"))
 OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("objective.square", "Objectives", "Square"):SetRefresher("objective/refresher"))
+
+
+-- QuestHeader
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("questHeader.frame", "Quest Header"):SetRefresher("questHeader/refresh"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("questHeader.name", "Quest Header", "Name"):SetRefresher("questHeader/refresh"))
+
 
 
 

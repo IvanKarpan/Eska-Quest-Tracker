@@ -127,7 +127,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID, self.frame)
+    Theme:RegisterFrame(class._THEME_CLASS_ID..".frame", self.frame)
     Theme:RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header)
 
     Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.headerName)
@@ -318,6 +318,7 @@ class "AchievementBlock" inherit "Block"
   --                            Properties                                    --
   ------------------------------------------------------------------------------
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.achievements" }
+  __Static__() property "_prefix" { DEFAULT = "block.achievements" }
 
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
