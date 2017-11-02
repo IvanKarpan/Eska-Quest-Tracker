@@ -1,2 +1,7 @@
 [1.5.0]
 - Pushed the first version of 1.5
+NOTE: This build is experimental so don't install it if you want something that is stable. The goal of this push is to prepare the files architecture, dependencies and the base changes of the 1.5 to improve the stability of next alpha versions.
+
+Content of this build:
+- API Theme Reworked
+- The options have been rebuilded
