@@ -79,17 +79,16 @@ class "WorldQuestBlock" inherit "Block"
     self.height = self.baseHeight + height
   end
 
-  __Static__()
-  function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_WorldQuestBlockCache) do
-      obj:Refresh()
+      obj:Refresh(skinFlags)
     end
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
-  -- Theme
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.worldQuests" }
+  __Static__() property "_prefix" { DEFAULT = "block.worldQuests" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -101,16 +100,8 @@ class "WorldQuestBlock" inherit "Block"
 
     _WorldQuestBlockCache[self] = true
   end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-  end
 endclass "WorldQuestBlock"
-WorldQuestBlock:InstallOptions()
+
+function OnLoad(self)
+  CallbackHandlers:Register("worldQuests/refresher", CallbackHandler(WorldQuestBlock.RefreshAll))
+end

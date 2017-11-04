@@ -153,17 +153,20 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     end
   end
 
-  __Arguments__{ Argument(Boolean, true, true)}
-  function Refresh(self, callSuper)
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  function Refresh(self, skinFlags, callSuper)
     if callSuper then
-      Super.Refresh(self)
+      Super.Refresh(self, skinFlags)
     end
+
+    Theme:SkinText(self.frame.level, string.format("LEVEL %i", self.level), nil, skinFlags)
+
   end
 
-  __Static__()
-  function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_KeystoneCache) do
-      obj:Refresh()
+      obj:Refresh(skinFlags)
     end
   end
 
@@ -171,22 +174,9 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterText(class._THEME_CLASS_ID..".level", self.frame.level)
+    Theme:RegisterText(class._prefix..".level", self.frame.level)
   end
 
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix..".level", Options.ThemeKeywordType.TEXT)
-    )
-  end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
@@ -198,8 +188,8 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
   property "timeLimit2Chest" { TYPE = Number, DEFAULT = 0 }
   property "timeLimit3Chest" { TYPE = Number, DEFAULT = 0 }
   property "isCompleted" { TYPE = Boolean, DEFAULT = false }
-  -- Theme
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.keystone" }
+
+  __Static__() property "_prefix" { DEFAULT = "block.keystone" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -271,16 +261,17 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     This.RegisterFramesForThemeAPI(self)
     -- Here the false boolean say to refresh function to not call the refresh super function
     -- because it's already done by the super constructor
-    This.Refresh(self, false)
+    This.Refresh(self, nil, false)
 
     _KeystoneCache[self] = true
   end
 endclass "Keystone"
-Keystone:InstallOptions()
 -- ========================================================================== --
 -- == OnLoad Handler
 -- ========================================================================== --
 function OnLoad(self)
   -- Register this class in the object manager
   _ObjectManager:Register(Affix)
+
+  CallbackHandlers:Register("keystone/refresher", CallbackHandler(Keystone.RefreshAll))
 end

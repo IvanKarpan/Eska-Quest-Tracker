@@ -17,25 +17,16 @@ class "BonusQuest" inherit "Quest"
     Super.Draw(self)
   end
 
-  __Static__() function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_BonusQuestCache) do
-      obj:Refresh()
-    end
-  end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
+      obj:Refresh(skinFlags)
     end
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "bonusQuest"}
+  __Static__() property "_prefix" { DEFAULT = "bonusQuest" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -44,9 +35,6 @@ class "BonusQuest" inherit "Quest"
     _BonusQuestCache[self] = true
   end
 endclass "BonusQuest"
-BonusQuest:InstallOptions()
---Theme.RegisterRefreshHandler("bonusQuest", BonusQuest.RefreshAll)
-
 
 class "BonusObjectives" inherit "Block"
   _BonusObjectivesCache = setmetatable( {}, { __mode = "k" } )
@@ -120,17 +108,16 @@ class "BonusObjectives" inherit "Block"
     self.height = self.baseHeight + height
   end
 
-  __Static__()
-  function RefreshAll()
-    for obj in pairs(_BonusOjectivesCache) do
-      obj:Refresh()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
+    for obj in pairs(_BonusObjectivesCache) do
+      obj:Refresh(skinFlags)
     end
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
-  -- Theme
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.bonusObjectives" }
+  __Static__() property "_prefix" { DEFAULT = "block.bonusObjectives" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -143,20 +130,13 @@ class "BonusObjectives" inherit "Block"
     _BonusObjectivesCache[self] = true
   end
 
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-  end
 endclass "BonusObjectives"
-BonusObjectives:InstallOptions()
 
 
 function OnLoad(self)
   _ObjectManager:Register(BonusQuest)
+
+  -- Register the refresher
+  CallbackHandlers:Register("bonusQuest/refresher", CallbackHandler(BonusQuest.RefreshAll))
+  CallbackHandlers:Register("bonusObjectives/refresher", CallbackHandler(BonusObjectives.RefreshAll))
 end

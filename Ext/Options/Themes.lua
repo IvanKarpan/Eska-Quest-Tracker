@@ -8,9 +8,9 @@ Scorpio                "EskaQuestTracker.Options.Theme"                       ""
 namespace "EQT"
 import "System.Reflector"
 --============================================================================--
-_THEME_ELEMENTS_CATEGORY_SELECTED = "Tracker"
-_THEME_ELEMENT_SELECTED = "Frame"
-_THEME_SELECTED = ""
+local _THEME_ELEMENTS_CATEGORY_SELECTED = "Tracker"
+local _THEME_ELEMENT_SELECTED = "Frame"
+local _THEME_SELECTED = ""
 
 function BuildThemeCategory(content, ...)
   -- [OPTION] Select a them
@@ -420,14 +420,14 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local backgroundColor = _AceGUI:Create("ColorPicker")
           backgroundColor:SetHasAlpha(true)
 
-          local color = theme:GetElementProperty(self.elementID, "background-color", self.inheritElementID)
+          local color = theme:GetElementProperty(self.elementID, "background-color", self.inheritedFromElement)
           backgroundColor:SetColor(color.r, color.g, color.b, color.a)
 
           local row = CreateRow("Background Color", backgroundColor)
           group:AddChild(row)
 
           local function refresh()
-            local color = theme:GetElementProperty(self.elementID, "background-color", self.inheritElementID)
+            local color = theme:GetElementProperty(self.elementID, "background-color", self.inheritedFromElement)
             backgroundColor:SetColor(color.r, color.g, color.b, color.a)
             self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
           end
@@ -453,14 +453,14 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local borderColor = _AceGUI:Create("ColorPicker")
           borderColor:SetHasAlpha(true)
 
-          local color = theme:GetElementProperty(self.elementID, "border-color", self.inheritElementID)
+          local color = theme:GetElementProperty(self.elementID, "border-color", self.inheritedFromElement)
           borderColor:SetColor(color.r, color.g, color.b, color.a)
 
           local row = CreateRow("Border Color", borderColor)
           group:AddChild(row)
 
           local function refresh()
-            local color = theme:GetElementProperty(self.elementID, "border-color", self.inheritElementID)
+            local color = theme:GetElementProperty(self.elementID, "border-color", self.inheritedFromElement)
             borderColor:SetColor(color.r, color.g, color.b, color.a)
             self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
           end
@@ -497,14 +497,14 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local textColor = _AceGUI:Create("ColorPicker")
           textColor:SetHasAlpha(true)
 
-          local color = theme:GetElementProperty(self.elementID, "text-color", self.inheritElementID)
+          local color = theme:GetElementProperty(self.elementID, "text-color", self.inheritedFromElement)
           textColor:SetColor(color.r, color.g, color.b, color.a)
 
           local row = CreateRow("Text Color", textColor)
           group:AddChild(row)
 
           local function refresh()
-            local color = theme:GetElementProperty(self.elementID, "text-color", self.inheritElementID)
+            local color = theme:GetElementProperty(self.elementID, "text-color", self.inheritedFromElement)
             textColor:SetColor(color.r, color.g, color.b, color.a)
             self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
           end
@@ -530,12 +530,12 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local textSize = _AceGUI:Create("Slider")
           textSize:SetRelativeWidth(0.3)
           textSize:SetSliderValues(6, 32, 1)
-          textSize:SetValue(theme:GetElementProperty(self.elementID, "text-size", self.inheritElementID))
+          textSize:SetValue(theme:GetElementProperty(self.elementID, "text-size", self.inheritedFromElement))
 
           local row = CreateRow("Text Size", textSize)
           group:AddChild(row)
           local function refresh()
-            textSize:SetValue(theme:GetElementProperty(self.elementID, "text-size", self.inheritElementID))
+            textSize:SetValue(theme:GetElementProperty(self.elementID, "text-size", self.inheritedFromElement))
             self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
           end
 
@@ -558,12 +558,12 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         if hasTextFont then
           local textFont = _AceGUI:Create("Dropdown")
           textFont:SetList(_Fonts, nil, "DDI-Font")
-          textFont:SetValue(GetFontIndex(theme:GetElementProperty(self.elementID, "text-font", self.inheritElementID)))
+          textFont:SetValue(GetFontIndex(theme:GetElementProperty(self.elementID, "text-font", self.inheritedFromElement)))
 
           local row = CreateRow("Text Font", textFont)
           group:AddChild(row)
 
-          local function refresh() textFont:SetValue(GetFontIndex(theme:GetElementProperty(self.elementID, "text-font", self.inheritElementID))) ; self:RefreshElements(Theme.SkinFlags.TEXT_FONT) end
+          local function refresh() textFont:SetValue(GetFontIndex(theme:GetElementProperty(self.elementID, "text-font", self.inheritedFromElement))) ; self:RefreshElements(Theme.SkinFlags.TEXT_FONT) end
 
           if theme:GetElementPropertyFromDB(self.elementID, "text-font") then
             ShowReset(row, "text-font", refresh)
@@ -579,12 +579,12 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         if hasTextTransform then
           local textTransform = _AceGUI:Create("Dropdown")
           textTransform:SetList(_TextTransforms)
-          textTransform:SetValue(theme:GetElementProperty(self.elementID, "text-transform", self.inheritElementID))
+          textTransform:SetValue(theme:GetElementProperty(self.elementID, "text-transform", self.inheritedFromElement))
 
           local row = CreateRow("Text Transform", textTransform)
           group:AddChild(row)
 
-          local function refresh() textTransform:SetValue(theme:GetElementProperty(self.elementID, "text-transform", self.inheritElementID)) ; self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM) end
+          local function refresh() textTransform:SetValue(theme:GetElementProperty(self.elementID, "text-transform", self.inheritedFromElement)) ; self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM) end
 
           if theme:GetElementPropertyFromDB(self.elementID, "text-transform") then
             ShowReset(row, "text-transform", refresh)
@@ -607,14 +607,14 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         local textureColor = _AceGUI:Create("ColorPicker")
         textureColor:SetHasAlpha(true)
 
-        local color = theme:GetElementProperty(self.elementID, "texture-color", self.inheritElementID)
+        local color = theme:GetElementProperty(self.elementID, "texture-color", self.inheritedFromElement)
         textureColor:SetColor(color.r, color.g, color.b, color.a)
 
         local row = CreateRow("Texture Color", textureColor)
         group:AddChild(row)
 
         local function refresh()
-          local color = theme:GetElementProperty(self.elementID, "texture-color", self.inheritElementID)
+          local color = theme:GetElementProperty(self.elementID, "texture-color", self.inheritedFromElement)
           textureColor:SetColor(color.r, color.g, color.b, color.a)
           self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
         end
@@ -638,108 +638,6 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     end
   end
 
---[[
-  function Build(self, parent)
-    print("[BUILD]", self.elementID)
-    -- Clean the parent content
-    parent:ReleaseChildren()
-
-    local function CreateGroup(name)
-      local g = _AceGUI:Create("InlineGroup")
-      g:SetLayout("Flow")
-      g:SetTitle(name)
-      g:SetRelativeWidth(1.0)
-      return g
-    end
-
-    do
-      local hasFrameBackgroundColor = ValidateFlags(self.options, OptionFlags.FRAME_BACKGROUND_COLOR)
-      local hasFrameBorderColor = ValidateFlags(self.options, OptionFlags.FRAME_BORDER_COLOR)
-      -- If there is a frame option, create the group
-      if hasFrameBackgroundColor or hasFrameBorderColor then
-        local group = CreateGroup("Frame")
-        parent:AddChild(group)
-
-        if hasFrameBackgroundColor then
-          local backgroundColor = _AceGUI:Create("ColorPicker")
-          backgroundColor:SetHasAlpha(true)
-          backgroundColor:SetRelativeWidth(1.0)
-          backgroundColor:SetLabel("Background Color")
-          group:AddChild(backgroundColor)
-        end
-
-        if hasFrameBorderColor then
-          local borderColor = _AceGUI:Create("ColorPicker")
-          borderColor:SetHasAlpha(true)
-          borderColor:SetRelativeWidth(1.0)
-          borderColor:SetLabel("Border Color")
-          group:AddChild(borderColor)
-        end
-
-        if hasFrameBorderColor then
-          local g = _AceGUI:Create("SimpleGroup")
-          g:SetLayout("Flow")
-          g:SetRelativeWidth(1.0)
-
-          local toggle = _AceGUI:Create("CheckBox")
-          toggle:SetLabel("Text Font")
-          toggle:SetRelativeWidth(0.4)
-
-          local textFont = _AceGUI:Create("Dropdown")
-          textFont:SetRelativeWidth(0.6)
-          textFont:SetList({
-            ["Arial"] = "none",
-            ["LOL"] = "uppercase",
-            ["Lowercase"] = "lowercase",
-          })
-          --textFont:SetLabel("Text Font")
-          group:AddChild(textFont)
-
-          g:AddChild(toggle)
-          g:AddChild(textFont)
-          group:AddChild(g)
-        end
-      end
-    end
-
-    do
-      local hasTextSize = ValidateFlags(self.options, OptionFlags.TEXT_SIZE)
-      local hasTextColor = ValidateFlags(self.options, OptionFlags.TEXT_COLOR)
-      local hasTextFont = ValidateFlags(self.options, OptionFlags.TEXT_FONT)
-      local hasTextTransform = ValidateFlags(self.options, OptionFlags.TEXT_TRANSFORM)
-      if hasTextSize or hasTextColor or hasTextFont or hasTextTransform then
-        local group = CreateGroup("Text")
-        parent:AddChild(group)
-
-        if hasTextColor then
-          local textColor = _AceGUI:Create("ColorPicker")
-          textColor:SetHasAlpha(true)
-          textColor:SetLabel("Text Color")
-          group:AddChild(textColor)
-        end
-
-        if hasTextSize then
-          local textSize = _AceGUI:Create("Slider")
-          textSize:SetSliderValues(6, 32, 1)
-          textSize:SetLabel("Text Size")
-          group:AddChild(textSize)
-        end
-
-        if hasTextFont then
-          local textFont = _AceGUI:Create("Dropdown")
-          textFont:SetList({
-            ["Arial"] = "none",
-            ["LOL"] = "uppercase",
-            ["Lowercase"] = "lowercase",
-          })
-          textFont:SetLabel("Text Font")
-          group:AddChild(textFont)
-        end
-      end
-    end
-  end
-  --]]
-
   __Arguments__ {  Argument(Theme.SkinFlags, true, 127) }
   function RefreshElements(self, flags)
     if self.refresherIsGroup then
@@ -762,6 +660,12 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     self.refresher = refresher
     self.refresherIsGroup = isGroup
 
+    return self
+  end
+
+  __Arguments__ { OptionFlags }
+  function SetOptions(self, optFlags)
+    self.options = optFlags
     return self
   end
 
@@ -833,77 +737,101 @@ trackerStripe.elementID = "tracker.stripe"
 trackerStripe.text = "Stripe"
 trackerStripe.category = "Tracker"
 OptionBuilder:AddThemeElementRecipe(trackerStripe) --]]
+local ALL_FRAME_OPTIONS = ThemeElementRecipe.ALL_FRAME_OPTIONS
+local ALL_TEXT_OPTIONS = ThemeElementRecipe.ALL_TEXT_OPTIONS
+local ALL_TEXTURE_OPTIONS = ThemeElementRecipe.ALL_TEXTURE_OPTIONS
+local FRAME_BORDER_OPTION = ThemeElementRecipe.OptionFlags.FRAME_BORDER_COLOR
+
+
+
 
 -- Tracker
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.frame", "Tracker"):SetRefresher("tracker/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.scrollbar", "Tracker", "Scrollbar"):SetRefresher("tracker/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.scrollbar.thumb", "Tracker", "Scrollbar Thumb"):SetRefresher("tracker/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.frame", "Tracker"):SetRefresher("tracker/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.scrollbar", "Tracker", "Scrollbar"):SetRefresher("tracker/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("tracker.scrollbar.thumb", "Tracker", "Scrollbar Thumb"):SetRefresher("tracker/refresher"):SetOptions(ALL_TEXTURE_OPTIONS))
 
 -- Blocks
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.frame", "Blocks"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.header", "Blocks", "Header"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.stripe", "Blocks", "Stripe"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.frame", "Blocks"):SetRefresher("block/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.header", "Blocks", "Header"):SetRefresher("block/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.stripe", "Blocks", "Stripe"):SetRefresher("block/refresher"):SetOptions(ALL_TEXTURE_OPTIONS))
 
 -- Block quests
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.frame", "Blocks/Quests"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.header", "Blocks/Quests", "Header"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.stripe", "Blocks/Quests", "Stripe"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.frame", "Blocks/Quests"):SetRefresher("quests/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.header", "Blocks/Quests", "Header"):SetRefresher("quests/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.quests.stripe", "Blocks/Quests", "Stripe"):SetRefresher("quests/refresher"):SetOptions(ALL_TEXTURE_OPTIONS))
+
+-- Block World quests
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.worldQuests.frame", "Blocks/World Quests", "Frame", "block.frame"):SetRefresher("worldQuests/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.worldQuests.header", "Blocks/World Quests", "Header", "block.header"):SetRefresher("worldQuests/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.worldQuests.stripe", "Blocks/World Quests", "Stripe", "block.stripe"):SetRefresher("worldQuests/refresher"):SetOptions(ALL_FRAME_OPTIONS))
 
 -- Block scenario
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.frame", "Blocks/Scenario", "Frame", "block.frame"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.header", "Blocks/Scenario", "Header", "block.header"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stripe", "Blocks/Scenario", "Stripe", "block.scenario"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stage", "Blocks/Scenario", "Stage"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageName", "Blocks/Scenario", "Stage Name"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageCounter", "Blocks/Scenario", "Stage Counter"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.frame", "Blocks/Scenario", "Frame", "block.frame"):SetRefresher("scenario/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.header", "Blocks/Scenario", "Header", "block.header"):SetRefresher("scenario/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stripe", "Blocks/Scenario", "Stripe", "block.scenario"):SetRefresher("scenario/refresher"):SetOptions(ALL_TEXTURE_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stage", "Blocks/Scenario", "Stage"):SetRefresher("scenario/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageName", "Blocks/Scenario", "Stage Name"):SetRefresher("scenario/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.scenario.stageCounter", "Blocks/Scenario", "Stage Counter"):SetRefresher("scenario/refresher"):SetOptions(ALL_TEXT_OPTIONS))
 
 -- Block dungeon
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.frame", "Blocks/Dungeon", "Frame", "block.frame"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.header", "Blocks/Dungeon", "Header", "block.header"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.stripe", "Blocks/Dungeon", "Stripe", "block.stripe"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.name", "Blocks/Dungeon", "Name"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.icon", "Blocks/Dungeon", "Icon"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.frame", "Blocks/Dungeon", "Frame", "block.frame"):SetRefresher("dungeon/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.header", "Blocks/Dungeon", "Header", "block.header"):SetRefresher("dungeon/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.stripe", "Blocks/Dungeon", "Stripe", "block.stripe"):SetRefresher("dungeon/refresher"):SetOptions(ALL_TEXTURE_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.name", "Blocks/Dungeon", "Name"):SetRefresher("dungeon/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.dungeon.icon", "Blocks/Dungeon", "Icon"):SetRefresher("dungeon/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXTURE_OPTIONS))
 
 -- Block keystone
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.frame", "Blocks/Keystone", "Frame", "block.frame"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.header", "Blocks/Keystone", "Header", "block.header"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.stripe", "Blocks/Keystone", "Stripe", "block.stripe"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.name", "Blocks/Keystone", "Name", "block.dungeon.name"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.icon", "Blocks/Keystone", "Icon", "block.dungeon.icon"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.level", "Blocks/Keystone", "Level"):SetRefresher("block/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.frame", "Blocks/Keystone", "Frame", "block.frame"):SetRefresher("keystone/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.header", "Blocks/Keystone", "Header", "block.header"):SetRefresher("keystone/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.stripe", "Blocks/Keystone", "Stripe", "block.stripe"):SetRefresher("keystone/refresher"):SetOptions(ALL_TEXTURE_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.name", "Blocks/Keystone", "Name", "block.dungeon.name"):SetRefresher("keystone/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.icon", "Blocks/Keystone", "Icon", "block.dungeon.icon"):SetRefresher("keystone/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXTURE_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.keystone.level", "Blocks/Keystone", "Level"):SetRefresher("keystone/refresher"):SetOptions(ALL_TEXT_OPTIONS))
 
--- Block Achievement
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.frame", "Blocks/Achievements", "Frame", "block.frame"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.header", "Blocks/Achievements", "Header", "block.header"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.stripe", "Blocks/Achievements", "Stripe", "block.stripe"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.name", "Blocks/Achievements", "Name"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.icon", "Blocks/Achievements", "Icon"):SetRefresher("block/refresher"))
+-- Block Achievements
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.frame", "Blocks/Achievements", "Frame", "block.frame"):SetRefresher("achievements/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.header", "Blocks/Achievements", "Header", "block.header"):SetRefresher("achievements/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.achievements.stripe", "Blocks/Achievements", "Stripe", "block.stripe"):SetRefresher("achievements/refresher"):SetOptions(ALL_FRAME_OPTIONS))
 
--- Block Bonus objective
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.frame", "Blocks/Bonus Objectives", "Frame", "block.frame"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.header", "Blocks/Bonus Objectives", "Header", "block.header"):SetRefresher("block/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.stripe", "Blocks/Bonus Objectives", "Stripe", "block.stripe"):SetRefresher("block/refresher"))
+-- Block Bonus objectives
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.frame", "Blocks/Bonus Objectives", "Frame", "block.frame"):SetRefresher("bonusObjectives/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.header", "Blocks/Bonus Objectives", "Header", "block.header"):SetRefresher("bonusObjectives/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("block.bonusObjectives.stripe", "Blocks/Bonus Objectives", "Stripe", "block.stripe"):SetRefresher("bonusObjectives/refresher"):SetOptions(ALL_FRAME_OPTIONS))
 
 -- Quest
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.frame", "Quest"):SetRefresher("quest/refresh"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.header", "Quest", "Header"):SetRefresher("quest/refresh"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.frame", "Quest"):SetRefresher("quest/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.header", "Quest", "Header"):SetRefresher("quest/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.name", "Quest", "Name"):SetRefresher("quest/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("quest.level", "Quest", "Level"):SetRefresher("quest/refresher"):SetOptions(ALL_TEXT_OPTIONS))
 
 -- Bonus quest
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("bonusQuest.frame", "Bonus Quest", nil, "quest.frame"):SetRefresher("quest/refresh"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("bonusQuest.header", "Bonus Quest", "Header", "quest.header"):SetRefresher("quest/refresh"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("bonusQuest.frame", "Quest/Bonus Quest", nil, "quest.frame"):SetRefresher("bonusQuest/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("bonusQuest.header", "Quest/Bonus Quest", "Header", "quest.header"):SetRefresher("bonusQuest/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("bonusQuest.name", "Quest/Bonus Quest", "Name", "quest.name"):SetRefresher("bonusQuest/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("bonusQuest.level", "Quest/Bonus Quest", "Level", "quest.level"):SetRefresher("bonusQuest/refresher"):SetOptions(ALL_TEXT_OPTIONS))
 
 -- World quest
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("worldQuest.frame", "World Quest", nil, "quest.frame"):SetRefresher("quest/refresh"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("worldQuest.header", "World Quest", "Header", "quest.header"):SetRefresher("quest/refresh"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("worldQuest.frame", "Quest/World Quest", nil, "quest.frame"):SetRefresher("worldQuest/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("worldQuest.header", "Quest/World Quest", "Header", "quest.header"):SetRefresher("worldQuest/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("worldQuest.name", "Quest/World Quest", "Name", "quest.name"):SetRefresher("worldQuest/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("worldQuest.level", "Quest/World Quest", "Level", "quest.level"):SetRefresher("worldQuest/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+
 
 -- Objective
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("objective.frame", "Objectives"):SetRefresher("objective/refresher"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("objective.square", "Objectives", "Square"):SetRefresher("objective/refresher"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("objective.frame", "Objectives"):SetRefresher("objective/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("objective.square", "Objectives", "Square"):SetRefresher("objective/refresher"):SetOptions(FRAME_BORDER_OPTION + ALL_TEXTURE_OPTIONS))
+
 
 
 -- QuestHeader
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("questHeader.frame", "Quest Header"):SetRefresher("questHeader/refresh"))
-OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("questHeader.name", "Quest Header", "Name"):SetRefresher("questHeader/refresh"))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("questHeader.frame", "Quest Header"):SetRefresher("questHeader/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("questHeader.name", "Quest Header", "Name"):SetRefresher("questHeader/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+
+-- Achievement
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("achievement.frame", "Achievement"):SetRefresher("achievement/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("achievement.header", "Achievement", "Header"):SetRefresher("achievement/refresher"):SetOptions(ALL_FRAME_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("achievement.name", "Achievement", "Name"):SetRefresher("achievement/refresher"):SetOptions(ALL_TEXT_OPTIONS))
+OptionBuilder:AddThemeElementRecipe(ThemeElementRecipe("achievement.icon", "Achievement", "Icon"):SetRefresher("achievement/refresher"):SetOptions(ALL_FRAME_OPTIONS + ALL_TEXTURE_OPTIONS))
 
 
 

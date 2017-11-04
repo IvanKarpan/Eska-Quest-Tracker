@@ -19,43 +19,28 @@ class "Block" inherit "Frame"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ {}
-  function Refresh(self)
-    Theme:SkinFrame(self.frame)
-    Theme:SkinFrame(self.frame.header, self.text)
-    Theme:SkinTexture(self.frame.header.stripe)
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  function Refresh(self, skinFlags, callSuper)
+    Theme:SkinFrame(self.frame, nil, nil, skinFlags)
+    Theme:SkinFrame(self.frame.header, self.text, nil, skinFlags)
+    Theme:SkinTexture(self.frame.header.stripe, nil, skinFlags)
   end
 
 
   __Arguments__ {}
-  function RegisterFramesForThemeAPI(self, child)
+  function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".frame", self.frame, "block.frame")
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header, "block.header")
-    Theme:RegisterTexture(class._THEME_CLASS_ID..".stripe", self.frame.header.stripe, "block.stripe")
+
+    Theme:RegisterFrame(class._prefix..".frame", self.frame, "block.frame")
+    Theme:RegisterFrame(class._prefix..".header", self.frame.header, "block.header")
+    Theme:RegisterTexture(class._prefix..".stripe", self.frame.header.stripe, "block.stripe")
   end
 
-  -- Say to option the keyword available
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix..".frame", Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".header", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-      Options.ThemeKeyword(prefix..".stripe", Options.ThemeKeywordType.TEXTURE)
-    )
-  end
-
-  __Static__() function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_BlockCache) do
-      obj:Refresh()
+      obj:Refresh(skinFlags)
     end
   end
   ------------------------------------------------------------------------------
@@ -67,6 +52,7 @@ class "Block" inherit "Frame"
   property "priority" { TYPE = Number, DEFAULT = 100 }
 
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block" }
+  __Static__() property "_prefix" { DEFAULT = "block" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -120,8 +106,6 @@ class "Block" inherit "Frame"
     This(self)
   end
 endclass "Block"
-Block:InstallOptions()
---Theme.RegisterRefreshHandler("block", Block.RefreshAll)
 -- ========================================================================== --
 -- == OnLoad Handler
 -- ========================================================================== --

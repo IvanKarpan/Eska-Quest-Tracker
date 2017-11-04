@@ -278,47 +278,7 @@ endclass "Option"
 
 
 class "Options"
-_KEYWORDS = Dictionary()
-
 OPTIONS = Dictionary()
-
--- @REVIEW Do that during the theme API update and create OptionRecipe!
-__Flags__()
-enum "ThemeKeywordType" {
-  FRAME = 1,
-  TEXT = 2,
-  TEXTURE = 4,
-}
-
--- @REVIEW Do that during the theme API update and create OptionRecipe!
-struct "ThemeKeyword"
-  target = String
-
-  __Default__( ThemeKeywordType.FRAME )
-  type = ThemeKeywordType
-
-  __Default__("0094FF")
-  flagColorStr = String
-
-endstruct "ThemeKeyword"
-
--- @REVIEW Do that during the theme API update and create OptionRecipe!
-__Static__()
-function AddAvailableThemeKeywords(...)
-
-  for i = 1, select('#', ...) do
-    local keyword = select(i, ...)
-    if not _KEYWORDS[keyword.target] then
-      _KEYWORDS[keyword.target] = keyword
-    end
-  end
-end
-
--- @REVIEW Do that during the theme API update and create OptionRecipe!
-__Static__()
-function GetAvailableThemeKeywords()
-  return _KEYWORDS.Values:ToList():Sort("a,b=>a.target<b.target"):GetIterator()
-end
 
 __Static__() __Arguments__ { Class }
 function SelectCurrentProfile(self)
@@ -621,73 +581,6 @@ interface "API"
     return _COMPRESSER:Decompress(data)
   end
   -- End encoding and compressing code
-
-  -- Some Theme function
-  function GetThemeProperty(self, target, property, inherit, includeParent)
-    if _Addon:GetCurrentTheme() then
-      return _Addon:GetCurrentTheme():GetProperty(target, property, inherit, includeParent)
-    end
-  end
-
-  function SetThemeProperty(self, target, property, value)
-    if _Addon:GetCurrentTheme() then
-      _Addon:GetCurrentTheme():SetProperty(target, property, value, true)
-    end
-  end
-
-  function SetAndRefreshThemeProperty(self, target, property, value)
-    if not target or not property then
-      return
-    end
-
-
-    self:SetThemeProperty(target, property, value)
-
-
-    local firstClass = strsplit(".", API:RemoveThemePropertyFlags(target), 2)
-
-
-    Theme.RefreshGroup(firstClass)
-  end
-
-  function GetThemePropertyFlags(self, target)
-    local flags = {}
-    for flag in string.gmatch(target, "[%[@,](%w+)") do
-      tinsert(flags, flag)
-    end
-    return flags
-  end
-
-  function RemoveThemePropertyFlags(self, target)
-    return target:gsub("%[.*%]", "")
-  end
-
-
-
-
-  class "Config"
-    _DEFAULT_VALUES = {}
-
-    function GetOption(self, option)
-
-    end
-
-    function SetOption(self, option)
-
-    end
-
-    __Static__() __Arguments__ { String }
-    function SelectDatabase(self, db)
-
-    end
-
-    function RegisterOption(self, option)
-      -- name
-      -- default =
-      -- refresh callback
-    end
-
-  endclass "Config"
 endinterface "API"
 --------------------------------------------------------------------------------
 --                   Base Frame class                                         --
@@ -1029,16 +922,6 @@ _REGISTERED_FRAMES = {}
     end
     fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
 
-
-
-    --local size = theme:GetElementProperty(elementID, "text-size", inheritElementID)
-    --local font = _LibSharedMedia:Fetch("font", theme:GetElementProperty(elementID, "text-font", inheritElementID))
-    --local transform = theme:GetElementProperty(elementID, "text-transform", inheritElementID)
-    --fontstring:SetFont(font, size, "OUTLINE")
-
-    --local textColor = theme:GetElementProperty(elementID, "text-color", inheritElementID)
-    --fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
-
     local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
     local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
     local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
@@ -1061,15 +944,12 @@ _REGISTERED_FRAMES = {}
       txt = fontstring:GetText()
     end
 
-    if ValidateFlags(flags, SkinFlags.TEXT_TRANSFORM) then
-      local transform = theme:GetElementProperty(elementID, "text-transform", inheritElementID)
-      if transform == "uppercase" then
-        txt = txt:upper()
-      elseif transform == "lowercase" then
-        txt = txt:lower()
-      end
+    local transform = theme:GetElementProperty(elementID, "text-transform", inheritElementID)
+    if transform == "uppercase" then
+      txt = txt:upper()
+    elseif transform == "lowercase" then
+      txt = txt:lower()
     end
-
     fontstring:SetText(txt)
   end
 
@@ -1215,47 +1095,6 @@ _REGISTERED_FRAMES = {}
       end
   end
 
-  --[[__Arguments__ { String, String, Argument(String, true), Argument(ElementFlags, true, 15) }
-  function GetElementProperty(self, elementID, property, inheritElementID, flags)
-    elementID = elementID:gsub("%s+", "") -- Remove the space
-
-    local value
-    if ValidateFlags(flags, ElementFlags.INCLUDE_DATABASE) then
-      value = self:GetElementPropertyFromDB(elementID, property)
-      if value then
-        return value
-      end
-    end
-
-    value = self.properties[elementID] and self.properties[elementID][property]
-    if value then
-      return value
-    end
-
-    if not ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
-      if ValidateFlags(flags, ElementFlags.INCLUDE_DEFAULT_VALUES) then
-        return Theme:GetDefaultProperty(property)
-      end
-      return value
-    end
-
-    for _, id in Theme:GetReadingIDList(elementID, inheritElementID, flags):GetIterator() do
-      if ValidateFlags(flags, ElementFlags.INCLUDE_DATABASE) then
-        value = self:GetElementPropertyFromDB(id, property)
-        if value then return value end
-      end
-
-      value = self.properties[id] and self.properties[id][property]
-      if value then return value end
-    end
-
-    if ValidateFlags(flags, ElementFlags.INCLUDE_DEFAULT_VALUES) then
-      return Theme:GetDefaultProperty(property)
-    end
-  end--]]
-
-
-
   __Arguments__{ String, String, Argument(Any, true) }
   function SetElementProperty(self, elementID, property, value)
     -- NOTE Make the *
@@ -1287,7 +1126,8 @@ _REGISTERED_FRAMES = {}
     flags = flags + ElementFlags.IGNORE_WITHOUT_STATE + ElementFlags.INCLUDE_STATE
     elementID = string.format("%s[%s]", elementID, state)
 
-    --[[
+    --print("ElementHasState", elementID, state, inheritElementID)
+
     for _, id in Theme:GetReadingIDList(elementID, inheritElementID, flags):GetIterator() do
       if ValidateFlags(flags, INCLUDE_DATABASE) and self:ElementExistsFromDB(id) then
         return true
@@ -1295,7 +1135,6 @@ _REGISTERED_FRAMES = {}
 
       if self.properties[id] then return true end
     end
-    --]]
 
     return false
   end
@@ -1362,7 +1201,7 @@ _REGISTERED_FRAMES = {}
     end
 
     local theme = Themes:GetSelected()
-    if not theme or not theme:ElementHasState(frame.elementID, "hover") then return end
+    if not theme or not theme:ElementHasState(frame.elementID, "hover", frame.inheritElementID) then return end
 
     local function FrameOnHover(f)
       if Frame:MustBeInteractive(f) then
@@ -1399,10 +1238,11 @@ _REGISTERED_FRAMES = {}
     local categories = { strsplit(".", rawElementID) }
     local list = List()
 
-    local parentIDNum
+    local parentIDs, parentIDNum
     if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
       if inheritElementID then
-        parentIDNum = #{ strsplit(".", inheritElementID) }
+        parentIDs = { strsplit(".", inheritElementID) }
+        parentIDNum = #parentIDs
       end
     end
 
@@ -1422,6 +1262,9 @@ _REGISTERED_FRAMES = {}
 
         if index ~= #categories then
           if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+            if inheritElementID then
+              list:Insert(parentIDs[index]..".*")
+            end
             list:Insert(currentID..category..".*")
           end
         else
@@ -1447,6 +1290,10 @@ _REGISTERED_FRAMES = {}
 
           if index ~= #categories then
             if ValidateFlags(flags, ElementFlags.INCLUDE_PARENT) then
+              if inheritElementID then
+                list:Insert(parentIDs[index]..".*"..states)
+              end
+
               list:Insert(currentID..category..".*"..states)
             end
           else

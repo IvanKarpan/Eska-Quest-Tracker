@@ -183,12 +183,9 @@ class "Objective" inherit "Frame" extend "IReusable"
 
 	__Arguments__ { Argument(Theme.SkinFlags, true, 127) }
 	__Static__() function RefreshAll(skinFlags)
-		--print("[Objective]", "RefreshAll/SkinFlags", skinFlags)
-		--local startTime = debugprofilestop()
 		for obj in pairs(_ObjectiveCache) do
 			obj:Refresh(skinFlags)
 		end
-		--print(format("myFunction executed in %f ms", debugprofilestop()-startTime))
 	end
 
 	function Reset(self)
@@ -221,26 +218,6 @@ class "Objective" inherit "Frame" extend "IReusable"
 		Theme:RegisterFrame(classPrefix..".frame", self.frame)
 		Theme:RegisterFrame(classPrefix..".square", self.frame.square)
 	end
-
-	__Static__()
-	function InstallOptions(self, child)
-		local class = child or self
-		local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-		local superClass = System.Reflector.GetSuperClass(self)
-
-		if superClass.InstallOptions then
-			superClass:InstallOptions(class)
-		end
-
-		Options.AddAvailableThemeKeywords(
-			-- Completed objectives
-			Options.ThemeKeyword(class._THEME_CLASS_ID.."[@completed]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-			Options.ThemeKeyword(class._THEME_CLASS_ID..".square[@completed]", Options.ThemeKeywordType.FRAME, "00ff00"),
-			-- progress objective
-			Options.ThemeKeyword(class._THEME_CLASS_ID.."[@progress]", Options.ThemeKeywordType.FRAME + Options.ThemeKeywordType.TEXT),
-			Options.ThemeKeyword(class._THEME_CLASS_ID..".square[@progress]", Options.ThemeKeywordType.FRAME, "808080")
-		)
-	end
 	------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
@@ -263,7 +240,7 @@ class "Objective" inherit "Frame" extend "IReusable"
 		Get = function(self) return _DB.Objective.colors.inProgress end,
 	}
 
-	__Static__() property "_THEME_CLASS_ID" { DEFAULT = "objective" }
+	__Static__() property "_prefix" { DEFAULT = "objective" }
 	------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -300,13 +277,12 @@ class "Objective" inherit "Frame" extend "IReusable"
 		self.baseHeight = self.height
 
 		self:RegisterFramesForThemeAPI()
+
 		self:Refresh()
 
 		_ObjectiveCache[self] = true
   end
 endclass "Objective"
-Objective:InstallOptions()
---Theme.RegisterRefreshHandler("objective", Objective.RefreshAll)
 
 class "DottedObjective" inherit "Frame" extend "IReusable"
 	_DottedObjectiveCache = setmetatable( {}, { __mode = "k"})

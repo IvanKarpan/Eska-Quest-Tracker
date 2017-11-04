@@ -114,14 +114,16 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   end
 
 
-  function Refresh(self)
-    Theme:SkinFrame(self.frame)
-    Theme:SkinText(self.frame.name, self.name)
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  function Refresh(self, skinFlags, callSuper)
+    Theme:SkinFrame(self.frame, nil, nil, skinFlags)
+    Theme:SkinText(self.frame.name, self.name, nil, skinFlags)
   end
 
-  __Static__() function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_QuestHeaderCache) do
-      obj:Refresh()
+      obj:Refresh(skinFlags)
     end
   end
 
@@ -129,24 +131,8 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID, self.frame)
-    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
-  end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix, Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT)
-    )
-
+    Theme:RegisterFrame(class._prefix..".frame", self.frame)
+    Theme:RegisterText(class._prefix..".name", self.frame.name)
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
@@ -162,8 +148,7 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
         end
       end
   }
-  -- Theme
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "questHeader" }
+  __Static__() property "_prefix" { DEFAULT = "questHeader" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -190,8 +175,6 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
     _QuestHeaderCache[self] = true
   end
 endclass "QuestHeader"
-QuestHeader:InstallOptions()
--- Theme.RegisterRefreshHandler("questHeader", QuestHeader.RefreshAll)
 --============================================================================--
 -- OnLoad Handler
 --============================================================================--
@@ -199,5 +182,5 @@ function OnLoad(self)
   -- Register this class in the object manager
   _ObjectManager:Register(QuestHeader)
 
-  CallbackHandlers:Register("questHeader/refresh", CallbackHandler(QuestHeader.RefreshAll), "refresher")
+  CallbackHandlers:Register("questHeader/refresher", CallbackHandler(QuestHeader.RefreshAll), "refresher")
 end

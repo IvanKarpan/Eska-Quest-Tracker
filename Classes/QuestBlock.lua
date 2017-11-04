@@ -136,28 +136,11 @@ class "QuestBlock" inherit "Block"
     self.height = self.baseHeight + height + 10
   end
 
-  __Arguments__{}
-  function Refresh(self)
-    Super.Refresh(self)
-  end
-
-
-  __Static__()
-  function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_QuestBlockCache) do
-      obj:Refresh()
+      obj:Refresh(skinFlags)
     end
-  end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
   end
 
   __Static__() property "showOnlyQuestsInZone" {
@@ -171,8 +154,7 @@ class "QuestBlock" inherit "Block"
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
-  -- Theme
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.quests" }
+  __Static__() property "_prefix" { DEFAULT = "block.quests" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -184,8 +166,10 @@ class "QuestBlock" inherit "Block"
     self.quests = ObjectArray(Quest)
     self.headers = Dictionary()
 
-    -- self:Refresh()
     _QuestBlockCache[self] = true
   end
 endclass "QuestBlock"
-QuestBlock:InstallOptions()
+
+function OnLoad(self)
+  CallbackHandlers:Register("quests/refresher", CallbackHandler(QuestBlock.RefreshAll))
+end

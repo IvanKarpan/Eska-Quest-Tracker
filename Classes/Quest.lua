@@ -80,16 +80,16 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.frame.headerName:SetPoint("RIGHT")
   end
 
-
-  function Refresh(self)
-    Theme:SkinFrame(self.frame)
-    Theme:SkinFrame(self.frame.header)
-    Theme:SkinText(self.frame.headerName, self.name)
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  function Refresh(self, skinFlags, callSuper)
+    Theme:SkinFrame(self.frame, nil, nil, skinFlags)
+    Theme:SkinFrame(self.frame.header, nil, nil, skinFlags)
+    Theme:SkinText(self.frame.headerName, self.name, nil, skinFlags)
 
 
     if Options:Get("quest-show-level") then
       self:ShowLevel()
-      Theme:SkinText(self.frame.headerLevel, self.level)
+      Theme:SkinText(self.frame.headerLevel, self.level, nil, skinFlags)
 
       if Options:Get("quest-color-level-by-difficulty") then
         local color = GetQuestDifficultyColor(self.level)
@@ -134,37 +134,21 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
   end
 
-  __Static__() function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_QuestCache) do
-      obj:Refresh()
+      obj:Refresh(skinFlags)
     end
   end
-
-  --[[
-  __Static__() property "showID" {
-    GET = function(self) return _DB.Quest.showID end,
-    SET = function(self, showID) _DB.Quest.showID = showID ; Quest:RefreshAll() end
-  }
-
-  __Static__() property "showLevel" {
-    GET = function() return _DB.Quest.showLevel end,
-    SET = function(self, showLevel) _DB.Quest.showLevel = showLevel ; Quest:RefreshAll() end
-  }
-
-  __Static__() property "showOnlyQuestsInZone" {
-    GET = function() return _DB.Quest.showOnlyQuestsInZone end,
-    SET = function(self, showInZone) _DB.Quest.showOnlyInQuestsInZone = showInZone end,
-  }--]]
-
 
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".frame", self.frame)
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header)
+    Theme:RegisterFrame(class._prefix..".frame", self.frame, "quest.frame")
+    Theme:RegisterFrame(class._prefix..".header", self.frame.header, "quest.header")
 
-    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.headerName)
-    Theme:RegisterText(class._THEME_CLASS_ID..".level", self.frame.headerLevel)
+    Theme:RegisterText(class._prefix..".name", self.frame.headerName, "quest.name")
+    Theme:RegisterText(class._prefix..".level", self.frame.headerLevel, "quest.level")
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
@@ -178,9 +162,8 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   property "isTask" { TYPE = Boolean, DEFAULT = false }
   property "isHidden" { TYPE = Boolean, DEFAULT = false }
   property "isOnMap" { TYPE = Boolean, DEFAULT = false, EVENT = "IsOnMapChanged" }
-  -- Theme system
-  property "tID" { DEFAULT = "quest"}
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "quest" }
+
+  __Static__() property "_prefix" { DEFAULT = "quest" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -267,29 +250,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
     _QuestCache[self] = true
   end
-
-  -- Say to option the keyword available
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix, Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".header", Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT),
-      Options.ThemeKeyword(prefix..".level", Options.ThemeKeywordType.TEXT)
-    )
-  end
-
 endclass "Quest"
-Quest:InstallOptions()
---Theme.RegisterRefreshHandler("quest", Quest.RefreshAll)
-
 --============================================================================--
 -- OnLoad Handler
 --============================================================================--
@@ -299,7 +260,7 @@ function OnLoad(self)
   Options:Register("quest-color-level-by-difficulty", true, "quest/refresh")
 
 
-  CallbackHandlers:Register("quest/refresh", CallbackHandler(Quest.RefreshAll), "refresher")
+  CallbackHandlers:Register("quest/refresher", CallbackHandler(Quest.RefreshAll), "refresher")
 
   -- Register this class in the object manager
   _ObjectManager:Register(Quest)

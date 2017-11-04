@@ -101,14 +101,14 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   end
 
 
-  function Refresh(self)
-    Theme:SkinFrame(self.frame)
-    Theme:SkinFrame(self.frame.header)
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true) }
+  function Refresh(self, skinFlags, callSuper)
+    Theme:SkinFrame(self.frame, nil, nil, skinFlags)
+    Theme:SkinFrame(self.frame.header, nil, nil, skinFlags)
 
-    Theme:SkinText(self.frame.headerName, self.name)
+    Theme:SkinText(self.frame.headerName, self.name, nil, skinFlags)
 
-    Theme:SkinFrame(self.frame.ftex)
-
+    Theme:SkinFrame(self.frame.ftex, nil, nil, skinFlags)
   end
 
   function Reset(self)
@@ -127,17 +127,18 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".frame", self.frame)
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".header", self.frame.header)
+    Theme:RegisterFrame(class._prefix..".frame", self.frame)
+    Theme:RegisterFrame(class._prefix..".header", self.frame.header)
 
-    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.headerName)
+    Theme:RegisterText(class._prefix..".name", self.frame.headerName)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".icon", self.frame.ftex)
+    Theme:RegisterFrame(class._prefix..".icon", self.frame.ftex)
   end
 
-  __Static__() function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(SkinFlags)
     for obj in pairs(_AchievementCache) do
-      obj:Refresh()
+      obj:Refresh(skinFlags)
     end
   end
   ------------------------------------------------------------------------------
@@ -148,7 +149,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   property "icon" { TYPE = String + Number, DEFAULT = nil, HANDLER = UpdateProps }
   property "desc" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps }
   property "showDesc" { TYPE = Boolean, DEFAULT = true, HANDLER = UpdateProps }
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "achievement" }
+  __Static__() property "_prefix" { DEFAULT = "achievement"}
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -314,10 +315,17 @@ class "AchievementBlock" inherit "Block"
     end
     self.height = self.baseHeight + height + 10
   end
+
+
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
+    for obj in pairs(_AchievementBlockCache) do
+      obj:Refresh(skinFlags)
+    end
+  end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.achievements" }
   __Static__() property "_prefix" { DEFAULT = "block.achievements" }
 
   ------------------------------------------------------------------------------
@@ -341,4 +349,8 @@ endclass "AchievementBlock"
 function OnLoad(self)
   -- Register this class in the object manager
   _ObjectManager:Register(Achievement)
+
+  CallbackHandlers:Register("achievements/refresher", CallbackHandler(AchievementBlock.RefreshAll))
+  CallbackHandlers:Register("achievement/refresher", CallbackHandler(Achievement.RefreshAll), "refresher")
+
 end

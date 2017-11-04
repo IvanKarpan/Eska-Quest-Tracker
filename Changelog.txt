@@ -1,7 +1,11 @@
-[1.5.0]
-- Pushed the first version of 1.5
-NOTE: This build is experimental so don't install it if you want something that is stable. The goal of this push is to prepare the files architecture, dependencies and the base changes of the 1.5 to improve the stability of next alpha versions.
+[1.5.1]
+- Fixed lot of things.
+- Updated Transparence and Eska Theme to apply changes that have been done with the new API (the themes should now work as intended).
+- Cleaned the code (removed some useless part) and updated the API.
+- Continued the work on the theme options (all elements should now be added).
 
-Content of this build:
-- API Theme Reworked
-- The options have been rebuilded
+NOTE: This build should now be more stable.
+
+[1.5.0]
+- API Theme Reworked.
+- The options have been rebuilt.

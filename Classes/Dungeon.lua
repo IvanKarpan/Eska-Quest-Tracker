@@ -41,20 +41,20 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     end
   end
 
-  __Arguments__{ Argument(Boolean, true, true)}
-  function Refresh(self, callSuper)
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  function Refresh(self, skinFlags, callSuper)
     if callSuper then
-      Super.Refresh(self)
+      Super.Refresh(self, skinFlags)
     end
 
-    Theme:SkinFrame(self.frame.ftex)
-    Theme:SkinText(self.frame.name, self.name)
+    Theme:SkinFrame(self.frame.ftex, nil, nil, skinFlags)
+    Theme:SkinText(self.frame.name, self.name, nil, skinFlags)
   end
 
-  __Static__()
-  function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_DungeonCache) do
-      obj:Refresh()
+      obj:Refresh(skinFlags)
     end
   end
 
@@ -62,31 +62,16 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".icon", self.frame.ftex)
-    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
-  end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix..".icon", Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT)
-    )
+    Theme:RegisterFrame(class._prefix..".icon", self.frame.ftex, "block.dungeon.icon")
+    Theme:RegisterText(class._prefix..".name", self.frame.name, "block.dungeon.name")
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
   property "name" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps}
   property "texture" { TYPE = String + Number, DEFAULT = nil, HANDLER = UpdateProps }
-  -- Theme
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.dungeon" }
+
+  __Static__() property "_prefix" { DEFAULT = "block.dungeon" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -128,9 +113,12 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     This.RegisterFramesForThemeAPI(self)
     -- Here the false boolean say to refresh function to not call the refresh super function
     -- because it's already done by the super constructor
-    This.Refresh(self, false)
+    This.Refresh(self, nil, false)
 
     _DungeonCache[self] = true
   end
 endclass "Dungeon"
-Dungeon:InstallOptions()
+
+function OnLoad(self)
+  CallbackHandlers:Register("dungeon/refresher", CallbackHandler(Dungeon.RefreshAll))
+end

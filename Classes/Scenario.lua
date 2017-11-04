@@ -66,28 +66,11 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   function RegisterFramesForThemeAPI(self)
     local class = System.Reflector.GetObjectClass(self)
 
-    Theme:RegisterFrame(class._THEME_CLASS_ID..".stage", self.frame.stage)
+    Theme:RegisterFrame(class._prefix..".stage", self.frame.stage)
     -- Text
-    Theme:RegisterText(class._THEME_CLASS_ID..".name", self.frame.name)
-    Theme:RegisterText(class._THEME_CLASS_ID..".stageName", self.frame.stageName)
-    Theme:RegisterText(class._THEME_CLASS_ID..".stageCounter", self.frame.stageCounter)
-  end
-
-  __Static__()
-  function InstallOptions(self, child)
-    local class = child or self
-    local prefix = class._THEME_CLASS_ID and class._THEME_CLASS_ID or ""
-    local superClass = System.Reflector.GetSuperClass(self)
-    if superClass.InstallOptions then
-      superClass:InstallOptions(class)
-    end
-
-    Options.AddAvailableThemeKeywords(
-      Options.ThemeKeyword(prefix..".stage", Options.ThemeKeywordType.FRAME),
-      Options.ThemeKeyword(prefix..".name", Options.ThemeKeywordType.TEXT),
-      Options.ThemeKeyword(prefix..".stageName", Options.ThemeKeywordType.TEXT),
-      Options.ThemeKeyword(prefix..".stageCounter", Options.ThemeKeywordType.TEXT)
-    )
+    Theme:RegisterText(class._prefix..".name", self.frame.name)
+    Theme:RegisterText(class._prefix..".stageName", self.frame.stageName)
+    Theme:RegisterText(class._prefix..".stageCounter", self.frame.stageCounter)
   end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
@@ -97,8 +80,8 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   property "numStages" { TYPE = Number, DEFAULT = 1, HANDLER = UpdateProps }
   property "stageName" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps }
   property "numBonusObjectives" { TYPE = Number, DEFAULT = 0 }
-  -- Theme
-  __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block.scenario" }
+
+  __Static__() property "_prefix" { DEFAULT = "block.scenario" }
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
@@ -147,10 +130,13 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     This.RegisterFramesForThemeAPI(self)
     -- Here the false boolean say to refresh function to not call the refresh super function
     -- because it's already done by the super constructor
-    This.Refresh(self, false)
+    This.Refresh(self, nil, false)
 
     _ScenarioCache[self] = true
 
   end
 endclass "Scenario"
-Scenario:InstallOptions()
+
+function OnLoad(self)
+  CallbackHandlers:Register("scenario/refresher", CallbackHandler(Scenario.RefreshAll))
+end
