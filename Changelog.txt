@@ -1,11 +1,5 @@
-[1.5.1]
-- Fixed lot of things.
-- Updated Transparence and Eska Theme to apply changes that have been done with the new API (the themes should now work as intended).
-- Cleaned the code (removed some useless part) and updated the API.
-- Continued the work on the theme options (all elements should now be added).
-
-NOTE: This build should now be more stable.
-
-[1.5.0]
-- API Theme Reworked.
-- The options have been rebuilt.
+[1.5.2]
+  - Added some fix.
+  - Updated Transparence and Eska Theme.
+  - The options have been revamped.
+  NOTE: After some feedbacks, the options have been revamped in order to be more user friendly. The properties that change  elements apperance of the addon and those changing its behavior have been unifed in a one place.

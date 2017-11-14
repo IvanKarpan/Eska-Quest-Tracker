@@ -326,8 +326,8 @@ function Exists(self, option)
     return false
 end
 
-__Static__() __Arguments__ { Class, String, Argument(Any, true, nil), Argument(Boolean, true, true)}
-function Set(self, option, value, useHandler)
+__Static__() __Arguments__ { Class, String, Argument(Any, true, nil), Argument(Boolean, true, true), Argument(Boolean, true, true)}
+function Set(self, option, value, useHandler, passValue)
   -- select the current profile (global, char or spec)
   self:SelectCurrentProfile()
 
@@ -338,7 +338,11 @@ function Set(self, option, value, useHandler)
   if useHandler then
     local opt = OPTIONS[option]
     if opt then
-      opt(value)
+      if passValue then
+        opt(value)
+      else
+        opt()
+      end
     end
   end
 end
@@ -1475,3 +1479,45 @@ class "Themes"
   end
 
 endclass "Themes"
+
+
+class "State"
+  property "id" { TYPE = String }
+  property "text" { TYPE = String }
+  property "color" { TYPE = Color}
+
+  __Arguments__ { String, String, Color }
+  function State(self, id, text, color)
+    self.id = id
+    self.text = text
+    self.color = color
+  end
+
+
+endclass "State"
+
+class "States"
+  _STATES = Dictionary()
+
+  __Arguments__ { Class, State}
+  __Static__() function Add(self, state)
+    _STATES[state.id] = state
+  end
+
+  __Arguments__ { Class }
+  __Static__() function GetIterator()
+    return _STATES:GetIterator()
+  end
+
+  __Arguments__ { Class, String }
+  __Static__() function Get(self, stateID)
+    return _STATES[stateID]
+  end
+
+endclass "States"
+
+function OnLoad(self)
+  -- Add some basic state
+  States:Add(State("completed", "Completed", Color(0, 1, 0)))
+  States:Add(State("progress", "Progress", Color(0.5, 0.5, 0.5)))
+end

@@ -30,8 +30,13 @@ function OnLoad(self)
   })
   -- Register the options
   Options:Register("sort-quests-by-distance", true, "quests/sortingByDistance")
+  Options:Register("show-only-quests-in-zone", false, "quests/showOnlyQuestInZone")
+
   -- Register the callbacks for options
   CallbackHandlers:Register("quests/sortingByDistance", CallbackHandler(function(enabled) if enabled then self:UpdateDistance() end end))
+  CallbackHandlers:Register("quests/showOnlyQuestInZone", CallbackHandler(EQT_SHOW_ONLY_QUESTS_IN_ZONE))
+
+
 end
 
 __Thread__()
@@ -101,7 +106,7 @@ do
   local needUpdate = false
 
   function RunQuestLogUpdate()
-    if QuestBlock.showOnlyQuestsInZone then
+    if Options:Get("show-only-quests-in-zone") then
       QUEST_LOG_UPDATE()
       needUpdate = false
     end
@@ -111,7 +116,7 @@ do
   function ZONE_CHANGED()
     -- @NOTE This seems that GetQuestWorldMapAreaID() uses SetMapToCurrentZone so we
     -- need to wait the WorldMapFrame is hidden to continue
-    if QuestBlock.showOnlyQuestsInZone then
+    if Options:Get("show-only-quests-in-zone") then
       if WorldMapFrame:IsShown() then
         needUpdate = true
       else
@@ -122,7 +127,7 @@ do
 
   __SystemEvent__()
   function EQT_SHOW_ONLY_QUESTS_IN_ZONE()
-    if QuestBlock.showOnlyQuestsInZone then
+    if Options:Get("show-only-quests-in-zone") then
       if not alreadyHooked then
         WorldMapFrame:HookScript("OnHide", RunQuestLogUpdate)
         alreadyHooked = true
@@ -220,7 +225,7 @@ function UpdateQuest(self, questID)
 
     -- #######################################################################
     -- Is the player wants the quests are filered by zone ?
-    if QuestBlock.showOnlyQuestsInZone then
+    if Options:Get("show-only-quests-in-zone") then
 
       -- @NOTE This seems that GetQuestWorldMapAreaID() uses SetMapToCurrentZone so we
       -- need to wait the WorldMapFrame is hidden to continue

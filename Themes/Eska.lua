@@ -68,7 +68,7 @@ EskaTheme:SetElementProperty("block.keystone.level", "text-size", 14)
 EskaTheme:SetElementProperty("block.keystone.level", "text-color", { r = 1, g = 215/255, b = 0 })
 
 -- Scenario
-EskaTheme:SetElementProperty("block.scenario", "background-color", { r = 0, g = 0, b = 0, a = 0.3})
+EskaTheme:SetElementProperty("block.scenario.frame", "background-color", { r = 0, g = 0, b = 0, a = 0.3})
 
 -- Scenario
 EskaTheme:SetElementProperty("block.scenario.header", "text-size", 14)

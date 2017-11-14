@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.5.1"
+Scorpio                   "EskaQuestTracker"                             "1.5.2"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -50,8 +50,10 @@ function OnLoad(self)
   -- Create and init the DB
   _DB = SVManager("EskaQuestTrackerDB")
 
-  Options:Register("replace-blizzard-objective-tracker", true)
+  Options:Register("replace-blizzard-objective-tracker", true, "Blizzard/UpdateTrackerVisibility")
   Options:Register("theme-selected", "Eska")
+
+  CallbackHandlers:Register("Blizzard/UpdateTrackerVisibility", CallbackHandler(function(replace) _Addon.BLIZZARD_TRACKER_VISIBLITY_CHANGED(not replace) end))
 
   self:CheckDBMigration()
 

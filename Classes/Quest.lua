@@ -256,8 +256,8 @@ endclass "Quest"
 --============================================================================--
 function OnLoad(self)
   Options:Register("quest-show-id", false)
-  Options:Register("quest-show-level", true, "quest/refresh")
-  Options:Register("quest-color-level-by-difficulty", true, "quest/refresh")
+  Options:Register("quest-show-level", true, "quest/refresher")
+  Options:Register("quest-color-level-by-difficulty", true, "quest/refresher")
 
 
   CallbackHandlers:Register("quest/refresher", CallbackHandler(Quest.RefreshAll), "refresher")

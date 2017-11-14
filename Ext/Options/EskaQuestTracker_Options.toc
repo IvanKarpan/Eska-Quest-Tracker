@@ -12,6 +12,5 @@ Widgets\widgets.xml
 OptionBuilder.lua
 
 EskaQuestTracker_Options.lua
-Quests.lua
-Achievements.lua
+Contents\contents.xml
 Themes.lua
