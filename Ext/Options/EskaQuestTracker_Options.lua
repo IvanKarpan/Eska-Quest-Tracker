@@ -5,6 +5,7 @@
 Scorpio                 "EskaQuestTracker.Options"                            ""
 --============================================================================--
 namespace "EQT"
+import "System.Serialization"
 --============================================================================--
 _AceGUI               = LibStub("AceGUI-3.0")
 --============================================================================--
@@ -141,7 +142,6 @@ function Open(self)
   end
 
   _ROOT_FRAME:Show()
-
 end
 
 function BuildRootTreeTable(self)
@@ -281,9 +281,17 @@ function SelectCategory(self, category)
     else
       builder:Build(_CONTENT)
     end
+    OptionBuilder:SetVariable("category-selected", category)
   else
     self:BuildAddonInfoCategory(_CONTENT)
   end
+end
+
+__SystemEvent__ "EQT_REFRESH_OPTIONS"
+function RefreshOptions()
+  print("REFRESH OPTIONS")
+  local category = OptionBuilder:GetVariable("category-selected")
+  _M:SelectCategory(category)
 end
 
 
@@ -543,8 +551,12 @@ function AddObjectiveRecipes(self)
     OptionBuilder:AddRecipe(TabRecipe("", "Objective/Tabs"):SetOrder(1), "Objective/SelectThemeToEdit/Children")
     OptionBuilder:AddRecipe(TabItemRecipe("General", "Objective/General"):SetID("general"):SetOrder(10), "Objective/Tabs")
     OptionBuilder:AddRecipe(TabItemRecipe("Square", "Objective/Square"):SetID("square"):SetOrder(20), "Objective/Tabs")
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("objective.frame"):SetRefresher("objective/refresher"):SetFlags(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS), "Objective/General")
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("objective.square"):SetRefresher("objective/refresher"):SetFlags(ALL_FRAME_OPTIONS + ALL_TEXTURE_OPTIONS), "Objective/Square")
+
+    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("completed", "progress"):SetRecipeGroup("Objective/General/States"), "Objective/General")
+    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("completed", "progress"):SetRecipeGroup("Objective/Square/States"), "Objective/Square")
+
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("objective.frame"):SetRefresher("objective/refresher"):SetFlags(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS), "Objective/General/States")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("objective.square"):SetRefresher("objective/refresher"):SetFlags(ALL_FRAME_OPTIONS + ALL_TEXTURE_OPTIONS), "Objective/Square/States")
 end
 
 

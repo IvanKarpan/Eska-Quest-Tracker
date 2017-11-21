@@ -10,7 +10,7 @@ namespace "EQT"
 EskaTheme = Theme()
 EskaTheme.name    = "Eska"
 EskaTheme.author  = "Skamer"
-EskaTheme.version = "1.5.0"
+EskaTheme.version = "1.5.3"
 EskaTheme.stage   = "Release"
 Themes:Register(EskaTheme)
 -- ========================================================================== --

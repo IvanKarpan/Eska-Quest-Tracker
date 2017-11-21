@@ -25,7 +25,8 @@ class "OptionRecipe"
 
 
   __Require__()
-  function Build(self, optTable) end
+  function Build(self, parent, info) end
+
 
   __Arguments__ { Number }
   function SetOrder(self, order)
@@ -51,6 +52,21 @@ class "OptionRecipe"
     return self
   end
 
+
+  --[[__Arguments__ { Table, Table }
+  function SetInfo(self, widget, recipe)
+    self.info = setmetatable({}, { __mode = "v"})
+    self.info["parent-recipe"] = recipe
+    self.info["parent-widget"] = widget
+  end
+
+  function Build(self, parent, info)
+    info.parentRecipe
+    info.parentWidget
+    info.i
+    info.rebuild() = function() self:Build()
+  end --]]
+
   property "order" { TYPE = Number, DEFAULT = 50 }
   property "recipeGroup" { TYPE = String, DEFAULT = nil }
   property "id" { TYPE = String, DEFAULT = nil }
@@ -58,6 +74,8 @@ class "OptionRecipe"
 
   __Arguments__ { String, String }
   function OptionRecipe(self, text, recipeGroup)
+    This(self)
+
     self.text = text
     self.recipeGroup = recipeGroup
   end
@@ -66,6 +84,7 @@ class "OptionRecipe"
   function OptionRecipe(self)
 
   end
+
 
 endclass "OptionRecipe"
 
@@ -83,17 +102,38 @@ class "OptionTableRecipe"
 endclass "OptionTableRecipe"
 --]]
 
+class "HeadingRecipe" inherit "OptionRecipe"
+  function Build(self, parent, info)
+
+    local heading = _AceGUI:Create("Heading")
+    heading:SetRelativeWidth(1.0)
+    heading:SetText(self.text)
+    parent:AddChild(heading)
+  end
+
+endclass "HeadingRecipe"
+
+
+
 class "TreeItemRecipe" inherit "OptionRecipe"
 
-  function Build(self, parent)
+  function Build(self, parent, info)
     if not self.recipeGroup then
       return
     end
 
+    local data = {
+      parentWidget = parent,
+      parentRecipe = self,
+      rebuild = function() parent:ReleaseChildren() ; self:Build(parent, info) end,
+      i = 0,
+    }
+
     local recipes = OptionBuilder:GetRecipes(self.recipeGroup)
     if recipes then
       for index, recipe in recipes:GetIterator() do
-        recipe:Build(parent)
+        data.i = data.i + 1
+        recipe:Build(parent, data)
       end
     end
 
@@ -110,7 +150,7 @@ endclass "TreeItemRecipe"
 
 class "ThemeDropDownRecipe" inherit "OptionRecipe"
 
-  function Build(self, parent)
+  function Build(self, parent, info)
       parent:ReleaseChildren()
 
       local themeSelected = OptionBuilder:GetVariable("theme-selected")
@@ -133,10 +173,18 @@ class "ThemeDropDownRecipe" inherit "OptionRecipe"
           return
         end
 
+        local data = {
+          parentWidget = parent,
+          parentRecipe = self,
+          rebuild = function() self:Build(parent, info) end,
+          i = 0
+        }
+
         local recipes = OptionBuilder:GetRecipes(self.recipeGroup)
         if recipes then
           for index, recipe in recipes:GetIterator() do
-            recipe:Build(selectTheme)
+            data.i = data.i + 1
+            recipe:Build(selectTheme, data)
           end
         end
       end
@@ -157,10 +205,16 @@ endclass "ThemeDropDownRecipe"
 
 class "TabRecipe" inherit "OptionRecipe"
 
-  function Build(self, parent)
+  function Build(self, parent, info)
       if not self.recipeGroup then
         return
       end
+
+      -- Prepare the info table to pass to children
+      local data = {}
+      data.i = 1
+      data.parentRecipe = self
+      data.rebuild = function() self:Build(parent, info) end
 
       local frame = _AceGUI:Create("TabGroup")
       frame:SetLayout("Flow")
@@ -190,7 +244,7 @@ class "TabRecipe" inherit "OptionRecipe"
           local recipe = recipeCache[id]
           if recipe then
             frame:ReleaseChildren()
-            recipe:Build(frame)
+            recipe:Build(frame, data)
             parent:DoLayout()
           end
         end
@@ -210,17 +264,24 @@ class "TabRecipe" inherit "OptionRecipe"
 endclass "TabRecipe"
 
 class "TabItemRecipe" inherit "OptionRecipe"
-  function Build(self, parent)
-    parent:ReleaseChildren()
+  function Build(self, parent, info)
+
 
     if not self.recipeGroup then
       return
     end
 
+    local data = {}
+    data.parentRecipe = self
+    data.i = 1
+    data.rebuild = function() parent:ReleaseChildren() ; self:Build(parent, info) end
+
+
     local recipes = OptionBuilder:GetRecipes(self.recipeGroup)
     if recipes then
       for index, recipe in recipes:GetIterator() do
-        recipe:Build(parent)
+        recipe:Build(parent, data)
+        data.i = data.i + 1
       end
     end
   end
@@ -302,11 +363,11 @@ class "CheckBoxRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
 endclass "CheckBoxRecipe"
 
 class "ButtonRecipe" inherit "OptionRecipe"
-  function Build(self, parent)
+  function Build(self, parent, info)
     local button = _AceGUI:Create("Button")
     button:SetText(self.text)
 
-    button:SetCallback("OnClick", function() if self.onClick then self.onClick() end end)
+    button:SetCallback("OnClick", function() if self.onClick then self.onClick(parent, info) end end)
 
     parent:AddChild(button)
   end
@@ -435,6 +496,13 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
   function Build(self, parent)
     -- Get the theme selected
     local themeSelected = OptionBuilder:GetVariable("theme-selected")
+    local stateSelected = OptionBuilder:GetVariable("state-selected")
+
+    local elementID = self.elementID
+    if stateSelected and stateSelected ~= "none" then
+      elementID = string.format("%s[%s]", elementID, stateSelected)
+    end
+
     local theme = Themes:Get(themeSelected)
 
     if not theme then return end
@@ -483,7 +551,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         reset:SetText("Reset")
         reset:SetCallback("OnClick", function(reset)
           reset.frame:Hide()
-          theme:SetElementPropertyToDB(self.elementID, property, nil)
+          theme:SetElementPropertyToDB(elementID, property, nil)
           refresh()
         end)
 
@@ -506,31 +574,31 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local backgroundColor = _AceGUI:Create("ColorPicker")
           backgroundColor:SetHasAlpha(true)
 
-          local color = theme:GetElementProperty(self.elementID, "background-color", self.inheritedFromElement)
+          local color = theme:GetElementProperty(elementID, "background-color", self.inheritedFromElement)
           backgroundColor:SetColor(color.r, color.g, color.b, color.a)
 
           local row = CreateRow("Background Color", backgroundColor)
           group:AddChild(row)
 
           local function refresh()
-            local color = theme:GetElementProperty(self.elementID, "background-color", self.inheritedFromElement)
+            local color = theme:GetElementProperty(elementID, "background-color", self.inheritedFromElement)
             backgroundColor:SetColor(color.r, color.g, color.b, color.a)
             self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
           end
 
-          if theme:GetElementPropertyFromDB(self.elementID, "background-color") then
+          if theme:GetElementPropertyFromDB(elementID, "background-color") then
             ShowReset(row, "background-color", refresh)
           end
 
           backgroundColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "background-color", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "background-color", { r = r, g = g, b = b, a = a})
+            theme:SetElementPropertyToDB(elementID, "background-color", { r = r, g = g, b = b, a = a})
             self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
           end)
 
           backgroundColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "background-color", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "background-color", { r = r, g = g, b = b, a = a})
+            theme:SetElementPropertyToDB(elementID, "background-color", { r = r, g = g, b = b, a = a})
             self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
           end)
         end
@@ -539,31 +607,31 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local borderColor = _AceGUI:Create("ColorPicker")
           borderColor:SetHasAlpha(true)
 
-          local color = theme:GetElementProperty(self.elementID, "border-color", self.inheritedFromElement)
+          local color = theme:GetElementProperty(elementID, "border-color", self.inheritedFromElement)
           borderColor:SetColor(color.r, color.g, color.b, color.a)
 
           local row = CreateRow("Border Color", borderColor)
           group:AddChild(row)
 
           local function refresh()
-            local color = theme:GetElementProperty(self.elementID, "border-color", self.inheritedFromElement)
+            local color = theme:GetElementProperty(elementID, "border-color", self.inheritedFromElement)
             borderColor:SetColor(color.r, color.g, color.b, color.a)
             self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
           end
 
-          if theme:GetElementPropertyFromDB(self.elementID, "border-color") then
+          if theme:GetElementPropertyFromDB(elementID, "border-color") then
             ShowReset(row, "border-color", refresh)
           end
 
           borderColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "border-color", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "border-color", { r = r, g = g, b = b, a = a})
+            theme:SetElementPropertyToDB(elementID, "border-color", { r = r, g = g, b = b, a = a})
             self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
           end)
 
           borderColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "border-color", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "border-color", { r = r, g = g, b = b, a = a})
+            theme:SetElementPropertyToDB(elementID, "border-color", { r = r, g = g, b = b, a = a})
             self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
           end)
         end
@@ -583,30 +651,30 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local textColor = _AceGUI:Create("ColorPicker")
           textColor:SetHasAlpha(true)
 
-          local color = theme:GetElementProperty(self.elementID, "text-color", self.inheritedFromElement)
+          local color = theme:GetElementProperty(elementID, "text-color", self.inheritedFromElement)
           textColor:SetColor(color.r, color.g, color.b, color.a)
 
           local row = CreateRow("Text Color", textColor)
           group:AddChild(row)
 
           local function refresh()
-            local color = theme:GetElementProperty(self.elementID, "text-color", self.inheritedFromElement)
+            local color = theme:GetElementProperty(elementID, "text-color", self.inheritedFromElement)
             textColor:SetColor(color.r, color.g, color.b, color.a)
             self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
           end
-          if theme:GetElementPropertyFromDB(self.elementID, "text-color") then
+          if theme:GetElementPropertyFromDB(elementID, "text-color") then
             ShowReset(row, "text-color", refresh)
           end
 
           textColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "text-color", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "text-color", { r = r, g = g, b = b, a = a})
+            theme:SetElementPropertyToDB(elementID, "text-color", { r = r, g = g, b = b, a = a})
             self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
           end)
 
           textColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "text-color", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "text-color", { r = r, g = g, b = b, a = a})
+            theme:SetElementPropertyToDB(elementID, "text-color", { r = r, g = g, b = b, a = a})
             self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
           end)
         end
@@ -616,27 +684,27 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local textSize = _AceGUI:Create("Slider")
           textSize:SetRelativeWidth(0.3)
           textSize:SetSliderValues(6, 32, 1)
-          textSize:SetValue(theme:GetElementProperty(self.elementID, "text-size", self.inheritedFromElement))
+          textSize:SetValue(theme:GetElementProperty(elementID, "text-size", self.inheritedFromElement))
 
           local row = CreateRow("Text Size", textSize)
           group:AddChild(row)
           local function refresh()
-            textSize:SetValue(theme:GetElementProperty(self.elementID, "text-size", self.inheritedFromElement))
+            textSize:SetValue(theme:GetElementProperty(elementID, "text-size", self.inheritedFromElement))
             self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
           end
 
-          if theme:GetElementPropertyFromDB(self.elementID, "text-size") then
+          if theme:GetElementPropertyFromDB(elementID, "text-size") then
             ShowReset(row, "text-size", refresh)
           end
 
           textSize:SetCallback("OnValueChanged", function(_, _, size)
             ShowReset(row, "text-size", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "text-size", size)
+            theme:SetElementPropertyToDB(elementID, "text-size", size)
             self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
            end)
            textSize:SetCallback("OnValueConfirmed", function(_, _, size)
              ShowReset(row, "text-size", refresh)
-             theme:SetElementPropertyToDB(self.elementID, "text-size", size)
+             theme:SetElementPropertyToDB(elementID, "text-size", size)
              self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
             end)
         end
@@ -644,20 +712,20 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         if hasTextFont then
           local textFont = _AceGUI:Create("Dropdown")
           textFont:SetList(_Fonts, nil, "DDI-Font")
-          textFont:SetValue(GetFontIndex(theme:GetElementProperty(self.elementID, "text-font", self.inheritedFromElement)))
+          textFont:SetValue(GetFontIndex(theme:GetElementProperty(elementID, "text-font", self.inheritedFromElement)))
 
           local row = CreateRow("Text Font", textFont)
           group:AddChild(row)
 
-          local function refresh() textFont:SetValue(GetFontIndex(theme:GetElementProperty(self.elementID, "text-font", self.inheritedFromElement))) ; self:RefreshElements(Theme.SkinFlags.TEXT_FONT) end
+          local function refresh() textFont:SetValue(GetFontIndex(theme:GetElementProperty(elementID, "text-font", self.inheritedFromElement))) ; self:RefreshElements(Theme.SkinFlags.TEXT_FONT) end
 
-          if theme:GetElementPropertyFromDB(self.elementID, "text-font") then
+          if theme:GetElementPropertyFromDB(elementID, "text-font") then
             ShowReset(row, "text-font", refresh)
           end
 
           textFont:SetCallback("OnValueChanged", function(_, _, value)
             ShowReset(row, "text-font", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "text-font", _Fonts[value])
+            theme:SetElementPropertyToDB(elementID, "text-font", _Fonts[value])
             self:RefreshElements(Theme.SkinFlags.TEXT_FONT)
           end)
         end
@@ -665,20 +733,20 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         if hasTextTransform then
           local textTransform = _AceGUI:Create("Dropdown")
           textTransform:SetList(_TextTransforms)
-          textTransform:SetValue(theme:GetElementProperty(self.elementID, "text-transform", self.inheritedFromElement))
+          textTransform:SetValue(theme:GetElementProperty(elementID, "text-transform", self.inheritedFromElement))
 
           local row = CreateRow("Text Transform", textTransform)
           group:AddChild(row)
 
-          local function refresh() textTransform:SetValue(theme:GetElementProperty(self.elementID, "text-transform", self.inheritedFromElement)) ; self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM) end
+          local function refresh() textTransform:SetValue(theme:GetElementProperty(elementID, "text-transform", self.inheritedFromElement)) ; self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM) end
 
-          if theme:GetElementPropertyFromDB(self.elementID, "text-transform") then
+          if theme:GetElementPropertyFromDB(elementID, "text-transform") then
             ShowReset(row, "text-transform", refresh)
           end
 
           textTransform:SetCallback("OnValueChanged", function(_, _, transform)
             ShowReset(row, "text-transform", refresh)
-            theme:SetElementPropertyToDB(self.elementID, "text-transform", transform)
+            theme:SetElementPropertyToDB(elementID, "text-transform", transform)
             self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM)
           end)
         end
@@ -693,31 +761,31 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         local textureColor = _AceGUI:Create("ColorPicker")
         textureColor:SetHasAlpha(true)
 
-        local color = theme:GetElementProperty(self.elementID, "texture-color", self.inheritedFromElement)
+        local color = theme:GetElementProperty(elementID, "texture-color", self.inheritedFromElement)
         textureColor:SetColor(color.r, color.g, color.b, color.a)
 
         local row = CreateRow("Texture Color", textureColor)
         group:AddChild(row)
 
         local function refresh()
-          local color = theme:GetElementProperty(self.elementID, "texture-color", self.inheritedFromElement)
+          local color = theme:GetElementProperty(elementID, "texture-color", self.inheritedFromElement)
           textureColor:SetColor(color.r, color.g, color.b, color.a)
           self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
         end
 
-        if theme:GetElementPropertyFromDB(self.elementID, "texture-color") then
+        if theme:GetElementPropertyFromDB(elementID, "texture-color") then
           ShowReset(row, "texture-color", refresh)
         end
 
         textureColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
           ShowReset(row, "texture-color", refresh)
-          theme:SetElementPropertyToDB(self.elementID, "texture-color", { r = r, g = g, b = b, a = a})
+          theme:SetElementPropertyToDB(elementID, "texture-color", { r = r, g = g, b = b, a = a})
           self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
         end)
 
         textureColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
           ShowReset(row, "texture-color", refresh)
-          theme:SetElementPropertyToDB(self.elementID, "texture-color", { r = r, g = g, b = b, a = a})
+          theme:SetElementPropertyToDB(elementID, "texture-color", { r = r, g = g, b = b, a = a})
           self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
         end)
       end
@@ -779,20 +847,19 @@ endclass "ThemeElementRecipe"
 
 class "SelectRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
 
-  function Build(self, parent)
+  function Build(self, parent, info)
     local select = _AceGUI:Create("Dropdown")
     select:SetLabel(self.text)
-    select:SetList(self.list)
+    select:SetList(self:GetList())
     parent:AddChild(select)
 
-
     if self.option then
-      select:SetText(self.list[self:GetOption()])
+      select:SetText(self:GetList()[self:GetOption()])
     else
       if type(self.value) == "function" then
-        select:SetText(self.list[self.value()])
+        select:SetText(self:GetList()[self.value()])
       else
-        select:SetText(self.list[self.value])
+        select:SetText(self:GetList()[self.value])
       end
     end
 
@@ -800,7 +867,7 @@ class "SelectRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
       if self.option then
         self:SetOption(value)
       else
-        self.onValueChanged(value)
+        self.onValueChanged(value, self, info)
       end
     end)
 
@@ -817,6 +884,14 @@ class "SelectRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
     return self
   end
 
+  function GetList(self)
+    if type(self.list) == "table" then
+      return self.list
+    else
+      return self.list()
+    end
+  end
+
   function OnValueChanged(self, callback)
     self.onValueChanged = callback
     return self
@@ -826,12 +901,22 @@ class "SelectRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
 
 endclass "SelectRecipe"
 
+
+class "EditBoxRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
+  function Build(self, parent)
+    local editbox = _AceGUI:Create("EditBox")
+    editbox:SetLabel(self.text)
+    editbox:SetText(self:GetOption())
+    parent:AddChild(editbox)
+  end
+endclass "EditBoxRecipe"
+
 class "NotImplementedRecipe" inherit "OptionRecipe"
 
   function Build(self, parent)
     local heading = _AceGUI:Create("Heading")
     heading:SetRelativeWidth(1.0)
-    heading:SetText("|cffff0000Option Not Implemented|r")
+    heading:SetText("|cffff0000Options Not Implemented|r")
     parent:AddChild(heading)
 
 
@@ -844,6 +929,364 @@ class "NotImplementedRecipe" inherit "OptionRecipe"
   end
 
 endclass "NotImplementedRecipe"
+
+class "ThemeInformationRecipe" inherit "OptionRecipe"
+  function Build(self, parent)
+    local function CreateRow(name, value)
+      local layout = _AceGUI:Create("SimpleGroup")
+      layout:SetRelativeWidth(1.0)
+      layout:SetLayout("Flow")
+      --layout.frame:SetBackdropBorderColor(0, 0, 0, 0)
+
+      local label = _AceGUI:Create("Label")
+      label:SetRelativeWidth(0.2)
+      label:SetFontObject(GameFontHighlight)
+      label:SetText(name)
+      layout:AddChild(label)
+
+      local valueFrame = _AceGUI:Create("Label")
+      valueFrame:SetRelativeWidth(0.3)
+      valueFrame:SetText(value)
+
+      layout:AddChild(valueFrame)
+      return layout
+    end
+
+    local theme = Themes:GetSelected()
+
+    parent:AddChild(CreateRow("Name", theme.name))
+    parent:AddChild(CreateRow("Author", theme.author))
+    parent:AddChild(CreateRow("Version", theme.version))
+    parent:AddChild(CreateRow("Stage", theme.stage))
+  end
+endclass "ThemeInformationRecipe"
+
+class "CreateThemeRecipe" inherit "OptionRecipe"
+  function Build(self, parent, info)
+    -- Set the default values
+    local defaultAuthor = UnitName("player")
+    local defaultStage = "Release"
+    local defaultVersion = "1.0.0"
+    local defaultCopyFrom = "none"
+    -----------------------------
+
+    local name = _AceGUI:Create("EditBox")
+    name:SetLabel("Name")
+    name:SetRelativeWidth(0.2)
+    parent:AddChild(name)
+
+    local author = _AceGUI:Create("EditBox")
+    author:SetLabel("Author")
+    author:SetRelativeWidth(0.19)
+    author:SetText(defaultAuthor)
+    parent:AddChild(author)
+
+    local version = _AceGUI:Create("EditBox")
+    version:SetLabel("Version")
+    version:SetRelativeWidth(0.15)
+    version:SetText(defaultVersion)
+    parent:AddChild(version)
+
+    local stage = _AceGUI:Create("Dropdown")
+    stage:SetLabel("Stage")
+    stage:SetText(defaultStage)
+    stage:SetRelativeWidth(0.15)
+    stage:SetList({
+      ["Alpha"] = "Alpha",
+      ["Beta"] = "Beta",
+      ["Release"] = "Release",
+    })
+    stage:SetCallback("OnValueChanged", function(_, _, key) OptionBuilder:SetVariable("create-theme-stage", key) end)
+    parent:AddChild(stage)
+
+    local copyFrom = _AceGUI:Create("Dropdown")
+    copyFrom:SetLabel("Copy From")
+    copyFrom:SetRelativeWidth(0.2)
+    parent:AddChild(copyFrom)
+
+
+    local createButton = _AceGUI:Create("Button")
+    createButton:SetText("Create")
+    createButton:SetRelativeWidth(0.1)
+    parent:AddChild(createButton)
+
+    createButton:SetCallback("OnClick", function()
+      local themeToCopy = OptionBuilder:GetVariable("create-theme-copy-from") or defaultCopyFrom
+      local themeName = name:GetText()
+      local themeAuthor = author:GetText() or defaultAuthor
+      local themeVersion = version:GetText() or defaultVersion
+      local themeStage = OptionBuilder:GetVariable("create-theme-stage") or defaultStage
+      local themeToCopy = OptionBuilder:GetVariable("create-theme-copy-from") or defaultCopyFrom
+
+
+      if themeToCopy and themeToCopy ~= "none" then
+        Themes:CreateDBTheme(themeName, themeAuthor, themeVersion, themeStage, themeToCopy)
+        --local themeParent = Themes:Get(themeToCopy)
+        --local theme = System.Reflector.Clone(themeParent, true)
+        --print("Child", theme:GetElementProperty("block.header", "text-size"), "Parent:", themeParent:GetElementProperty("block.header", "text-size"))
+      else
+        local theme = Themes:CreateDBTheme(themeName, themeAuthor, themeVersion, themeStage)
+      end
+
+      info.rebuild()
+    end)
+
+    local themeList = {}
+    themeList["none"] = "None"
+    for _, theme in Themes:GetIterator() do
+      themeList[theme.name] = theme.name
+    end
+    copyFrom:SetList(themeList)
+    copyFrom:SetText(themeList[defaultCopyFrom])
+    copyFrom:SetCallback("OnValueChanged", function(_, _, key) OptionBuilder:SetVariable("create-theme-copy-from", key) end)
+
+  end
+
+
+endclass "CreateThemeRecipe"
+
+
+class "TextRecipe" inherit "OptionRecipe"
+  function Build(self, parent)
+    local text = _AceGUI:Create("Label")
+    text:SetText(self.text)
+    text:SetRelativeWidth(1.0)
+    text:SetFontObject(GameFontHighlight)
+    parent:AddChild(text)
+  end
+endclass "TextRecipe"
+
+class "ImportThemeRecipe" inherit "OptionRecipe"
+  function Build(self, parent)
+    local textBox = _AceGUI:Create("MultiLineEditBox")
+    textBox:SetLabel("Paste text below to import the theme")
+    textBox:SetRelativeWidth(1.0)
+    textBox:DisableButton(true)
+    textBox:SetNumLines(10)
+
+    parent:AddChild(textBox)
+
+    local headingThemeInfo = _AceGUI:Create("Heading")
+    headingThemeInfo:SetText("Theme information")
+    parent:AddChild(headingThemeInfo)
+
+    local function CreateRow(name, valueFrame)
+      local layout = _AceGUI:Create("SimpleGroup")
+      layout:SetRelativeWidth(1.0)
+      layout:SetLayout("Flow")
+      --layout.frame:SetBackdropBorderColor(0, 0, 0, 0)
+
+      local label = _AceGUI:Create("Label")
+      label:SetRelativeWidth(0.3)
+      label:SetFontObject(GameFontHighlight)
+      label:SetText(name)
+      layout:AddChild(label)
+
+      valueFrame:SetRelativeWidth(0.5)
+      layout:AddChild(valueFrame)
+
+      return layout
+    end
+
+    local name = _AceGUI:Create("Label")
+    name:SetText("")
+
+    local author = _AceGUI:Create("Label")
+    author:SetText("")
+
+    local version = _AceGUI:Create("Label")
+    version:SetText("")
+
+    local stage = _AceGUI:Create("Label")
+    stage:SetText("")
+
+    parent:AddChild(CreateRow("Name:", name))
+    parent:AddChild(CreateRow("Author:", author))
+    parent:AddChild(CreateRow("Version:", version))
+    parent:AddChild(CreateRow("Stage:", stage))
+
+    local separator = _AceGUI:Create("Heading")
+    separator:SetText("")
+    parent:AddChild(separator)
+
+    local import = _AceGUI:Create("Button")
+    import:SetText("Import")
+    import:SetRelativeWidth(1.0)
+    parent:AddChild(import)
+
+    import:SetCallback("OnClick", function() Themes:Import(textBox:GetText()) end)
+
+    -- Callback
+    textBox:SetCallback("OnTextChanged", function()
+      local theme, msg = Theme:GetFromText(textBox:GetText())
+      local successColor = "ff00ff00"
+      local failedColor = "ffff0000"
+
+      if theme then
+        name:SetText(string.format("|c%s%s|r", successColor, theme.name))
+        author:SetText(string.format("|c%s%s|r", successColor, theme.author))
+        version:SetText(string.format("|c%s%s|r", successColor, theme.version))
+        stage:SetText(string.format("|c%s%s|r", successColor, theme.stage))
+      else
+        name:SetText(string.format("|c%s%s|r", failedColor, msg))
+        author:SetText(string.format("|c%s%s|r", failedColor, msg))
+        version:SetText(string.format("|c%s%s|r", failedColor, msg))
+        stage:SetText(string.format("|c%s%s|r", failedColor, msg))
+      end
+    end)
+
+  end
+
+endclass "ImportThemeRecipe"
+
+class "ExportThemeRecipe" inherit "OptionRecipe"
+  function Build(self, parent)
+    local theme = Themes:GetSelected()
+
+    local selectTheme = _AceGUI:Create("Dropdown")
+    selectTheme:SetLabel("Select Theme to export")
+    selectTheme:SetRelativeWidth(0.25)
+    selectTheme:SetText(theme.name)
+    parent:AddChild(selectTheme)
+
+    local themeList = {}
+    for _, theme in Themes:GetIterator() do
+      themeList[theme.name] = theme.name
+    end
+    selectTheme:SetList(themeList)
+
+    local headingTop = _AceGUI:Create("Heading")
+    headingTop:SetText("")
+    parent:AddChild(headingTop)
+
+    local textBox = _AceGUI:Create("MultiLineEditBox")
+    textBox:SetLabel("Theme text export")
+    textBox:SetRelativeWidth(1.0)
+    textBox:DisableButton(true)
+    parent:AddChild(textBox)
+
+    textBox:SetText(theme:ExportToText())
+    textBox:SetNumLines(20)
+    textBox:HighlightText()
+
+    local headingFlags = _AceGUI:Create("Heading")
+    headingFlags:SetText("Export flags")
+    parent:AddChild(headingFlags)
+
+    local includeDBValue = _AceGUI:Create("CheckBox")
+    includeDBValue:SetLabel("Include database values")
+    parent:AddChild(includeDBValue)
+
+    selectTheme:SetCallback("OnValueChanged", function(_, _, themeName)
+      textBox:SetText(Themes:Get(themeName):ExportToText())
+      textBox:HighlightText()
+    end)
+
+  end
+
+endclass "ExportThemeRecipe"
+
+
+class "SelectStateRecipe" inherit "OptionRecipe"
+
+
+  function Build(self, parent)
+    local tabFrame = _AceGUI:Create("DropdownGroup")
+    tabFrame:SetLayout("Flow")
+    tabFrame:SetFullWidth(true)
+    tabFrame:SetTitle(" ")
+    parent:AddChild(tabFrame)
+
+
+
+    local function RGBPercToHex(r, g, b)
+    	r = r <= 1 and r >= 0 and r or 0
+    	g = g <= 1 and g >= 0 and g or 0
+    	b = b <= 1 and b >= 0 and b or 0
+    	return string.format("%02x%02x%02x", r*255, g*255, b*255)
+    end
+
+
+
+    local index = 1
+    local first
+    local list = {}
+    for stateID, state in pairs(self.states) do
+      local colorString = RGBPercToHex(state.color.r, state.color.g, state.color.b)
+      list[state.id] = string.format("|cff%s%s|r", colorString, state.text)
+      if index == 1 then
+        first = state.id
+      end
+      index = index + 1
+    end
+    tabFrame:SetGroupList(list)
+
+    local selectedState = OptionBuilder:GetVariable("state-selected")
+    if not selectedState or selectElement == "none" or not list[selectedState] then
+      tabFrame:SetGroup(first)
+      OptionBuilder:SetVariable("state-selected", first)
+    else
+      tabFrame:SetGroup(selectedState)
+    end
+
+    local function BuildChildren()
+      if not self.recipeGroup then return end
+
+      tabFrame:ReleaseChildren()
+
+      local recipes = OptionBuilder:GetRecipes(self.recipeGroup)
+      if recipes then
+        for index, recipe in recipes:GetIterator() do
+          recipe:Build(tabFrame)
+        end
+      end
+    end
+
+    tabFrame:SetCallback("OnGroupSelected", function(_, _, stateID)
+      OptionBuilder:SetVariable("state-selected", stateID)
+      BuildChildren()
+    end)
+
+    BuildChildren()
+
+
+  end
+
+
+  __Arguments__ { String }
+  function SetState(self, stateID)
+    return This.SetStates(self, stateID)
+  end
+
+  __Arguments__ { { Type = String, IsList = true} }
+  function SetStates(self, ...)
+      for i = 1, select("#", ...) do
+        local stateID = select(i, ...)
+        local state = States:Get(stateID)
+        if state then
+          self.states[stateID] = state
+        end
+      end
+      return self
+  end
+
+  __Arguments__ {}
+  function HasState(self)
+    for k, v in pairs(self.states) do return true end
+    return false
+  end
+
+
+
+  function SelectStateRecipe(self)
+    Super(self)
+    self.states = setmetatable({}, { __mode = "v"} )
+  end
+
+
+endclass "SelectStateRecipe"
+
+
 
 
 

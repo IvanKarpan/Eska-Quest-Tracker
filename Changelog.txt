@@ -1,3 +1,8 @@
+[1.5.3]
+  - Implemented the states in the options.
+  - Added a way to delete, create, copy, import and export themes. NOTE: These features are experimental so you may encounter some issues when using.
+
+
 [1.5.2]
   - Added some fix.
   - Updated Transparence and Eska Theme.

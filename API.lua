@@ -133,6 +133,9 @@ endclass "CallbackHandlers"
 class "Database"
 
   CURRENT_TABLE = nil
+  CURRENT_PARENT_TABLE = nil
+  CURRENT_LEVEL = 0
+  CURRENT_TABLE_NAME = nil
 
 
   class "Migration"
@@ -159,6 +162,11 @@ class "Database"
 
 
   __Arguments__ { Class }
+  __Static__() function IterateTable(self)
+    return pairs(CURRENT_TABLE)
+  end
+
+  __Arguments__ { Class }
   __Static__() function Clean()
     local function ClearEmptyTables(t)
       for k,v in pairs(t) do
@@ -173,6 +181,75 @@ class "Database"
 
       ClearEmptyTables(EskaQuestTrackerDB)
   end
+
+  __Static__() __Arguments__ { Class, { Type = String, Nilable = true, IsList = true } }
+  function MoveTable(self, ...)
+    local function deepcopy(orig)
+      local orig_type = type(orig)
+      local copy
+      if orig_type == 'table' then
+          copy = {}
+          for orig_key, orig_value in next, orig, nil do
+              copy[deepcopy(orig_key)] = deepcopy(orig_value)
+          end
+          setmetatable(copy, deepcopy(getmetatable(orig)))
+      else -- number, string, boolean, etc
+          copy = orig
+      end
+      return copy
+    end
+
+    local copy = deepcopy(CURRENT_TABLE)
+    local oldTable = CURRENT_TABLE
+    local tables = { ... }
+    local destName = tables[#tables]
+    tables[#tables] = nil
+
+    self:SelectRoot()
+
+    if #tables > 0 then
+      if self:SelectTable(true, unpack(tables)) then
+        Database:SetValue(destName, copy)
+        wipe(oldTable)
+      end
+    end
+  end
+
+  __Static__() __Arguments__ { Class, { Type = String, Nilable = true, IsList = true } }
+  function CopyTable(self, ...)
+    local function deepcopy(orig)
+      local orig_type = type(orig)
+      local copy
+      if orig_type == 'table' then
+          copy = {}
+          for orig_key, orig_value in next, orig, nil do
+              copy[deepcopy(orig_key)] = deepcopy(orig_value)
+          end
+          setmetatable(copy, deepcopy(getmetatable(orig)))
+      else -- number, string, boolean, etc
+          copy = orig
+      end
+      return copy
+    end
+
+    local copy = deepcopy(CURRENT_TABLE)
+    local tables = { ... }
+    local destName = tables[#tables]
+    tables[#tables] = nil
+
+    self:SelectRoot()
+    if #tables > 0 then
+      if self:SelectTable(true, unpack(tables)) then
+        Database:SetValue(destName, copy)
+      end
+    end
+  end
+
+__Arguments__ { Class }
+__Static__() function DeleteTable(self)
+  wipe(CURRENT_TABLE)
+  self:SelectRoot()
+end
 
   __Static__() __Arguments__{ Class, { Type = String, Nilable = true, IsList = true } }
   function SelectTable(self, ...)
@@ -197,7 +274,13 @@ class "Database"
           end
         end
 
+        if i > 1 then
+          CURRENT_PARENT_TABLE = tb
+        end
+
         tb = tb[indexTable]
+        CURRENT_LEVEL = CURRENT_LEVEL + 1
+        CURRENT_TABLE_NAME = indexTable
     end
     CURRENT_TABLE = tb
 
@@ -207,16 +290,19 @@ class "Database"
   __Static__() __Arguments__{ Class }
   function SelectRoot(self)
     CURRENT_TABLE = self:Get()
+    CURRENT_LEVEL = 0
   end
 
   __Static__() __Arguments__{ Class }
   function SelectRootChar(self)
     CURRENT_TABLE = self:GetChar()
+    CURRENT_LEVEL = 0
   end
 
   __Static__() __Arguments__ { Class }
   function SelectRootSpec(self)
     CURRENT_TABLE = self:GetSpec()
+    CURRENT_LEVEL = 0
   end
 
   __Static__() __Arguments__ { Class, Number }
@@ -435,8 +521,8 @@ class "SList" inherit "List" extend "ISerializable"
         vals:Insert(v)
       end
 
-      info:SetValue(1, keys)
-      info:SetValue(2, vals)
+      info:SetValue(1, keys, SList)
+      info:SetValue(2, vals, SList)
     end
 
     __Arguments__{ SerializationInfo }
@@ -585,6 +671,37 @@ interface "API"
     return _COMPRESSER:Decompress(data)
   end
   -- End encoding and compressing code
+
+  -- Copy functions
+  function DeepCopy(self, orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[self:DeepCopy(orig_key)] = self:DeepCopy(orig_value)
+        end
+        setmetatable(copy, self:DeepCopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+  end
+
+  function ShallowCopy(self, orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+  end
+
 endinterface "API"
 --------------------------------------------------------------------------------
 --                   Base Frame class                                         --
@@ -978,6 +1095,8 @@ _REGISTERED_FRAMES = {}
       texture:SetVertexColor(color.r, color.g, color.b, color.a)
     end
   end
+
+
 
   ------------------------------------------------------------------------------
   --              Element Property Methods                                    --
@@ -1381,10 +1500,133 @@ _REGISTERED_FRAMES = {}
     return GetList(1)
   end
 
-  property "author" { TYPE = String }
-  property "version" { TYPE = String }
-  property "name" {  TYPE = String }
-  property "stage" { TYPE = String, DEFAULT = "release"}
+  function ExportToText(self, includeDatabase)
+    local theme = self
+    if includeDatabase or self.lua == false then
+      theme = System.Reflector.Clone(self, true)
+      Database:SelectRoot()
+      if Database:SelectTable(false, "themes", self.name, "properties") then
+        for elementID, properties in Database:IterateTable() do
+          for property, value in pairs(properties) do
+            if type(value) == "table" then
+              local t = {}
+              for k,v in pairs(value) do
+                t[k] = v
+              end
+              theme:SetElementProperty(elementID, property, t)
+            else
+              theme:SetElementProperty(elementID, property, value)
+            end
+          end
+        end
+      end
+    end
+
+    local data = Serialization.Serialize( StringFormatProvider(), theme)
+    local compressedData = API:Compress(data)
+    local encode = API:EncodeToBase64(compressedData)
+    return encode
+  end
+
+  __Arguments__ { Class, String }
+  __Static__() function GetFromText(self, text)
+    -- decode from base 64
+    local decode = API:DecodeFromBase64(text)
+    local decompress, msg = API:Decompress(decode)
+
+    if not decompress then
+      return nil, "Error decompressing: ".. msg
+    end
+
+    local isOK, theme = pcall(Serialization.Deserialize, StringFormatProvider(), decompress, Theme)
+    if isOK then
+      return theme
+    else
+      return nil, "Error deserializing"
+    end
+  end
+
+  function MovePropertiesToDB(self)
+    for elementID, properties in self.properties:GetIterator() do
+      if properties then
+        for property, value in properties:GetIterator() do
+          self:SetElementPropertyToDB(elementID, property, value)
+        end
+      end
+    end
+    self.properties = SDictionary()
+  end
+
+  function SyncToDB(self)
+    if not self.lua then
+      Database:SelectRoot()
+      if Database:SelectTable(true, "themes", self.name) then
+        Database:SetValue("name", self.name)
+        Database:SetValue("author", self.author)
+        Database:SetValue("stage", self.stage)
+        Database:SetValue("version", self.version)
+      end
+    end
+  end
+
+  function SetAuthor(self, author)
+    -- If the theme isn't created from lua file, we need persist the value in the DB
+    if not self.lua then
+      Database:SelectRoot()
+
+      if Database:SelectTable(true, "themes", self.name) then
+        Database:SetValue("author", author)
+      end
+    end
+
+    self.__author = author
+  end
+
+  function SetVersion(self, version)
+    -- If the theme isn't created from lua file, we need persist the value in the DB
+    if not self.lua then
+      Database:SelectRoot()
+
+      if Database:SelectTable(true, "themes", self.name) then
+        Database:SetValue("version", version)
+      end
+    end
+
+    self.__version = version
+  end
+
+  function SetName(self, name)
+    -- If the theme isn't created from lua file, we need persist the value in the DB
+    if not self.lua then
+      Database:SelectRoot()
+      if Database:SelectTable(true, "themes", name) then
+        Database:SetValue("name", name)
+        Database:MoveTable("themes", name)
+      end
+
+    end
+
+    self.__name = name
+  end
+
+  function SetStage(self, stage)
+    -- If the theme isn't created from lua file, we need persist the value in the DB
+    if not self.lua then
+      Database:SelectRoot()
+
+      if Database:SelectTable(true, "themes", self.name) then
+        Database:SetValue("stage", stage)
+      end
+    end
+
+    self.__stage = stage
+  end
+
+  property "author" { TYPE = String, SET = "SetAuthor", GET = function(self) return self.__author end }
+  property "version" { TYPE = String, DEFAULT = "1.0.0", SET = "SetVersion", GET = function(self) return self.__version end }
+  property "name" {  TYPE = String, SET = "SetName", GET = function(self) return self.__name end }
+  property "stage" { TYPE = String, DEFAULT = "Release", SET = "SetStage", GET = function(self) return self.__stage end }
+  property "lua" { TYPE = Boolean, DEFAULT = true}
 
   function Serialize(self, info)
     info:SetValue("name", self.name, String)
@@ -1407,6 +1649,43 @@ _REGISTERED_FRAMES = {}
 
     self.links = SDictionary() -- used as cache to improve get performance
   end
+
+  __Arguments__{ SerializationInfo }
+  function Theme(self, info)
+    This(self)
+
+    self.name = info:GetValue("name", String)
+    self.author = info:GetValue("author", String)
+    self.version = info:GetValue("version", String)
+    self.stage = info:GetValue("stage", String)
+
+    self.properties = info:GetValue("properties", SDictionary)
+  end
+
+  __Arguments__ { Theme, Argument(Boolean, true, true )}
+  function Theme(self, orig)
+    This(self)
+
+    if orig.lua then
+      for elementID, properties in orig.properties:GetIterator() do
+        for property, value in properties:GetIterator() do
+          local copyValue = API:ShallowCopy(value)
+          self:SetElementProperty(elementID, property, copyValue)
+        end
+      end
+    else
+      Database:SelectRoot()
+      if Database:SelectTable(false, "themes", orig.name, "properties") then
+        for elementID, properties in Database:IterateTable() do
+          for property, value in pairs(properties) do
+            local copyValue = API:ShallowCopy(value)
+            self:SetElementProperty(elementID, property, copyValue)
+          end
+        end
+      end
+    end
+  end
+
 
 endclass "Theme"
 
@@ -1477,6 +1756,124 @@ class "Themes"
   function GetFirst(self)
     for _, theme in _THEMES:GetIterator() do return theme end
   end
+
+  __Arguments__ { Class }
+  __Static__() function LoadFromDB(self)
+    Database:SelectRoot()
+
+    if Database:SelectTable(false, "themes") then
+      for name, themeDB in Database:IterateTable() do
+        local name = themeDB.name
+        local author = themeDB.author
+        local version = themeDB.version
+        local stage = themeDB.stage
+        -- if the theme has these four properties, this say it not a lua theme.
+        if name and author and version and stage then
+          local theme = Theme()
+          theme.name = name
+          theme.author = author
+          theme.version = version
+          theme.stage = stage
+          -- @NOTE It's important to edit the lua variable to last to avoid to useless sync with DB while loading.
+          theme.lua = false -- [IMPORTANT]
+
+          self:Register(theme)
+        end
+      end
+    end
+  end
+
+
+  -- Create a DB Theme, it hightly advised to use this function
+  __Arguments__ { Class, String, String, String, String, Argument(String, true, "none")  }
+  __Static__() function CreateDBTheme(self, name, author, version, stage, themeToCopy)
+    -- Check if a theme already exists before to continue
+    Database:SelectRoot()
+    if Database:SelectTable(false, "themes", name) then
+      return nil, "A theme with this name already exists."
+    end
+
+    Database:SelectRoot()
+    if Database:SelectTable(true, "themes", name) then
+      if themeToCopy == "none" then
+        local theme = Theme()
+        theme.lua = false
+        theme.name = name
+        theme.author = author
+        theme.version = version
+        theme.stage = stage
+
+        self:Register(theme)
+        return theme
+      else
+        local parentTheme = self:Get(themeToCopy)
+        if not parentTheme then return nil, "The theme to copy not exists." end
+
+      -- If the theme copied is a lua theme
+        if parentTheme.lua then
+          local theme = Theme(parentTheme)
+          theme.lua = false
+          theme.name = name
+          theme.author = author
+          theme.version = version
+          theme:MovePropertiesToDB()
+          self:Register(theme)
+        else
+          Database:SelectRoot()
+          if Database:SelectTable(false, "themes", parentTheme.name) then
+            Database:CopyTable("themes", name)
+            local theme = Theme()
+            theme.lua = false
+            theme.name = name
+            theme.author = author
+            theme.version = version
+            theme.stage = stage
+            self:Register(theme)
+          end
+        end
+      end
+    end
+  end
+
+
+  __Arguments__ { Class, String }
+  __Static__() function Delete(self, name)
+    local theme = self:Get(name)
+    if theme and theme.lua == false then
+      Database:SelectRoot()
+      if Database:SelectTable(false, "themes", theme.name) then
+        Database:DeleteTable()
+        _THEMES[name] = nil
+        return true
+      end
+    end
+
+    return false
+  end
+
+  __Arguments__ { Class, String }
+  __Static__() function Import(self, importText)
+    local theme, msg = Theme:GetFromText(importText)
+    if theme then
+      theme.lua = false
+      theme:SyncToDB()
+      theme:MovePropertiesToDB()
+      self:Register(theme)
+    end
+  end
+
+
+  __Arguments__ { Class }
+  __Static__() function Print(self)
+    print("----[[ Themes ]]----")
+    local i = 1
+    for _, theme in _THEMES:GetIterator() do
+      print(i, "Name:", theme.name, " | Author:", theme.author, " | Version:", theme.version, " | Stage:", theme.stage, " | LUA:", theme.lua)
+      i = i + 1
+    end
+    print("--------------------")
+  end
+
 
 endclass "Themes"
 

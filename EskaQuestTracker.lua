@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.5.2"
+Scorpio                   "EskaQuestTracker"                             "1.5.3"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -63,10 +63,13 @@ function OnLoad(self)
   -- Create the blocks table in order to register them.
   self.blocks = Dictionary()
 
-  Themes:Select(Options:Get("theme-selected"))
-
   -- Setup the minimap button
   self:SetupMinimapButton()
+
+  -- Theme Loading
+  Themes:LoadFromDB()
+  Themes:Select(Options:Get("theme-selected"))
+
 end
 
 function OnEnable(self)
@@ -74,6 +77,7 @@ function OnEnable(self)
 
   -- From now, all themes property changes will refresh the targeted frame.
   Theme.refreshOnPropertyChanged = true
+
 end
 
 function OnQuit(self)
@@ -232,6 +236,7 @@ function SelectTheme(self, name)
   if theme then
     _CURRENT_THEME = theme
     Options:Set("theme-selected", name)
+
 
     --Theme.RefreshGroups()
   end
