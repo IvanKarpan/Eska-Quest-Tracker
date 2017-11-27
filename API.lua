@@ -1500,6 +1500,7 @@ _REGISTERED_FRAMES = {}
     return GetList(1)
   end
 
+  --[[
   function ExportToText(self, includeDatabase)
     local theme = self
     if includeDatabase or self.lua == false then
@@ -1517,6 +1518,34 @@ _REGISTERED_FRAMES = {}
             else
               theme:SetElementProperty(elementID, property, value)
             end
+          end
+        end
+      end
+    end
+
+    local data = Serialization.Serialize( StringFormatProvider(), theme)
+    local compressedData = API:Compress(data)
+    local encode = API:EncodeToBase64(compressedData)
+    return encode
+  end --]]
+
+  __Arguments__ { Argument(Boolean, true, true) }
+  function ExportToText(self, includeDB)
+
+
+    local theme = Theme(self)
+    theme.name = self.name
+    theme.author = self.author
+    theme.verison = self.version
+    theme.stage = self.stage
+
+    if includeDB and self.lua then
+      Database:SelectRoot()
+      if Database:SelectTable(false, "themes", self.name, "properties") then
+        for elementID, properties in Database:IterateTable() do
+          for property, value in pairs(properties) do
+            local copy = API:ShallowCopy(value)
+            theme:SetElementProperty(elementID, property, copy)
           end
         end
       end
@@ -1640,6 +1669,64 @@ _REGISTERED_FRAMES = {}
     info:SetValue("options", self.options, SDictionary)
 
   end
+
+  __Flags__()
+  enum "OverrideFlags" {
+    NONE = 0,
+    OVERRIDE_THEME_INFO = 1,
+  }
+
+  __Flags__()
+  enum "SourceFlags" {
+    NONE = 0,
+    DATABASE = 1,
+    LUA_TABLE = 2,
+  }
+
+  __Arguments__ { Theme, Argument(SourceType, true, SourceFlags.DATABASE + SourceFlags.LUA_TABLE), Argument(OverrideFlags, true, OverrideFlags.OVERRIDE_THEME_INFO) }
+  function Override(self, theme, sourceFlags, overrideFlags)
+    if ValidateFlags(overrideFlags, OverrideFlags.OVERRIDE_THEME_INFO) then
+      self.name = theme.name
+      self.author = theme.author
+      self.version = theme.version
+      self.stage = theme.stage
+    end
+
+    if ValidateFlags(sourceFlags, SourceFlags.LUA_TABLE) then
+      for elementID, properties in theme.properties:GetIterator() do
+        for property, value in properties:GetIterator() do
+          self:SetElementPropertyToDB(elementID, property, API:ShallowCopy(value))
+        end
+      end
+    end
+
+    if ValidateFlags(sourceFlags, SourceFlags.DATABASE) then
+      Database:SelectRoot()
+      if Database:SelectTable(false, "themes", theme.name, "properties") then
+        for elementID, properties in Database:IterateTable() do
+          for property, value in pairs(properties) do
+            self:SetElementPropertyToDB(elementID, property, API:ShallowCopy(value))
+          end
+        end
+      end
+    end
+  end
+
+  --[[__Arguments__ { Theme }
+  function Override(self, theme)
+    self.name = theme.name
+    self.author = theme.name
+    self.version = theme.version
+    self.stage = theme.stage
+
+    for elementID, properties in theme.properties:GetIterator() do
+      for property, value in properties:GetIterator() do
+        self:SetElementPropertyToDB(elementID, property, API:ShallowCopy(value))
+      end
+    end
+  end--]]
+
+
 
   __Arguments__{}
   function Theme(self)
@@ -1783,14 +1870,20 @@ class "Themes"
     end
   end
 
+  enum "ThemeCreateError" {
+    ThemeAlreadyExists = 1,
+    ThemeToCopyNotExists = 2,
+  }
+
+
 
   -- Create a DB Theme, it hightly advised to use this function
-  __Arguments__ { Class, String, String, String, String, Argument(String, true, "none")  }
-  __Static__() function CreateDBTheme(self, name, author, version, stage, themeToCopy)
+  __Arguments__ { Class, String, String, String, String, Argument(String, true, "none"), Argument(Boolean, true, false)}
+  __Static__() function CreateDBTheme(self, name, author, version, stage, themeToCopy, includeDB )
     -- Check if a theme already exists before to continue
     Database:SelectRoot()
     if Database:SelectTable(false, "themes", name) then
-      return nil, "A theme with this name already exists."
+      return nil, Themes.ThemeAlreadyExists, "A theme with this name already exists."
     end
 
     Database:SelectRoot()
@@ -1807,16 +1900,31 @@ class "Themes"
         return theme
       else
         local parentTheme = self:Get(themeToCopy)
-        if not parentTheme then return nil, "The theme to copy not exists." end
+        if not parentTheme then return nil, Themes.ThemeToCopyNotExists,"The theme to copy not exists." end
 
       -- If the theme copied is a lua theme
         if parentTheme.lua then
-          local theme = Theme(parentTheme)
+          --[[local theme = Theme(parentTheme)
           theme.lua = false
           theme.name = name
           theme.author = author
           theme.version = version
           theme:MovePropertiesToDB()
+          self:Register(theme) --]]
+
+          ---------
+          local theme = Theme()
+          theme.lua = false
+          theme.name = name
+          theme.author = author
+          theme.version = version
+          theme.stage = stage
+
+          if includeDB then
+              theme:Override(parentTheme, nil, Theme.OverrideFlags.NONE)
+          else
+              theme:Override(parentTheme, Theme.SourceFlags.DATABASE, Theme.OverrideFlags.NONE)
+          end
           self:Register(theme)
         else
           Database:SelectRoot()
@@ -1851,14 +1959,29 @@ class "Themes"
     return false
   end
 
-  __Arguments__ { Class, String }
-  __Static__() function Import(self, importText)
+  __Arguments__ { Class, String, Argument(String, true) }
+  __Static__() function Import(self, importText, destName)
     local theme, msg = Theme:GetFromText(importText)
     if theme then
+      if destName then
+        theme.name = destName
+      end
       theme.lua = false
       theme:SyncToDB()
       theme:MovePropertiesToDB()
       self:Register(theme)
+    end
+  end
+
+  function Override(self, importText)
+    local overrideTheme = Theme:GetFromText(importText)
+    local theme = Themes:Get(overrideTheme.name)
+    if theme then
+      theme:Override(overrideTheme)
+
+      if theme.name == Themes:GetSelected().name then
+        CallbackHandlers:CallGroup("refresher")
+      end
     end
   end
 

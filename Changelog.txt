@@ -1,3 +1,11 @@
+[1.5.4]
+  - The tracker can no longer be moved off screen.
+  - Added an option for changing the dungeon icon size.
+  - Added an option for changing the left clicking behavior on the quest header.
+  - Added new flag options for the theme creation, import and export features.
+  - A message box will now alert you when you import a theme and there is already existing one with same name. Moreover, the alert will ask you to change the name of imported theme.
+  - Remove files that are no longer needed.
+
 [1.5.3]
   - Implemented the states in the options.
   - Added a way to delete, create, copy, import and export themes. NOTE: These features are experimental so you may encounter some issues when using.

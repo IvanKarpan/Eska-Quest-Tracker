@@ -8,7 +8,7 @@
 
 embeds.xml
 
-Widgets\widgets.xml
+MessageBox.lua
 OptionBuilder.lua
 
 EskaQuestTracker_Options.lua

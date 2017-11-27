@@ -333,6 +333,7 @@ class "CheckBoxRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
   function Build(self, parent)
     local checkbox = _AceGUI:Create("CheckBox")
     checkbox:SetLabel(self.text)
+
     checkbox:SetValue(self:GetOption())
 
     checkbox:SetCallback("OnValueChanged", function(_, _, value) self:SetOption(value) end)
@@ -352,6 +353,8 @@ class "CheckBoxRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
     self.width = width
     return self
   end
+
+
 
   --[[__Arguments__ { Argument(Number, true) }
   function CheckBoxRecipe(self, width)
@@ -536,14 +539,18 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
       space:SetText("")
       layout:AddChild(space)
 
-      local reset = _AceGUI:Create("Button")
-      reset:SetWidth(75)
-      reset:SetText("Reset")
+      if theme.lua then
+        local reset = _AceGUI:Create("Button")
+        reset:SetWidth(75)
+        reset:SetText("Reset")
+      end
 
       return layout
     end
 
     local function ShowReset(layout, property, refresh)
+      if not theme.lua then return end
+
       local reset = layout:GetUserData("reset")
       if not reset then
         reset = _AceGUI:Create("Button")
@@ -853,6 +860,14 @@ class "SelectRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
     select:SetList(self:GetList())
     parent:AddChild(select)
 
+    if self.width then
+      if self.width > 0  and  self.width <= 1 then
+        select:SetRelativeWidth(self.width)
+      else
+        select:SetWidth(self.width)
+      end
+    end
+
     if self.option then
       select:SetText(self:GetList()[self:GetOption()])
     else
@@ -896,6 +911,12 @@ class "SelectRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
     self.onValueChanged = callback
     return self
   end
+
+function SetWidth(self, width)
+  self.width = width
+  return self
+end
+
 
 
 
@@ -968,6 +989,7 @@ class "CreateThemeRecipe" inherit "OptionRecipe"
     local defaultStage = "Release"
     local defaultVersion = "1.0.0"
     local defaultCopyFrom = "none"
+    local defaultIncludeDBValues = OptionBuilder:GetVariable("create-theme-include-db-values") or true
     -----------------------------
 
     local name = _AceGUI:Create("EditBox")
@@ -1010,6 +1032,11 @@ class "CreateThemeRecipe" inherit "OptionRecipe"
     createButton:SetRelativeWidth(0.1)
     parent:AddChild(createButton)
 
+    local includeDBValues = _AceGUI:Create("CheckBox")
+    includeDBValues:SetLabel("Include database values")
+    includeDBValues:SetValue(defaultIncludeDBValues)
+    parent:AddChild(includeDBValues)
+
     createButton:SetCallback("OnClick", function()
       local themeToCopy = OptionBuilder:GetVariable("create-theme-copy-from") or defaultCopyFrom
       local themeName = name:GetText()
@@ -1017,10 +1044,11 @@ class "CreateThemeRecipe" inherit "OptionRecipe"
       local themeVersion = version:GetText() or defaultVersion
       local themeStage = OptionBuilder:GetVariable("create-theme-stage") or defaultStage
       local themeToCopy = OptionBuilder:GetVariable("create-theme-copy-from") or defaultCopyFrom
+      local includeDBValues = OptionBuilder:GetVariable("create-theme-include-db-values") or defaultIncludeDBValues
 
 
       if themeToCopy and themeToCopy ~= "none" then
-        Themes:CreateDBTheme(themeName, themeAuthor, themeVersion, themeStage, themeToCopy)
+        Themes:CreateDBTheme(themeName, themeAuthor, themeVersion, themeStage, themeToCopy, includeDBValues)
         --local themeParent = Themes:Get(themeToCopy)
         --local theme = System.Reflector.Clone(themeParent, true)
         --print("Child", theme:GetElementProperty("block.header", "text-size"), "Parent:", themeParent:GetElementProperty("block.header", "text-size"))
@@ -1058,6 +1086,10 @@ endclass "TextRecipe"
 
 class "ImportThemeRecipe" inherit "OptionRecipe"
   function Build(self, parent)
+    -- local default values
+    local defaultForceOverride = OptionBuilder:GetVariable("import-theme-force-override") or false
+
+
     local textBox = _AceGUI:Create("MultiLineEditBox")
     textBox:SetLabel("Paste text below to import the theme")
     textBox:SetRelativeWidth(1.0)
@@ -1105,6 +1137,17 @@ class "ImportThemeRecipe" inherit "OptionRecipe"
     parent:AddChild(CreateRow("Version:", version))
     parent:AddChild(CreateRow("Stage:", stage))
 
+    local importFlags = _AceGUI:Create("Heading")
+    importFlags:SetText("Import flags")
+    parent:AddChild(importFlags)
+
+
+    local override = _AceGUI:Create("CheckBox")
+    override:SetLabel("Force override")
+    override:SetValue(defaultForceOverride)
+    override:SetCallback("OnValueChanged", function(_, _, value) OptionBuilder:SetVariable("import-theme-force-override", value) end)
+    parent:AddChild(override)
+
     local separator = _AceGUI:Create("Heading")
     separator:SetText("")
     parent:AddChild(separator)
@@ -1114,7 +1157,34 @@ class "ImportThemeRecipe" inherit "OptionRecipe"
     import:SetRelativeWidth(1.0)
     parent:AddChild(import)
 
-    import:SetCallback("OnClick", function() Themes:Import(textBox:GetText()) end)
+    local function ValidateValue(value)
+      if Themes:Get(value) then
+        return false, "Name already taken"
+      end
+
+      return true, "Name is avalaible"
+    end
+
+    local function ConfirmValue(value)
+      Themes:Import(textBox:GetText(), value)
+    end
+
+    import:SetCallback("OnClick", function()
+      local forceOverride = override:GetValue()
+      if not forceOverride then
+        local themeName = OptionBuilder:GetVariable("import-theme-name")
+        if ValidateValue(themeName) then
+          Themes:Import(textBox:GetText())
+        else
+          local title = "Name already exists !"
+          local  txt = "A theme with this name already exists.\nChoose an another one to continue."
+          MessageBox:QuestionWithEditBox(parent.frame, title, txt, nil, ConfirmValue, ValidateValue)
+        end
+      else
+        Themes:Override(textBox:GetText())
+      end
+    end)
+
 
     -- Callback
     textBox:SetCallback("OnTextChanged", function()
@@ -1127,12 +1197,14 @@ class "ImportThemeRecipe" inherit "OptionRecipe"
         author:SetText(string.format("|c%s%s|r", successColor, theme.author))
         version:SetText(string.format("|c%s%s|r", successColor, theme.version))
         stage:SetText(string.format("|c%s%s|r", successColor, theme.stage))
+        OptionBuilder:SetVariable("import-theme-name", theme.name)
       else
         name:SetText(string.format("|c%s%s|r", failedColor, msg))
         author:SetText(string.format("|c%s%s|r", failedColor, msg))
         version:SetText(string.format("|c%s%s|r", failedColor, msg))
         stage:SetText(string.format("|c%s%s|r", failedColor, msg))
       end
+
     end)
 
   end
@@ -1140,8 +1212,75 @@ class "ImportThemeRecipe" inherit "OptionRecipe"
 endclass "ImportThemeRecipe"
 
 class "ExportThemeRecipe" inherit "OptionRecipe"
-  function Build(self, parent)
+
+  function Build(self, parent, info)
+    -- Get the selected theme
     local theme = Themes:GetSelected()
+    OptionBuilder:SetVariable("export-theme-selected", theme.name)
+    -- default values
+    local defaultIncludeDBValues = OptionBuilder:GetVariable("export-theme-include-db-values") or true
+
+    local selectTheme = _AceGUI:Create("Dropdown")
+    selectTheme:SetLabel("Select Theme to export")
+    selectTheme:SetRelativeWidth(0.25)
+    selectTheme:SetText(theme.name)
+    parent:AddChild(selectTheme)
+
+    local themeList = {}
+    for _, theme in Themes:GetIterator() do
+      themeList[theme.name] = theme.name
+    end
+    selectTheme:SetList(themeList)
+
+    -- line
+    local headingTop = _AceGUI:Create("Heading")
+    headingTop:SetText("")
+    parent:AddChild(headingTop)
+
+    -- Export text
+    local textBox = _AceGUI:Create("MultiLineEditBox")
+    textBox:SetLabel("Theme text export")
+    textBox:SetRelativeWidth(1.0)
+    textBox:DisableButton(true)
+    parent:AddChild(textBox)
+
+    textBox:SetText(theme:ExportToText(defaultIncludeDBValues))
+    textBox:SetNumLines(20)
+    textBox:HighlightText()
+
+    -- Export Flags line
+    local headingFlags = _AceGUI:Create("Heading")
+    headingFlags:SetText("Export flags")
+    parent:AddChild(headingFlags)
+
+    local includeDBValue = _AceGUI:Create("CheckBox")
+    includeDBValue:SetLabel("Include database values")
+    includeDBValue:SetValue(defaultIncludeDBValues)
+    includeDBValue:SetCallback("OnValueChanged", function(_, _, value)
+      OptionBuilder:SetVariable("export-theme-include-db-values", value)
+      textBox:SetText(Themes:Get(OptionBuilder:GetVariable("export-theme-selected")):ExportToText(value))
+      textBox:HighlightText()
+    end)
+    parent:AddChild(includeDBValue)
+
+    -- Callbacks
+    selectTheme:SetCallback("OnValueChanged", function(_, _, themeName)
+      OptionBuilder:SetVariable("export-theme-selected", themeName)
+      textBox:SetText(Themes:Get(themeName):ExportToText(OptionBuilder:GetVariable("export-theme-include-db-values")))
+      textBox:HighlightText()
+    end)
+
+  end
+
+
+
+--[[
+
+  function Build(self, parent, info)
+    local theme = Themes:GetSelected()
+
+    -- defaut value
+    local defaultIncludeDBValues = OptionBuilder:GetVariable("export-theme-include-db-values") or true
 
     local selectTheme = _AceGUI:Create("Dropdown")
     selectTheme:SetLabel("Select Theme to export")
@@ -1175,14 +1314,22 @@ class "ExportThemeRecipe" inherit "OptionRecipe"
 
     local includeDBValue = _AceGUI:Create("CheckBox")
     includeDBValue:SetLabel("Include database values")
+    includeDBValue:SetValue(defaultIncludeDBValues)
+    includeDBValue:SetCallback("OnValueChanged", function(_, _, value)
+      OptionBuilder:SetVariable("export-theme-include-db-values", value)
+      textBox:SetText(Themes:Get(themeName):ExportToText(value))
+      textBox:HighlightText()
+    end)
     parent:AddChild(includeDBValue)
 
     selectTheme:SetCallback("OnValueChanged", function(_, _, themeName)
-      textBox:SetText(Themes:Get(themeName):ExportToText())
+      textBox:SetText(Themes:Get(themeName):ExportToText(OptionBuilder:GetVariable("export-theme-include-db-values")))
       textBox:HighlightText()
     end)
 
   end
+
+  --]]
 
 endclass "ExportThemeRecipe"
 

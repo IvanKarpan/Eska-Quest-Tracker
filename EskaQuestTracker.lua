@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.5.3"
+Scorpio                   "EskaQuestTracker"                             "1.5.4"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"

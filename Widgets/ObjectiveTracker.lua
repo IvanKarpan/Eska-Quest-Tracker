@@ -210,6 +210,7 @@ class "ObjectiveTracker" inherit "Frame"
 
     frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
     frame:SetFrameStrata("LOW")
+    frame:SetClampedToScreen(true)
     --frame:SetSize(ObjectiveTracker.width, ObjectiveTracker.height)
     frame:SetSize(Options:Get("tracker-width"), Options:Get("tracker-height"))
     -- Restore the position contained in the DB if exists

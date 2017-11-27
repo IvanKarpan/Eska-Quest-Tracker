@@ -26,6 +26,18 @@ function AddQuestRecipes(self)
    -- General
    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("quest.frame"):SetRefresher("quest/refresher"), "Quest/General")
    -- Header
+   leftClickBehaviorList = {
+      ["none"] = "None",
+      ["create-a-group"] = "Create a group",
+      ["join-a-group"] = "Join a group",
+      ["show-details"] = "Show details",
+      ["show-details-with-map"] = "Open the map and show details",
+      ["toggle-tracking"] = "Toggle tracking",
+   }
+
+   OptionBuilder:AddRecipe(SelectRecipe():SetText("Left click behavior"):BindOption("quest-left-click-behavior"):SetList(leftClickBehaviorList):SetWidth(0.5), "Quest/Header")
+
+
    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("quest.header"):SetRefresher("quest/refresher"), "Quest/Header")
    -- Name
    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("quest.name"):SetRefresher("quest/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "Quest/Name")

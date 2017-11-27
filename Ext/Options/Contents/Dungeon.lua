@@ -20,5 +20,10 @@ function AddDungeonBlockRecipes(self)
   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("block.dungeon.name"):SetRefresher("dungeon/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "Dungeon/Name")
   -- Dungeon Icon
   OptionBuilder:AddRecipe(TabItemRecipe("Icon", "Dungeon/Icon"):SetID("icon"):SetOrder(4), "Dungeon/Tabs")
+
+  OptionBuilder:AddRecipe(InlineGroupRecipe("Size", "Dungeon/Icon/Size"):SetOrder(2), "Dungeon/Icon")
+  OptionBuilder:AddRecipe(RangeGroupRecipe():SetText("Width"):BindOption("dungeon-icon-width", false):SetRange(16, 128), "Dungeon/Icon/Size")
+  OptionBuilder:AddRecipe(RangeGroupRecipe():SetText("Height"):BindOption("dungeon-icon-height", false):SetRange(16, 128), "Dungeon/Icon/Size")
+
   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("block.dungeon.icon"):SetRefresher("dungeon/refresher"):SetFlags(ThemeElementRecipe.ALL_FRAME_OPTIONS + ThemeElementRecipe.ALL_TEXTURE_OPTIONS), "Dungeon/Icon")
 end

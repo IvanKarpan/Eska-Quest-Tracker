@@ -24,6 +24,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   __Arguments__ {}
   function Draw(self)
+    local iconHeight = Options:Get("dungeon-icon-height")
     if self.numObjectives > 0 then
       local obj = self.objectives[1]
       if obj then
@@ -33,11 +34,11 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
         self.height = self.height + 5
       end
     else
-      self.height = self.baseHeight + 92 + 8
+      self.height = self.baseHeight + iconHeight + 8
     end
 
-    if self.height < self.baseHeight + 92 then
-      self.height = self.baseHeight + 92 + 8
+    if self.height < self.baseHeight + iconHeight then
+      self.height = self.baseHeight + iconHeight + 8
     end
   end
 
@@ -51,10 +52,30 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     Theme:SkinText(self.frame.name, self.name, nil, skinFlags)
   end
 
+  __Arguments__ { }
+  function RefreshIconSize(self)
+    local iconHeight = Options:Get("dungeon-icon-height")
+    local iconWidth = Options:Get("dungeon-icon-width")
+
+    self.frame.ftex:SetHeight(iconHeight)
+    self.frame.ftex:SetWidth(iconWidth)
+    self.frame.ftex.texture:SetHeight(iconHeight - 2)
+    self.frame.ftex.texture:SetWidth(iconWidth - 2)
+
+    self:Draw()
+  end
+
   __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_DungeonCache) do
       obj:Refresh(skinFlags)
+    end
+  end
+
+  __Arguments__ {}
+  __Static__() function RefreshAllIconSize()
+    for obj in pairs(_DungeonCache) do
+      obj:RefreshIconSize()
     end
   end
 
@@ -91,18 +112,21 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     name:SetJustifyH("CENTER")
     self.frame.name = name
 
+    local iconHeight = Options:Get("dungeon-icon-height")
+    local iconWidth = Options:Get("dungeon-icon-width")
+
     -- Dungeon Texture
     local ftex = CreateFrame("Frame", nil, self.frame)
     ftex:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
     ftex:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 4, -4)
-    ftex:SetHeight(92)
-    ftex:SetWidth(92)
+    ftex:SetHeight(iconHeight)
+    ftex:SetWidth(iconWidth)
     self.frame.ftex = ftex
 
     local texture = ftex:CreateTexture()
     texture:SetPoint("CENTER")
-    texture:SetHeight(90)
-    texture:SetWidth(90)
+    texture:SetHeight(iconHeight - 2)
+    texture:SetWidth(iconWidth - 2)
     texture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     ftex.texture = texture
 
@@ -121,4 +145,8 @@ endclass "Dungeon"
 
 function OnLoad(self)
   CallbackHandlers:Register("dungeon/refresher", CallbackHandler(Dungeon.RefreshAll))
+  CallbackHandlers:Register("dungeon/refreshIconSize", CallbackHandler(Dungeon.RefreshAllIconSize))
+
+  Options:Register("dungeon-icon-height", 92, "dungeon/refreshIconSize")
+  Options:Register("dungeon-icon-width", 92, "dungeon/refreshIconSize")
 end

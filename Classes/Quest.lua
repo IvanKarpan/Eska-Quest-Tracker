@@ -187,8 +187,35 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       end
 
       if button == "LeftButton" then
-        ShowQuestLog();
-        QuestMapFrame_ShowQuestDetails(self.id);
+        local behavior = Options:Get("quest-left-click-behavior")
+        if behavior or behavior ~= "none" then
+            --ShowQuestLog();
+            --QuestMapFrame_ShowQuestDetails(self.id);
+            if behavior == "create-a-group" then
+              GroupFinder:CreateGroup(self.id)
+            elseif behavior == "join-a-group" then
+              GroupFinder:JoinGroup(self.id)
+            elseif behavior == "show-details" then
+              local questLogIndex = GetQuestLogIndexByID(self.id);
+              if ( IsQuestComplete(self.id) and GetQuestLogIsAutoComplete(questLogIndex) ) then
+                ShowQuestComplete(questLogIndex);
+              else
+                QuestLogPopupDetailFrame_Show(questLogIndex)
+              end
+            elseif behavior == "show-details-with-map" then
+              ShowQuestLog()
+              QuestMapFrame_ShowQuestDetails(self.id)
+            elseif behavior == "toggle-tracking" then
+              if not QuestUtils_IsQuestWorldQuest(self.id) then
+                if GetSuperTrackedQuestID() == self.id then
+                  SetSuperTrackedQuestID(0)
+                  QuestSuperTracking_ChooseClosestQuest()
+                else
+                  SetSuperTrackedQuestID(self.id)
+                end
+              end
+            end
+        end
       elseif button == "RightButton" then
         if _Addon.MenuContext:IsShown() then
           _Addon.MenuContext:Hide()
@@ -258,6 +285,7 @@ function OnLoad(self)
   Options:Register("quest-show-id", false)
   Options:Register("quest-show-level", true, "quest/refresher")
   Options:Register("quest-color-level-by-difficulty", true, "quest/refresher")
+  Options:Register("quest-left-click-behavior", "show-details-with-map")
 
 
   CallbackHandlers:Register("quest/refresher", CallbackHandler(Quest.RefreshAll), "refresher")

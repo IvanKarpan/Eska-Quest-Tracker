@@ -91,7 +91,7 @@ function CreateBlockRecipes(self, prefix, recipeGroup)
     OptionBuilder:AddRecipe(TabItemRecipe("Header", lastElement.."/Header"):SetID("scrollbar"):SetOrder(2), lastElement.."/Tabs")
     OptionBuilder:AddRecipe(TabItemRecipe("Stripe", lastElement.."/Stripe"):SetID("scrollbar-thumb"):SetOrder(3), lastElement.."/Tabs")
 
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".frame", "block.frame"):SetRefresher(refresherPrefix.."/refresher"), lastElement.."/General")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".frame", "block.frame"):SetRefresher(refresherPrefix.."/refresher"):SetOrder(10), lastElement.."/General")
 
 
     OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".header", "block.frame"):SetRefresher(refresherPrefix.."/refresher"):SetFlags(ThemeElementRecipe.ALL_FRAME_OPTIONS + ThemeElementRecipe.ALL_TEXT_OPTIONS), lastElement.."/Header")

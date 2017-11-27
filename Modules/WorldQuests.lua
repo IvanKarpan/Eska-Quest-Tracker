@@ -21,6 +21,9 @@ WORLD_QUESTS_BLACKLIST = {
 function OnLoad(self)
   -- Check if the player is in a world quest zone
   self._Enabled = self:HasWorldQuest()
+
+  -- Register the options
+  --Options:Register("show-tracked-world-quests", true, "worldquests/showTrackedWorld")
 end
 
 function OnEnable(self)
