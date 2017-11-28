@@ -72,7 +72,7 @@ class "WorldQuestBlock" inherit "Block"
         worldQuest.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
       end
 
-      height = height + worldQuest.height
+      height = height + worldQuest.height + 5
       previousFrame = worldQuest.frame
     end
 

@@ -10,7 +10,7 @@ namespace "EQT"
 EskaTheme = Theme()
 EskaTheme.name    = "Eska"
 EskaTheme.author  = "Skamer"
-EskaTheme.version = "1.5.3"
+EskaTheme.version = "1.5.5"
 EskaTheme.stage   = "Release"
 Themes:Register(EskaTheme)
 -- ========================================================================== --
@@ -99,6 +99,11 @@ EskaTheme:SetElementProperty("quest.*", "text-color", { r = 1.0, g = 191/255, b 
 EskaTheme:SetElementProperty("quest.frame", "background-color", { r = 0, g = 0, b = 0, a = 0.3})
 EskaTheme:SetElementProperty("quest.header", "background-color", { r = 0, g = 0, b = 0, a = 0.4 })
 EskaTheme:SetElementProperty("quest.header[hover]", "background-color", { r = 0, g = 148/255, b = 1, a = 0.4 })
+-- ========================================================================== --
+-- == World Quest properties
+-- ========================================================================== --
+EskaTheme:SetElementProperty("worldQuest.frame[tracked]", "background-color", { r = 167/255, g = 0, b = 17/255, a = 148/255})
+
 -- ========================================================================== --
 -- == Bonus Quest properties
 -- ========================================================================== --

@@ -25,6 +25,12 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       end
     elseif prop == "distance" then
       self.OnDistanceChanged(self, new)
+    elseif prop == "isTracked" then
+      if new then
+        Theme:SkinFrame(self.frame, nil, "tracked")
+      else
+        Theme:SkinFrame(self.frame)
+      end
     end
   end
   ------------------------------------------------------------------------------
@@ -82,14 +88,17 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
   __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
   function Refresh(self, skinFlags, callSuper)
-    Theme:SkinFrame(self.frame, nil, nil, skinFlags)
-    Theme:SkinFrame(self.frame.header, nil, nil, skinFlags)
-    Theme:SkinText(self.frame.headerName, self.name, nil, skinFlags)
+    local state = nil
+    if self.isTracked then state = "tracked" end
+
+    Theme:SkinFrame(self.frame, nil, state, skinFlags)
+    Theme:SkinFrame(self.frame.header, nil, state, skinFlags)
+    Theme:SkinText(self.frame.headerName, self.name, state, skinFlags)
 
 
     if Options:Get("quest-show-level") then
       self:ShowLevel()
-      Theme:SkinText(self.frame.headerLevel, self.level, nil, skinFlags)
+      Theme:SkinText(self.frame.headerLevel, self.level, state, skinFlags)
 
       if Options:Get("quest-color-level-by-difficulty") then
         local color = GetQuestDifficultyColor(self.level)
@@ -120,6 +129,8 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.isTask = nil
     self.isHidden = nil
     self.isOnMap = nil
+    self.isTracked = nil
+    self.isInArea = nil
 
 
     if self.questItem then
@@ -162,6 +173,8 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   property "isTask" { TYPE = Boolean, DEFAULT = false }
   property "isHidden" { TYPE = Boolean, DEFAULT = false }
   property "isOnMap" { TYPE = Boolean, DEFAULT = false, EVENT = "IsOnMapChanged" }
+  property "isInArea" { TYPE = Boolean, DEFAULT = false }
+  property "isTracked" { TYPE = Boolean, DEFAULT = false, HANDLER = UpdateProps }
 
   __Static__() property "_prefix" { DEFAULT = "quest" }
   ------------------------------------------------------------------------------

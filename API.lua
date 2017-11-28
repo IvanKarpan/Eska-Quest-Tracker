@@ -2038,6 +2038,8 @@ endclass "States"
 
 function OnLoad(self)
   -- Add some basic state
+  States:Add(State("none", "None", Color(1, 1, 1)))
   States:Add(State("completed", "Completed", Color(0, 1, 0)))
   States:Add(State("progress", "Progress", Color(0.5, 0.5, 0.5)))
+  States:Add(State("tracked", "Tracked", Color(1.0, 0.5, 0)))
 end

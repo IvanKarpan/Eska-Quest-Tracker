@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.5.4"
+Scorpio                   "EskaQuestTracker"                             "1.5.5"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -218,6 +218,21 @@ __SystemEvent__ "ZONE_CHANGED" "ZONE_CHANGED_NEW_AREA"
 function UPDATE_PLAYER_MAP()
   if not WorldMapFrame:IsShown() then
     SetMapToCurrentZone()
+  end
+end
+
+-- @NOTE Transform the two hooks to event for the World quest module. Remove it when the __EnableOnHook_ is implememented.
+__SecureHook__()
+function BonusObjectiveTracker_TrackWorldQuest(questID, hardWatch)
+  if Options:Get("show-tracked-world-quests") then
+    _M:FireSystemEvent("EQT_WORLDQUEST_TRACKED_LIST_CHANGED", questID, true, hardWatch)
+  end
+end
+
+__SecureHook__()
+function BonusObjectiveTracker_UntrackWorldQuest(questID)
+  if Options:Get("show-tracked-world-quests") then
+    _M:FireSystemEvent("EQT_WORLDQUEST_TRACKED_LIST_CHANGED", questID, false)
   end
 end
 

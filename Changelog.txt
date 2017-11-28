@@ -1,3 +1,11 @@
+[1.5.5]
+  - Implemented the tracking of world quests (disabled by default)
+  - Added an option to disable/enable world quests tracking.
+  - Added a new state "tracked" for the world quests that are tracked. By default, their background color is red and can be changed directly from options.
+  - Added a state "none" for customizing the properties when the element has no state.
+  - Fixed an issue where sometimes the world quests overlap to other block.
+  - Updated Eska and Transparence themes.
+
 [1.5.4]
   - The tracker can no longer be moved off screen.
   - Added an option for changing the dungeon icon size.

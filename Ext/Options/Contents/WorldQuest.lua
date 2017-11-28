@@ -22,16 +22,19 @@ function AddWorldQuestRecipes(self)
    OptionBuilder:AddRecipe(TabItemRecipe("Header", "WorldQuest/Header"):SetID("header"):SetOrder(2), "WorldQuest/Tabs")
    OptionBuilder:AddRecipe(TabItemRecipe("Name", "WorldQuest/Name"):SetID("name"):SetOrder(3), "WorldQuest/Tabs")
    -- General
-   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("worldQuest.frame", "quest.frame"):SetRefresher("worldQuest/refresher"), "WorldQuest/General")
+   OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("none", "tracked"):SetRecipeGroup("WorldQuest/General/States"), "WorldQuest/General")
+   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("worldQuest.frame", "quest.frame"):SetRefresher("worldQuest/refresher"), "WorldQuest/General/States")
    -- Header
-   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("worldQuest.header", "quest.header"):SetRefresher("worldQuest/refresher"), "WorldQuest/Header")
+   OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("none", "tracked"):SetRecipeGroup("WorldQuest/Header/States"), "WorldQuest/Header")
+   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("worldQuest.header", "quest.header"):SetRefresher("worldQuest/refresher"), "WorldQuest/Header/States")
    -- Name
-   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("worldQuest.name", "quest.name"):SetRefresher("worldQuest/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "WorldQuest/Name")
+   OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("none", "tracked"):SetRecipeGroup("WorldQuest/Name/States"), "WorldQuest/Name")
+   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("worldQuest.name", "quest.name"):SetRefresher("worldQuest/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "WorldQuest/Name/States")
 end
 
 
 function AddWorldQuestsBLockRecipes(self)
   OptionBuilder:AddRecipe(TreeItemRecipe("World Quests", "WorldQuests/Children"):SetID("block-worldQuests"):SetOrder(20):SetPath("blocks"), "RootTree")
-  OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Show tracked world quests"):BindOption("show-tracked-world-quests", false):SetOrder(5), "WorldQuests/General")
+  OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Show tracked world quests"):BindOption("show-tracked-world-quests"):SetOrder(5), "WorldQuests/General")
   _Parent:CreateBlockRecipes("block.worldQuests", "WorldQuests/Children")
 end
