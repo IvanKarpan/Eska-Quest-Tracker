@@ -1,26 +1,19 @@
-[1.5.5]
-  - Implemented the tracking of world quests (disabled by default)
-  - Added an option to disable/enable world quests tracking.
-  - Added a new state "tracked" for the world quests that are tracked. By default, their background color is red and can be changed directly from options.
-  - Added a state "none" for customizing the properties when the element has no state.
-  - Fixed an issue where sometimes the world quests overlap to other block.
-  - Updated Eska and Transparence themes.
+[1.5.6]
+* Tagged as beta
 
-[1.5.4]
-  - The tracker can no longer be moved off screen.
-  - Added an option for changing the dungeon icon size.
-  - Added an option for changing the left clicking behavior on the quest header.
-  - Added new flag options for the theme creation, import and export features.
-  - A message box will now alert you when you import a theme and there is already existing one with same name. Moreover, the alert will ask you to change the name of imported theme.
-  - Remove files that are no longer needed.
+- FIX: An issue where sometimes the world quests overlaps on others frames.
+- FIX: The tracker can no longer be moved off screen.
+- NEW: Implemented the tracking of world quests (disabled by default).
+- CHANGES: The options have been completely rewamped in order to be more user friendly.
+- NEW: Added an option for changing the dungeon icon size.
+- NEW: Added an option for changing the left clicking behavior on a quest header.
+- NEW: Added the states in the options, allowing to change properties when a element has a specific state (e.g, progress or completed for objectives).
+- NEW: You can now created, delete and copy a Theme.
+- NEW: Themes can now be exported and improted, allowing to share them to community.
+- NEW: Implemented the message box.
+- UPDATE: Eska and Transparence themes.
 
-[1.5.3]
-  - Implemented the states in the options.
-  - Added a way to delete, create, copy, import and export themes. NOTE: These features are experimental so you may encounter some issues when using.
+NOTE: Following to theme system rework and some db structure changes, i couldn't migrate your appearance properties (e.g, tracker background) in the new version, so you will lost them.
+Sorry for that, in the future, i will no longer encounter this issue.
 
-
-[1.5.2]
-  - Added some fix.
-  - Updated Transparence and Eska Theme.
-  - The options have been revamped.
-  NOTE: After some feedbacks, the options have been revamped in order to be more user friendly. The properties that change  elements apperance of the addon and those changing its behavior have been unifed in a one place.
+I'm going to make later a post for showing more in detail the changes contained in this patch.

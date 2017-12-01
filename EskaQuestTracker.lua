@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.5.5"
+Scorpio                   "EskaQuestTracker"                             "1.5.6"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -57,7 +57,7 @@ function OnLoad(self)
 
   self:CheckDBMigration()
 
-  _DB:SetDefault{dbVersion = 1 }
+  _DB:SetDefault{dbVersion = 2 }
   _DB:SetDefault{ minimap = { hide = false }}
 
   -- Create the blocks table in order to register them.
