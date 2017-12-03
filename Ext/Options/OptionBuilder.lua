@@ -161,7 +161,7 @@ class "ThemeDropDownRecipe" inherit "OptionRecipe"
       end
 
       local selectTheme = _AceGUI:Create("DropdownGroup")
-      selectTheme:SetTitle("Choose the Theme where the apperance properties changes will be saved")
+      selectTheme:SetTitle("Choose the Theme where the appearance properties changes will be saved")
       selectTheme:SetLayout("Flow")
       selectTheme:SetFullWidth(true)
       --selectTheme:SetFullHeight(true)
