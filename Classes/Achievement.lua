@@ -18,7 +18,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     elseif prop == "icon" then
       self.frame.ftex.texture:SetTexture(new)
     elseif prop == "desc" then
-      self.frame.description:SetText(new)
+      Theme:SkinText(self.frame.description, new)
     elseif prop == "showDesc" then
       if new then
         self:ShowDescription()
@@ -40,33 +40,65 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__{}
+  __Arguments__ {}
   function Draw(self)
+    if self.numObjectives > 0 then
+      self:UpdateFirstObjectiveAnchors()
+      self:DrawObjectives(self.frame, true)
+    end
+
+    -- Update the height (avoid a incorrect value by CalculateHeight)
+    self.frame.description:SetHeight(0)
+
+    self:CalculateHeight()
+  end
+
+  __Arguments__{}
+  function UpdateFirstObjectiveAnchors(self)
     if self.numObjectives > 0 then
       local obj = self.objectives[1]
       if obj then
+        obj:ClearAllPoints()
         if self.showDesc then
-          obj.frame:SetPoint("TOPLEFT", self.frame.description, "BOTTOMLEFT")
+          --obj.frame:SetPoint("TOPLEFT", self.frame.description, "BOTTOMLEFT", -5, 0)
+          obj.frame:SetPoint("TOP", self.frame.description, "BOTTOM")
+          obj.frame:SetPoint("LEFT", self.frame.description, "LEFT", -5, 0) -- -5 counter the offset +5 of description
           obj.frame:SetPoint("TOPRIGHT", self.frame.description, "BOTTOMRIGHT")
-          self.frame.description:Show()
         else
           obj.frame:SetPoint("TOPLEFT", self.frame.header, "BOTTOMLEFT")
           obj.frame:SetPoint("TOPRIGHT", self.frame.header, "BOTTOMRIGHT")
-          self.frame.description:Hide()
         end
-        self:DrawObjectives(self.frame, true)
       end
-    end
-    if self.showDesc then
-      self.height = self.height + self.frame.description:GetHeight() + 8
-    end
-
-    if self.height < 46 + 8 then
-      self.height = 46 + 8
     end
   end
 
+  __Arguments__{}
+  function GetDescriptionHeight(self)
+    return self.frame.description:GetHeight()
+  end
 
+  __Arguments__{}
+  function CalculateHeight(self)
+    -- Reset the height to baseHeight
+    self.height = self.baseHeight
+
+    -- Get the descript height if enabled
+    if self.showDesc then
+      self.height = self.height + self:GetDescriptionHeight()
+    end
+
+    -- Adds the total height of objectives
+    self.height = self.height + self:GetObjectivesHeight()
+
+    -- Add a offset
+    local offset = 8
+    self.height = self.height + offset
+
+    -- Then to finish, set a minimun height (icon height)
+    if self.height < 46 + offset then
+      self.height = 46 + offset
+    end
+  end
 
 
   __Arguments__{}
@@ -75,14 +107,11 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       return
     end
 
-    if self.numObjectives > 0 then
-      local obj = self.objectives[1]
-      obj.frame:SetPoint("TOPLEFT", self.frame.description, "BOTTOMLEFT")
-      obj.frame:SetPoint("TOPRIGHT", self.frame.description, "BOTTOMRIGHT")
-    end
+    self:UpdateFirstObjectiveAnchors()
 
     self.frame.description:Show()
-    self.height = self.height + self.frame.description:GetHeight()
+
+    self:CalculateHeight()
   end
 
   __Arguments__{}
@@ -91,13 +120,11 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       return
     end
 
-    if self.numObjectives > 0 then
-      local obj = self.objectives[1]
-      obj.frame:SetPoint("TOPLEFT", self.frame.header, "BOTTOMLEFT")
-      obj.frame:SetPoint("TOPRIGHT", self.frame.header, "BOTTOMRIGHT")
-    end
+    self:UpdateFirstObjectiveAnchors()
+
     self.frame.description:Hide()
-    self.height = self.height - self.frame.description:GetHeight()
+
+    self:CalculateHeight()
   end
 
 
@@ -107,8 +134,12 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     Theme:SkinFrame(self.frame.header, nil, nil, skinFlags)
 
     Theme:SkinText(self.frame.headerName, self.name, nil, skinFlags)
+    Theme:SkinText(self.frame.description, self.desc, nil, skinFlags)
 
     Theme:SkinFrame(self.frame.ftex, nil, nil, skinFlags)
+
+    -- if show desc, we are forced to update height
+    self:CalculateHeight()
   end
 
   function Reset(self)
@@ -122,6 +153,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.name = nil
     self.icon = nil
     self.desc = nil
+    self.showDesc = nil
   end
 
   function RegisterFramesForThemeAPI(self)
@@ -131,6 +163,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     Theme:RegisterFrame(class._prefix..".header", self.frame.header)
 
     Theme:RegisterText(class._prefix..".name", self.frame.headerName)
+    Theme:RegisterText(class._prefix..".description", self.frame.description)
 
     Theme:RegisterFrame(class._prefix..".icon", self.frame.ftex)
   end
@@ -216,10 +249,15 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     headerText:SetPoint("BOTTOM")
 
     local description = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    description:SetPoint("TOPLEFT", headerFrame, "BOTTOMLEFT")
-    description:SetPoint("TOPRIGHT", headerFrame, "BOTTOMRIGHT")
+    description:SetPoint("TOP", headerFrame, "BOTTOM")
+    --description:SetPoint("TOPRIGHT", headerFrame, "BOTTOMRIGHT")
+    description:SetPoint("LEFT", ftex, "RIGHT", 5, 0)
+    description:SetPoint("RIGHT")
     description:SetText("")
-    description:Hide()
+    description:SetJustifyH("LEFT")
+    description:SetWordWrap(true)
+    --description:SetNonSpaceWrap(true)
+    --description:Hide()
     frame.description = description
 
 
@@ -299,9 +337,6 @@ class "AchievementBlock" inherit "Block"
 
     for index, achievement in self.achievements:GetIterator() do
       achievement:ClearAllPoints()
-      achievement:Show()
-      achievement:Draw()
-
       if index == 1 then
         achievement.frame:SetPoint("TOPLEFT", 0, -40)
         achievement.frame:SetPoint("TOPRIGHT", 0, -40)
@@ -309,6 +344,11 @@ class "AchievementBlock" inherit "Block"
         achievement.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -5)
         achievement.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
       end
+
+      -- Refresh the text Height (avoid the text is wrapped)
+      achievement.frame.description:SetHeight(0)
+      achievement:Show()
+      achievement:Draw()
 
       height = height + achievement.height
       previousFrame = achievement.frame
@@ -323,6 +363,13 @@ class "AchievementBlock" inherit "Block"
       obj:Refresh(skinFlags)
     end
   end
+
+  __Static__() function DrawAll()
+    for obj in pairs(_AchievementBlockCache) do
+      obj:Draw()
+    end
+  end
+
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------

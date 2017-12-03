@@ -136,3 +136,7 @@ TransparenceTheme:SetElementProperty("achievement.frame", "background-color", { 
 TransparenceTheme:SetElementProperty("achievement.header", "background-color", { r = 0, g = 0, b = 0, a = 0.4 })
 TransparenceTheme:SetElementProperty("achievement.header[hover]", "background-color", { r = 0, g = 148/255, b = 1, a = 0.4 })
 TransparenceTheme:SetElementProperty("achievement.icon", "background-color", { r = 1, g = 233/255, b = 127/255})
+TransparenceTheme:SetElementProperty("achievement.description", "text-size", 11)
+TransparenceTheme:SetElementProperty("achievement.description", "text-font", "PT Sans Bold")
+TransparenceTheme:SetElementProperty("achievement.description", "text-color", { r = 1, g = 1, b = 1, a = 1 })
+TransparenceTheme:SetElementProperty("achievement.description", "text-location", "LEFT")

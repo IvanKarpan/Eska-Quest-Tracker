@@ -500,7 +500,7 @@ function AddTrackerRecipes(self)
    end), "Tracker/General/TopOptions")
 
    OptionBuilder:AddRecipe(InlineGroupRecipe("Size", "Tracker/Size"):SetOrder(2), "Tracker/General")
-   OptionBuilder:AddRecipe(RangeGroupRecipe():SetText("Width"):BindOption("tracker-width"):SetRange(270, 500), "Tracker/Size")
+   OptionBuilder:AddRecipe(RangeGroupRecipe():SetText("Width"):BindOption("tracker-width"):SetRange(200, 500), "Tracker/Size")
    OptionBuilder:AddRecipe(RangeGroupRecipe():SetText("Height"):BindOption("tracker-height"):SetRange(64, 1024), "Tracker/Size")
 
    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("tracker.frame"):SetRefresher("tracker/refresher"):SetOrder(3), "Tracker/General")

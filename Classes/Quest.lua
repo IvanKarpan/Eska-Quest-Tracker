@@ -202,8 +202,6 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       if button == "LeftButton" then
         local behavior = Options:Get("quest-left-click-behavior")
         if behavior or behavior ~= "none" then
-            --ShowQuestLog();
-            --QuestMapFrame_ShowQuestDetails(self.id);
             if behavior == "create-a-group" then
               GroupFinder:CreateGroup(self.id)
             elseif behavior == "join-a-group" then

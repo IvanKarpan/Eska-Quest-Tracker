@@ -111,6 +111,14 @@ function DrawObjectives(self, f, custom)
     self.height = self.baseHeight + height -- +  5
 end
 
+  function GetObjectivesHeight(self)
+    local totalHeight = 0
+    if self.objectives then
+      for index, objective in self.objectives:GetIterator() do totalHeight = totalHeight + objective.height end
+    end
+    return totalHeight
+  end
+
   function ClearObjectives(self)
     while(self.objectives.Count > 0) do self.objectives:RemoveByIndex(list.Count) end
   end

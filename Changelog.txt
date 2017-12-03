@@ -1,3 +1,13 @@
+[1.5.7]
+  - FIX: An issue where the description isn't displayed for some achievements (e.g, raid boss mythic achievements).
+  - FIX: An issue where the achievement height is incorrect after a loading.
+  - FIX: An issue where the description of all achievements is wrapped after to have tracked one, causing  also height problem.
+  - CHANGE: Tuned the position of achievement description and its objectives.
+  - NEW: Added a new element id "achievement.description" for customizing the achievement description text . By the way, a new tab "Description" has been added in the achievement options.
+  - FIX: Some typo
+  - CHANGE: The minimum value allowed for the width of tracker in the options, it's now 200 (from 270). I don't recommend to use too small values.
+  - UPDATE: Transparence and Eska themes to apply achievements changes.
+
 [1.5.6]
 * Tagged as beta
 

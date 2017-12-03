@@ -68,8 +68,8 @@ function TRACKED_ACHIEVEMENT_LIST_CHANGED(achievementID, isAdded)
   if isAdded and not _AchievementBlock:GetAchievement(achievementID) then
     local achievement = _ObjectManager:Get(Achievement)
     achievement.id =  achievementID
-    _M:UpdateAchievement(achievement)
     _AchievementBlock:AddAchievement(achievement)
+    _M:UpdateAchievement(achievement)
   elseif not isAdded then
     _AchievementBlock:RemoveAchievement(achievementID)
   end
@@ -141,6 +141,8 @@ function UpdateAchievement(self, achievement)
     else
       achievement:HideDotted()
     end
+  elseif numObjectives == 0 then
+    achievement.numObjectives = 0
   end
 end
 

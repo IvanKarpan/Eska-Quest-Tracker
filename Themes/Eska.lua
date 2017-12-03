@@ -148,3 +148,7 @@ EskaTheme:SetElementProperty("achievement.frame", "background-color", { r = 0, g
 EskaTheme:SetElementProperty("achievement.header", "background-color", { r = 0, g = 0, b = 0, a = 0.4 })
 EskaTheme:SetElementProperty("achievement.header[hover]", "background-color", { r = 0, g = 148/255, b = 1, a = 0.4 })
 EskaTheme:SetElementProperty("achievement.icon", "background-color", { r = 0, g = 0, b = 0})
+EskaTheme:SetElementProperty("achievement.description", "text-size", 11)
+EskaTheme:SetElementProperty("achievement.description", "text-font", "PT Sans Bold")
+EskaTheme:SetElementProperty("achievement.description", "text-color", { r = 1, g = 1, b = 1, a = 1 })
+EskaTheme:SetElementProperty("achievement.description", "text-location", "LEFT")
