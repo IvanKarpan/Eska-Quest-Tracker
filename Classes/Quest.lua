@@ -200,6 +200,9 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       end
 
       if button == "LeftButton" then
+        if ChatEdit_TryInsertQuestLinkForQuestID(self.id) then
+          return
+        end
         local behavior = Options:Get("quest-left-click-behavior")
         if behavior or behavior ~= "none" then
             if behavior == "create-a-group" then
@@ -254,6 +257,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
               QuestLogPopupDetailFrame_Show(questLogIndex)
             end
           end)
+          _Addon.MenuContext:AddItem("Link to chat", nil, function() ChatFrame_OpenChat(GetQuestLink(self.id)) end)
           _Addon.MenuContext:AddItem(MenuItemSeparator())
           _Addon.MenuContext:AddItem("Help", nil, function() print("Put a Help handler here !") end).disabled = true
         end
