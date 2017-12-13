@@ -94,8 +94,8 @@ function CreateBlockRecipes(self, prefix, recipeGroup)
     OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".frame", "block.frame"):SetRefresher(refresherPrefix.."/refresher"):SetOrder(10), lastElement.."/General")
 
 
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".header", "block.frame"):SetRefresher(refresherPrefix.."/refresher"):SetFlags(ThemeElementRecipe.ALL_FRAME_OPTIONS + ThemeElementRecipe.ALL_TEXT_OPTIONS), lastElement.."/Header")
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".stripe", "block.frame"):SetRefresher(refresherPrefix.."/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXTURE_OPTIONS), lastElement.."/Stripe")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".header", "block.header"):SetRefresher(refresherPrefix.."/refresher"):SetFlags(ThemeElementRecipe.ALL_FRAME_OPTIONS + ThemeElementRecipe.ALL_TEXT_OPTIONS), lastElement.."/Header")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".stripe", "block.stripe"):SetRefresher(refresherPrefix.."/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXTURE_OPTIONS), lastElement.."/Stripe")
 
 end
 
@@ -552,6 +552,8 @@ function AddObjectiveRecipes(self)
     OptionBuilder:AddRecipe(TabItemRecipe("General", "Objective/General"):SetID("general"):SetOrder(10), "Objective/Tabs")
     OptionBuilder:AddRecipe(TabItemRecipe("Square", "Objective/Square"):SetID("square"):SetOrder(20), "Objective/Tabs")
 
+    --OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Enable text wrapping"):BindOption("objective-text-wrapping"):SetOrder(1), "Objective/General")
+
     OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("completed", "progress"):SetRecipeGroup("Objective/General/States"), "Objective/General")
     OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("completed", "progress"):SetRecipeGroup("Objective/Square/States"), "Objective/Square")
 
@@ -584,11 +586,11 @@ function AddMenuContextRecipes(self)
     OptionBuilder:AddRecipe(TreeItemRecipe("Menu Context", "MenuContext/Children"):SetID("menu-context"):SetOrder(70), "RootTree")
 
     local orientations = {
-      ["RIGHT"] = "RIGHT",
-      ["LEFT"] = "LEFT",
+      ["LEFT"] = "RIGHT",
+      ["RIGHT"] = "LEFT",
     }
 
-    OptionBuilder:AddRecipe(SelectRecipe():SetText("Orientation"):SetList(orientations):BindOption("menu-context-orientation"), "MenuContext/Children")
+    OptionBuilder:AddRecipe(SelectRecipe():SetText("Location"):SetList(orientations):BindOption("menu-context-orientation"), "MenuContext/Children")
 end
 
 

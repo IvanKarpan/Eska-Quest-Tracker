@@ -18,7 +18,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     if prop == "name" then
       Theme:SkinText(self.frame.headerName, new)
     elseif prop == "level" then
-      Theme:SkinText(self.frame.headerLevel, new)
+      Theme:SkinText(self.frame.headerLevel, new > 0 and new or "")
       if Options:Get("quest-color-level-by-difficulty") then
         local color = GetQuestDifficultyColor(new)
         self.frame.headerLevel:SetTextColor(color.r, color.g, color.b)
@@ -98,7 +98,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
     if Options:Get("quest-show-level") then
       self:ShowLevel()
-      Theme:SkinText(self.frame.headerLevel, self.level, state, skinFlags)
+      Theme:SkinText(self.frame.headerLevel, self.level > 0 and self.level or "", state, skinFlags)
 
       if Options:Get("quest-color-level-by-difficulty") then
         local color = GetQuestDifficultyColor(self.level)

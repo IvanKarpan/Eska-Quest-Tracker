@@ -1,3 +1,11 @@
+[1.5.9]
+- World quests no longer display the level text ("0").
+- CHANGES: The background color of world quests that are tracked (the color used will be now less aggressive).
+
+Options:
+- FIX: An issue where the size of quest header displayed isn't correct.
+- CHANGES: Text and values displayed in the menu context to avoid any misleading.
+
 [1.5.8]
 * Tagged as release
 

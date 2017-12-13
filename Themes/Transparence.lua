@@ -10,7 +10,7 @@ namespace "EQT"
 TransparenceTheme = Theme()
 TransparenceTheme.name     = "Transparence"
 TransparenceTheme.author   = "Skamer"
-TransparenceTheme.version  = "1.5.8"
+TransparenceTheme.version  = "1.5.9"
 TransparenceTheme.stage    = "Release"
 Themes:Register(TransparenceTheme)
 -- ========================================================================== --
@@ -90,7 +90,7 @@ TransparenceTheme:SetElementProperty("quest.header[hover]", "background-color", 
 -- ========================================================================== --
 -- == World Quest properties
 -- ========================================================================== --
-TransparenceTheme:SetElementProperty("worldQuest.frame[tracked]", "background-color", { r = 167/255, g = 0, b = 17/255, a = 148/255})
+TransparenceTheme:SetElementProperty("worldQuest.frame[tracked]", "background-color", { r = 0.93, g = 0, b = 0.1, a = 0.13})
 -- ========================================================================== --
 -- == Bonus Quest properties
 -- ========================================================================== --
