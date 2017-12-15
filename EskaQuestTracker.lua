@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.5.9"
+Scorpio                   "EskaQuestTracker"                            "1.5.10"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -70,6 +70,11 @@ function OnLoad(self)
   Themes:LoadFromDB()
   Themes:Select(Options:Get("theme-selected"))
 
+  -- Check dependencies and print if they are deprecated or outdated
+  Scorpio.Delay(2, function()
+    self:CheckPLoopVersion()
+    self:CheckScorpioVersion()
+  end)
 end
 
 function OnEnable(self)
@@ -273,8 +278,63 @@ function GetCurrentTheme()
   return _CURRENT_THEME
 end
 
--- ImportTheme(encoded)
--- ExportTheme(theme, )
+-- ========================================================================== --
+-- == Dependecies Checks
+-- ========================================================================== --
+enum "DependencyState" {
+  "OK",         -- The addon works fine with the current dependency version.
+  "DEPRECATED", -- The addon works fine with the current dependency version, but for the next addon version, the dependency must be updated in order to the addon works.
+  "OUTDATED",   -- The addon doesn't work with the current dependency version, the dependency must be updated.
+}
+
+local deprecatedAlertText = "Your |cffFF6A00%s|r version is deprecated. That means in the next updates of |cff7FC9FFEska Quest Tracker|r, your version will no longer be enought in order to the addon works. Update your |cffFF6A00%s|r as soon as possible !"
+local requiredAlertText = "Your |cffFF6A00%s|r version is too older for the addon works. Update it now !"
+
+function CheckPLoopVersion(self, printCheck)
+  local deprecatedVersion = 190 -- The version below will be considered as deprecated
+  local requiredVersion = 190   -- The version below will be considered as outdated and not working with the current addon version.
+
+  if printCheck == nil then
+    printCheck = true
+  end
+
+  if _PLOOP_VERSION < requiredVersion then
+    if printCheck then
+      Error(requiredAlertText, "[Lib] PLoop")
+    end
+    return false, DependencyState.OUTDATED
+  elseif _PLOOP_VERSION < deprecatedVersion then
+    if printCheck then
+      Warn(deprecatedAlertText, "[Lib] PLoop", "[Lib] PLoop")
+    end
+    return false, DependencyState.DEPRECATED
+  end
+  return true, DependencyState.OK
+end
+
+function CheckScorpioVersion(self, printCheck)
+  local deprecatedVersion = 14 -- The version below will be considered as deprecated
+  local requiredVersion = 13   -- The version below will be considered as outdated and not working with the current addon version.
+
+  if printCheck == nil then
+    printCheck = true
+  end
+
+  if _SCORPIO_VERSION < requiredVersion then
+    if printCheck then
+      Error(requiredAlertText, "[Lib] Scorpio")
+    end
+    return false, DependencyState.OUTDATED
+  elseif _SCORPIO_VERSION < deprecatedVersion then
+    if printCheck then
+      Warn(deprecatedAlertText, "[Lib] Scorpio", "[Lib] Scorpio")
+    end
+    return false, DependencyState.DEPRECATED
+  end
+  return true, DependencyState.OK
+end
+
+
 
 __SlashCmd__ "eqt" "scorpio" "- return the current scorpio version"
 function PrintScorpioVersion()

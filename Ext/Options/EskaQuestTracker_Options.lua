@@ -426,15 +426,38 @@ function BuildAddonInfoCategory(self, content)
   do
     local group =  _AceGUI:Create("SimpleGroup")
     group:SetLayout("Flow")
-    for lib, version in pairs({ ["|cff0094ffPLoop|r"] = _PLOOP_VERSION, ["|cffff6a00Scorpio|r"] = _SCORPIO_VERSION }) do
+
+    local dependencies = {
+      ["PLoop"] = {
+        displayText = "|cff0094ffPLoop|r",
+        version = _PLOOP_VERSION,
+        state = select(2, _Addon:CheckPLoopVersion(false))
+      },
+      ["Scorpio"] = {
+        displayText = "|cffff6a00Scorpio|r",
+        version = _SCORPIO_VERSION,
+        state = select(2, _Addon:CheckScorpioVersion(false))
+      }
+    }
+
+    for libName, lib in pairs(dependencies) do
+
+      local versionColor = "ff00ff00"
+
+      if lib.state == DependencyState.OUTDATED then
+        versionColor = "ffff0000"
+      elseif lib.state == DependencyState.DEPRECATED then
+        versionColor = "ffffd800"
+      end
+
       local label = _AceGUI:Create("Label")
-      label:SetText(lib)
+      label:SetText(lib.displayText)
       label:SetFont(font, fontSize)
       label:SetWidth(100)
       group:AddChild(label)
 
       local labelValue = _AceGUI:Create("Label")
-      labelValue:SetText(string.format("|cff00ff00v%d|r", version))
+      labelValue:SetText(string.format("|c%sv%d|r", versionColor, lib.version))
       labelValue:SetFont(font, fontSize)
       group:AddChild(labelValue)
     end

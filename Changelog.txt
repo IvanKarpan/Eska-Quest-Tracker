@@ -1,5 +1,16 @@
 [1.5.10]
 - NEW: The item button will now be colored in red if your target is not in its range (thank to kurapica).
+- NEW: Implemented a dependencies checker. The addon will now alert you if you use a dependency that is deprecated or too older.
+
+Options:
+ - NEW: The dependencies version will now be colored in different color, in function if they are deprecated or too older.
+
+ The color code is the following:
+ - Green: The dependency version is OK, and the future addon updates will work property with.
+ - Yellow: The dependency version is OK for the current addon version, but will become outdated for the next addon updates.
+ - Red: The dependency version is already outdated, so the addon will not work correctly.
+
+ NOTE: I've implemented this system in order to alert you as quickly as possible when a dependency version of Eska Quest Tracker will become too old.
 
 [1.5.9]
 - World quests no longer display the level text ("0").
