@@ -1,14 +1,13 @@
--- ************************************************************************** **
---                       EskaQuestTracker                                     **
---                  All Rights Reserved - Skamer                              **
--- *************************************************************************  **
-local _, EQT = ...
--- ========================================================================== --
-Scorpio        "EskaQuestTracker.Widgets.ItemButton"                     "1.0.0"
--- ========================================================================== --
+--============================================================================--
+--                          Eska Quest Tracker                                --
+-- @Author  : Skamer <https://mods.curse.com/members/DevSkamer>               --
+-- @Website : https://wow.curseforge.com/projects/eska-quest-tracker          --
+--============================================================================--
+Scorpio        "EskaQuestTracker.Widgets.ItemButton"                          ""
+--============================================================================--
 namespace "EQT"
 import "System"
-
+--============================================================================--
 class "ItemButton" inherit "Frame" extend "IReusable"
 
   function GetID(self)
@@ -52,6 +51,19 @@ class "ItemButton" inherit "Frame" extend "IReusable"
     self.frame.cooldown:SetCooldown(start, duration)
   end
 
+  __Thread__()
+  function RefreshRange(self)
+    local frame = self.frame
+    while frame:IsShown() do
+      if self.__link and IsItemInRange(self.__link, "target") == false then
+        frame.texture:SetVertexColor(1, 0, 0)
+      else
+        frame.texture:SetVertexColor(1, 1, 1)
+      end
+      Delay(0.1)
+    end
+  end
+
 
   __Static__() property "index" {
     Default = 1,
@@ -81,10 +93,13 @@ class "ItemButton" inherit "Frame" extend "IReusable"
     frame.cooldown = cooldown
 
     frame:SetScript("OnLeave", function(btn) GameTooltip:Hide() end)
+    frame:SetScript("OnShow", function(btn) RefreshRange(self) end)
+    frame:Hide()
 
     ItemButton.index = ItemButton.index + 1
   end
 endclass "ItemButton"
+
 
 function OnLoad(self)
   _ObjectManager:Register(ItemButton)

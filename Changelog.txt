@@ -1,3 +1,6 @@
+[1.5.10]
+- NEW: The item button will now be colored in red if your target is not in its range (thank to kurapica).
+
 [1.5.9]
 - World quests no longer display the level text ("0").
 - CHANGES: The background color of world quests that are tracked (the color used will be now less aggressive).
