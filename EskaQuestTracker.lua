@@ -313,7 +313,7 @@ function CheckPLoopVersion(self, printCheck)
 end
 
 function CheckScorpioVersion(self, printCheck)
-  local deprecatedVersion = 14 -- The version below will be considered as deprecated
+  local deprecatedVersion = 15 -- The version below will be considered as deprecated
   local requiredVersion = 13   -- The version below will be considered as outdated and not working with the current addon version.
 
   if printCheck == nil then
