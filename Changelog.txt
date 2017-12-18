@@ -1,3 +1,6 @@
+[1.5.11]
+- FIX: ticket #9 - An issue where the mythic + timer is updated too often (causing FPS drop).
+
 [1.5.10]
 - NEW: The item button will now be colored in red if your target is not in its range (thank to kurapica).
 - NEW: Implemented a dependencies checker. The addon will now alert you if you use a dependency that is deprecated or too older.

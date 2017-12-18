@@ -127,6 +127,6 @@ function UpdateTimer(self)
     while not _Keystone.isCompleted do
        local _, elapsedTime = GetWorldElapsedTime(1)
       _Keystone.timer = elapsedTime
-      Continue()
+      Delay(0.1)
     end
 end
