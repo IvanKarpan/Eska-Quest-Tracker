@@ -185,9 +185,14 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
     local frame = CreateFrame("Frame")
     frame:SetBackdrop(_Backdrops.Common)
+    frame:SetBackdropBorderColor(0,0,0,0)
+
+
+
 
     local headerFrame = CreateFrame("Button", nil, frame)
     headerFrame:SetBackdrop(_Backdrops.Common)
+    headerFrame:SetBackdropBorderColor(0,0,0,0)
     headerFrame:SetPoint("TOPRIGHT")
     headerFrame:SetPoint("TOPLEFT")
     headerFrame:SetHeight(21) -- 14
@@ -195,7 +200,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
     -- Script
     headerFrame:SetScript("OnClick", function(_, button, down)
-      if not self:MustBeInteractive(headerFrame) then
+      if not Frame:MustBeInteractive(headerFrame) then
         return
       end
 

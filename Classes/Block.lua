@@ -62,10 +62,11 @@ class "Block" inherit "Frame"
 
     local frame = CreateFrame("Frame")
     frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+    frame:SetBackdropBorderColor(0,0,0,0)
 
     local headerFrame = CreateFrame("Frame", nil, frame)
     headerFrame:SetPoint("TOPLEFT")
-    headerFrame:SetPoint("TOPRIGHT", 2, 0)
+    headerFrame:SetPoint("TOPRIGHT")
     headerFrame:SetFrameStrata("HIGH")
     headerFrame:SetHeight(34) -- 24
     headerFrame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)

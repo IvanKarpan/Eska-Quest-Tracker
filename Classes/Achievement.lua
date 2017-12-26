@@ -213,7 +213,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     headerFrame:SetHeight(21)
     headerFrame:RegisterForClicks("RightButtonUp", "LeftButtonUp")
     headerFrame:SetScript("OnClick", function(_, button, down)
-      if not self:MustBeInteractive(headerFrame) then
+      if not Frame:MustBeInteractive(headerFrame) then
         return
       end
       if button == "LeftButton" then

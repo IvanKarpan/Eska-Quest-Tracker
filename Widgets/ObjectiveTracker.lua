@@ -7,7 +7,7 @@ Scorpio        "EskaQuestTracker.Widgets.ObjectiveTrackerFrame"               ""
 --============================================================================--
 namespace "EQT"
 --============================================================================--
-class "ObjectiveTracker" inherit "Frame"
+class "ObjectiveTracker" inherit "BorderFrame"
   _Obj = {}
   ------------------------------------------------------------------------------
   --                                Handlers                                  --
@@ -96,29 +96,29 @@ class "ObjectiveTracker" inherit "Frame"
   ------------------------------------------------------------------------------
   _Addon.ObjectiveTrackerMouseDown = function(f, button)
     if button == "LeftButton" and not Options:Get("tracker-locked") and _Obj then
-      if not _Obj:MustBeInteractive(f) then
+      if not Frame:MustBeInteractive(f) then
         return
       end
 
-        _Obj.frame:StartMoving()
+        _Obj:GetFrameContainer():StartMoving()
     end
   end
 
   _Addon.ObjectiveTrackerMouseUp = function(f, button)
     if button == "LeftButton" and not Options:Get("tracker-locked") and _Obj then
-      if not _Obj:MustBeInteractive(f) then
+      if not Frame:MustBeInteractive(f) then
         return
       end
 
-      _Obj.frame:StopMovingOrSizing()
+      _Obj:GetFrameContainer():StopMovingOrSizing()
 
-      local x = _Obj.frame:GetLeft()
-      local y = _Obj.frame:GetBottom()
+      local x = _Obj:GetFrameContainer():GetLeft()
+      local y = _Obj:GetFrameContainer():GetBottom()
 
       if _Obj then
         _Obj:SetPosition(x, y)
       end
-      _Obj.frame:SetUserPlaced(false)
+      _Obj:GetFrameContainer():SetUserPlaced(false)
     end
   end
 
@@ -127,14 +127,16 @@ class "ObjectiveTracker" inherit "Frame"
   ------------------------------------------------------------------------------
   __Arguments__ { Boolean }
   function SetLocked(self, locked)
-    self.frame:EnableMouse(not locked)
-    self.frame:SetMovable(not locked)
+    self:GetFrameContainer():EnableMouse(not locked)
+    self:GetFrameContainer():SetMovable(not locked)
   end
 
   __Arguments__ { Number, Number, Argument(Boolean, true, true, "saveInDB")}
   function SetPosition(self, x, y, saveInDB)
-    self.frame:ClearAllPoints()
-    self.frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)
+    --self.frame:ClearAllPoints()
+    --self.frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)
+    self:ClearAllPoints()
+    self:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)
     if saveInDB then
       Options:Set("tracker-xPos", x, false)
       Options:Set("tracker-yPos", y, false)
@@ -186,7 +188,7 @@ class "ObjectiveTracker" inherit "Frame"
   end
 
   function RegisterFramesForThemeAPI(self)
-    Theme:RegisterFrame("tracker.frame", self.frame)
+    --Theme:RegisterFrame("tracker.frame", self.frame)
     Theme:RegisterFrame("tracker.scrollbar", self.scrollbar)
     Theme:RegisterTexture("tracker.scrollbar.thumb", self.scrollbar.thumb)
   end
@@ -201,6 +203,174 @@ class "ObjectiveTracker" inherit "Frame"
   ------------------------------------------------------------------------------
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
+  --[[
+  function ObjectiveTracker(self)
+    Super(self)
+
+    self:SetSize(Options:Get("tracker-width"), Options:Get("tracker-height"))
+    self:SetParent(UIParent)
+    self:GetFrameContainer():SetClampedToScreen(true)
+
+    self.frame = CreateFrame("ScrollFrame", "EQT-ObjectiveTrackerFrameScrollFrame", , "UIPanelScrollFrameTemplate")
+    self.frame:SetScript("OnScrollRangeChanged", ObjectiveTracker_OnScrollRangeChanged)
+
+    -- Restore the position contained in the DB if exists
+    if Options:Exists("tracker-xPos") and Options:Exists("tracker-yPos") then
+      self:SetPosition(Options:Get("tracker-xPos"), Options:Get("tracker-yPos"), false)
+    else
+      self:SetPoint("CENTER")
+    end
+    self:SetLocked(Options:Get("tracker-locked"))
+
+    -- Drag and move functions
+    self:GetFrameContainer():SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
+    self:GetFrameContainer():SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
+
+    -- Hide the scroll bar and its buttons
+    local scrollbarName = self.frame:GetName()
+    local scrollbar = _G[self.frame:GetName().."ScrollBar"];
+    local scrollupbutton = _G[scrollbar:GetName().."ScrollUpButton"];
+    local scrolldownbutton = _G[scrollbarName.."ScrollBarScrollDownButton"];
+    scrollbar:Hide()
+    scrollupbutton:Hide()
+    scrollupbutton:ClearAllPoints()
+    scrolldownbutton:Hide()
+    scrolldownbutton:ClearAllPoints()
+
+    -- Customize the scroll bar
+    scrollbar:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+    scrollbar:ClearAllPoints()
+    scrollbar:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT")
+    scrollbar:SetPoint("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT")
+    -- customize the scroll bar thumb
+    local thumb = scrollbar:GetThumbTexture()
+    thumb:SetTexture(_Backdrops.Common.bgFile)
+    thumb:SetHeight(40)
+    thumb:SetWidth(8)
+
+
+    local content = CreateFrame("Frame", "EQT-ObjectiveTrackerFrameContent")
+    self.frame:SetScrollChild(content)
+    content:SetHeight(self.contentHeight)
+    content:SetWidth(self.frame:GetWidth())
+
+    self.content = content
+    self.scrollFrame = self.frame
+    self.scrollbar = scrollbar
+    self.scrollbar.thumb = thumb
+
+    This.RegisterFramesForThemeAPI(self)
+    self:Refresh()
+
+    _Obj = self
+
+    function self:OnWidthChanged(new, old)
+      self:UpdateScrollbarVisibility()
+    end
+
+    -- OnHeightChanged event hander
+    function self:OnHeightChanged(new, old)
+      self.frame:SetHeight(new)
+
+      -- Update the scroll bar visibility
+      self:UpdateScrollbarVisibility()
+    end
+  end--]]
+
+  function ObjectiveTracker(self)
+    Super(self)
+
+    self:SetSize(Options:Get("tracker-width"), Options:Get("tracker-height"))
+    self:SetParent(UIParent)
+    self.frame = CreateFrame("Frame", "EQT-TrackerFrame")
+    self.frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+    self.frame:SetBackdropColor(0, 1, 0, 0)
+    self.frame:SetBackdropBorderColor(0, 0, 0, 0)
+    --self.borderWidth = 2
+    --self.frame:SetFrameStrata("LOW")
+    self:GetFrameContainer():SetClampedToScreen(true)
+
+    -- Restore the position contained in the DB if exists
+    if Options:Exists("tracker-xPos") and Options:Exists("tracker-yPos") then
+      self:SetPosition(Options:Get("tracker-xPos"), Options:Get("tracker-yPos"), false)
+    else
+      self:SetPoint("CENTER")
+    end
+    self:SetLocked(Options:Get("tracker-locked"))
+
+    -- Drag and move functions
+    self:GetFrameContainer():SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
+    self:GetFrameContainer():SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
+
+    local scrollFrame = CreateFrame("ScrollFrame", "EQT-ObjectiveTrackerFrameScrollFrame", self.frame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetAllPoints()
+    scrollFrame:SetBackdrop(_Backdrops.Common)
+    scrollFrame:SetBackdropColor(1, 1, 0, 0)
+    scrollFrame:SetBackdropBorderColor(0, 0, 0, 0)
+    scrollFrame:SetScript("OnScrollRangeChanged", ObjectiveTracker_OnScrollRangeChanged)
+
+    -- Hide the scroll bar and its buttons
+    local scrollbarName = scrollFrame:GetName()
+    local scrollbar = _G[scrollFrame:GetName().."ScrollBar"];
+    local scrollupbutton = _G[scrollbar:GetName().."ScrollUpButton"];
+    local scrolldownbutton = _G[scrollbarName.."ScrollBarScrollDownButton"];
+
+    scrollbar:Hide()
+    scrollupbutton:Hide()
+    scrollupbutton:ClearAllPoints()
+    scrolldownbutton:Hide()
+    scrolldownbutton:ClearAllPoints()
+
+    -- customize the scroll bar
+    scrollbar:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+    scrollbar:ClearAllPoints()
+    scrollbar:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT")
+    scrollbar:SetPoint("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT")
+    -- customize the scroll bar thumb
+    local thumb = scrollbar:GetThumbTexture()
+    thumb:SetTexture(_Backdrops.Common.bgFile)
+    thumb:SetHeight(40)
+    thumb:SetWidth(8)
+
+    local content = CreateFrame("Frame", "EQT-ObjectiveTrackerFrameContent")
+    content:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+
+    content:SetBackdropBorderColor(0, 0, 0, 0)
+    content:SetBackdropColor(1, 0, 0, 0)
+    scrollFrame:SetScrollChild(content)
+    content:SetHeight(self.contentHeight)
+    content:SetWidth(scrollFrame:GetWidth())
+    print("Widht", scrollFrame:GetWidth())
+
+
+    --local content = Creat
+
+    self.content = content
+    self.scrollFrame = scrollFrame
+    self.scrollbar = scrollbar
+    self.scrollbar.thumb = thumb
+
+    This.RegisterFramesForThemeAPI(self)
+    self:Refresh()
+
+    _Obj = self
+
+    function self:OnWidthChanged(new, old)
+      self:UpdateScrollbarVisibility()
+    end
+
+    -- OnHeightChanged event hander
+    function self:OnHeightChanged(new, old)
+      self.frame:SetHeight(new)
+
+      -- Update the scroll bar visibility
+      self:UpdateScrollbarVisibility()
+    end
+    --self.borderColor = { r = 0, g = 0,  b = 0, a = 1}
+
+  end
+
+  --[[
   function ObjectiveTracker(self)
     Super(self)
 
@@ -270,6 +440,8 @@ class "ObjectiveTracker" inherit "Frame"
     self.scrollbar = scrollbar
     self.scrollbar.thumb = thumb
 
+    self:CreateBorders()
+
 
     This.RegisterFramesForThemeAPI(self)
     self:Refresh()
@@ -287,7 +459,7 @@ class "ObjectiveTracker" inherit "Frame"
       -- Update the scroll bar visibility
       self:UpdateScrollbarVisibility()
     end
-  end
+  end --]]
 endclass "ObjectiveTracker"
 
 function OnLoad(self)

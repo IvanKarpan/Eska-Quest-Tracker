@@ -188,16 +188,18 @@ function DrawBlocks(self)
   local height = 0
   local previousBlock
   for index, obj in self:SortBlocks():GetIterator() do
+    obj:ClearAllPoints()
     --print(index, obj.id, obj.priority)
     height = height + obj.height
 
     if index == 1 then
       obj.frame:SetPoint("TOPLEFT", self.ObjectiveTracker.content, "TOPLEFT")
-      obj.frame:SetPoint("TOPRIGHT", self.ObjectiveTracker.content, "TOPRIGHT", 2, 0)
+      obj.frame:SetPoint("TOPRIGHT", self.ObjectiveTracker.content, "TOPRIGHT")
     else
       obj.frame:SetPoint("TOPLEFT", previousBlock.frame, "BOTTOMLEFT", 0, -15)
       obj.frame:SetPoint("TOPRIGHT", previousBlock.frame, "BOTTOMRIGHT")
     end
+    obj.OnDrawRequest()
     previousBlock = obj
   end
 

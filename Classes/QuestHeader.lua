@@ -156,6 +156,7 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
     Super(self)
     local frame = CreateFrame("Frame")
     frame:SetBackdrop(_Backdrops.Common)
+    frame:SetBackdropBorderColor(0,0,0,0)
 
     local name = frame:CreateFontString(nil, "OVERLAY")
     name:SetHeight(29) -- 20
