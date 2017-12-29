@@ -24,7 +24,7 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true)}
   function Refresh(self, skinFlags, callSuper)
     if callSuper then
       Super.Refresh(self)

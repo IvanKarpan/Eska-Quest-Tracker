@@ -729,7 +729,7 @@ class "Frame"
     if frame then
       frame:SetWidth(new)
     end
-    return OnHeightChanged(self, new, old)
+    return OnWidthChanged(self, new, old)
   end
 
   local function OnDrawRequestHandler(self)
@@ -759,7 +759,7 @@ class "Frame"
   __Arguments__ { Number }
   function SetHeight(self, height)
     self.height = height
-    return OnSizeChanged(self, self.widht, height)
+    return OnSizeChanged(self, self.width, height)
   end
 
   __Arguments__ { Number, Number }
@@ -772,8 +772,7 @@ class "Frame"
   ------------------------------------------------------------------------------
   --                        SetPoint Methods                                  --
   ------------------------------------------------------------------------------
-  -- It's hightly advised to use these functions for anchoring frames, instead
-  -- to do himself.
+  -- It's highly advised to use these functions for anchoring frames
   __Arguments__ { String, Table, String, Argument(Number, true), Argument(Number, true)}
   function SetPoint(self, point, relativeTo, relativePoint, xOffset, yOffset)
     self:GetFrameContainer():SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
@@ -932,6 +931,7 @@ endclass "Frame"
 
 class "BorderFrame" inherit "Frame"
   _BorderFrameCache = setmetatable({}, { __mode = "k" })
+  event "OnBorderWidthChanged"
   ------------------------------------------------------------------------------
   --                          Handlers                                        --
   ------------------------------------------------------------------------------
@@ -962,6 +962,7 @@ class "BorderFrame" inherit "Frame"
 
 
     self:SetBorderWidth(new)
+    OnBorderWidthChanged(self, new, old)
 
   end
 
@@ -1064,10 +1065,12 @@ class "BorderFrame" inherit "Frame"
 
   function SetBorderWidth(self, width)
     if self.borders then
-      self.borders.top:SetHeight(width)
       self.borders.left:SetWidth(width)
-      self.borders.bottom:SetHeight(width)
+      self.borders.top:SetHeight(width)
       self.borders.right:SetWidth(width)
+      self.borders.bottom:SetHeight(width)
+
+      self:UpdateBorderAnchors ()
     end
   end
 
@@ -1082,6 +1085,7 @@ class "BorderFrame" inherit "Frame"
 
   function UpdateBorderAnchors(self)
     if self.showBorder then
+      self.frame:ClearAllPoints()
       self.frame:SetPoint("TOP", self.borders.top, "BOTTOM")
       self.frame:SetPoint("LEFT", self.borders.left, "RIGHT")
       self.frame:SetPoint("RIGHT", self.borders.right, "LEFT")
@@ -1095,7 +1099,8 @@ class "BorderFrame" inherit "Frame"
   ------------------------------------------------------------------------------
   --                   Refresh & Skin Methods                                 --
   ------------------------------------------------------------------------------
-  function ExtraSkinFeatures(self)
+  --__Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  function ExtraSkinFeatures(self, skinFlags)
     -- Call the super function
     Super.ExtraSkinFeatures(self)
 
@@ -1103,8 +1108,8 @@ class "BorderFrame" inherit "Frame"
     local theme = Themes:GetSelected()
 
     -- Get the element id and inherit element id if exists
-    local elementID = frame.elementID
-    local inheritElementID = frame.inheritElementID
+    local elementID = self.frame.elementID
+    local inheritElementID = self.frame.inheritElementID
 
     -- If the element ID is nil, don't continue
     if not elementID then
@@ -1112,7 +1117,8 @@ class "BorderFrame" inherit "Frame"
     end
 
     -- Border width
-    self.borderWidth = theme:GetElementProperty(elementID, "border-widht", inheritElementID)
+    --if System.Reflector.ValidateFlags(skinFlags, )
+    self.borderWidth = theme:GetElementProperty(elementID, "border-width", inheritElementID)
 
     -- Border color
     self.borderColor = theme:GetElementProperty(elementID, "border-color", inheritElementID)
@@ -1135,7 +1141,7 @@ class "BorderFrame" inherit "Frame"
   property "frame"{ TYPE = Table, HANDLER = UpdateFrame }
   property "containerFrame" { TYPE = Table } -- contains the borders and the content frame
   property "showBorder" { TYPE = Boolean, DEFAULT = true, HANDLER = UpdateBorderVisibility }
-  property "borderWidth" { TYPE = Number, DEFAULT = 2, HANDLER = UpdateBorderWidth }
+  property "borderWidth" { TYPE = Number, DEFAULT = 0, HANDLER = UpdateBorderWidth }
   property "borderColor" { TYPE = Table, DEFAULT = { r = 0, g = 0, b = 0, a = 1}, HANDLER = UpdateBorderColor }
   ------------------------------------------------------------------------------
   --                         Constructors                                     --
@@ -1222,17 +1228,18 @@ _REGISTERED_FRAMES = {}
   ------------------------------------------------------------------------------
   __Flags__()
   enum "SkinFlags" {
-    FRAME_BACKGROUND_COLOR = 1,
-    FRAME_BORDER_COLOR = 2,
-    TEXT_SIZE = 4,
-    TEXT_COLOR = 8,
-    TEXT_FONT = 16,
-    TEXT_TRANSFORM = 32,
-    TEXTURE_COLOR = 64,
-    -- ALL = 127
+    ALL = 1,
+    FRAME_BACKGROUND_COLOR = 2,
+    FRAME_BORDER_COLOR = 4,
+    FRAME_BORDER_WIDTH = 8,
+    TEXT_SIZE = 16,
+    TEXT_COLOR = 32,
+    TEXT_FONT = 64,
+    TEXT_TRANSFORM = 128,
+    TEXTURE_COLOR = 256,
   }
 
-  __Arguments__ { Class, Table, Argument(String, true), Argument(String, true), Argument(SkinFlags, true, 127) }
+  __Arguments__ { Class, Table, Argument(String, true), Argument(String, true), Argument(SkinFlags, true, ALL) }
   __Static__() function SkinFrame(self, frame, originText, state, flags)
     -- Get the selected theme
     local theme = Themes:GetSelected()
@@ -1248,18 +1255,16 @@ _REGISTERED_FRAMES = {}
       elementID = elementID.."["..state.."]"
     end
 
-
-
     -- The frame is a normal frame
     if frame.type == "FRAME" then
       -- Backgorund color
       local color
-      if frame.SetBackdropColor and ValidateFlags(flags, SkinFlags.FRAME_BACKGROUND_COLOR) then
+      if frame.SetBackdropColor and (ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, SkinFlags.FRAME_BACKGROUND_COLOR)) then
         color = theme:GetElementProperty(elementID, "background-color", inheritElementID)
         frame:SetBackdropColor(color.r, color.g, color.b, color.a)
       end
 
-      if frame.SetBackdropBorderColor and ValidateFlags(flags, SkinFlags.FRAME_BORDER_COLOR) then
+      if frame.SetBackdropBorderColor and (ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, SkinFlags.FRAME_BORDER_COLOR)) then
         --color = theme:GetElementProperty(elementID, "border-color", inheritElementID)
         frame:SetBackdropBorderColor(0, 0, 0, 0)
       end
@@ -1274,7 +1279,7 @@ _REGISTERED_FRAMES = {}
     end
   end
 
-  __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true), Argument(SkinFlags, true, 127) }
+  __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true), Argument(SkinFlags, true, ALL) }
   __Static__() function SkinText(self, fontstring, originText, state, flags)
     local theme = Themes:GetSelected()
 
@@ -1294,16 +1299,16 @@ _REGISTERED_FRAMES = {}
     local font, size = fontstring:GetFont()
     local textColor = {}
     textColor.r, textColor.g, textColor.b, textColor.a = fontstring:GetTextColor()
-    if ValidateFlags(flags, SkinFlags.TEXT_SIZE) then
+    if ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, SkinFlags.TEXT_SIZE) then
       size = theme:GetElementProperty(elementID, "text-size", inheritElementID)
     end
 
-    if ValidateFlags(flags, SkinFlags.TEXT_FONT) then
+    if ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, SkinFlags.TEXT_FONT) then
       font = _LibSharedMedia:Fetch("font", theme:GetElementProperty(elementID, "text-font", inheritElementID))
     end
     fontstring:SetFont(font, size, "OUTLINE")
 
-    if ValidateFlags(flags, SkinFlags.TEXT_COLOR) then
+    if ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, SkinFlags.TEXT_COLOR) then
       textColor = theme:GetElementProperty(elementID, "text-color", inheritElementID)
     end
     fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
@@ -1339,7 +1344,7 @@ _REGISTERED_FRAMES = {}
     fontstring:SetText(txt)
   end
 
-  __Arguments__{ Class, Table, Argument(String, true), Argument(SkinFlags, true, 127) }
+  __Arguments__{ Class, Table, Argument(String, true), Argument(SkinFlags, true, ALL) }
   __Static__() function SkinTexture(self, texture, state, flags)
     local theme = Themes:GetSelected()
 
@@ -1355,7 +1360,7 @@ _REGISTERED_FRAMES = {}
       elementID = elementID.."["..state.."]"
     end
 
-    if ValidateFlags(flags, SkinFlags.TEXTURE_COLOR) then
+    if ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, SkinFlags.TEXTURE_COLOR) then
       local color = theme:GetElementProperty(elementID, "texture-color", inheritElementID)
       texture:SetVertexColor(color.r, color.g, color.b, color.a)
     end
@@ -1532,6 +1537,7 @@ _REGISTERED_FRAMES = {}
       local defaults = {
         ["background-color"] = { r = 0, g = 0, b = 0, a = 0 },
         ["border-color"] = { r = 0, g = 0, b = 0, a = 0 },
+        ["border-width"] = 2,
         ["offsetX"] = 0,
         ["offsetY"] = 0,
         ["text-size"] = 10,

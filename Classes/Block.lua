@@ -19,7 +19,7 @@ class "Block" inherit "Frame"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true)}
   function Refresh(self, skinFlags, callSuper)
     Theme:SkinFrame(self.frame, nil, nil, skinFlags)
     Theme:SkinFrame(self.frame.header, self.text, nil, skinFlags)
@@ -37,7 +37,7 @@ class "Block" inherit "Frame"
     Theme:RegisterTexture(class._prefix..".stripe", self.frame.header.stripe, "block.stripe")
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_BlockCache) do
       obj:Refresh(skinFlags)

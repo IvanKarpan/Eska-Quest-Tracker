@@ -1,53 +1,6 @@
-[1.5.11]
-- FIX: ticket #9 - An issue where the mythic + timer is updated too often (causing FPS drop).
-
-[1.5.10]
-- NEW: The item button will now be colored in red if your target is not in its range (thank to kurapica).
-- NEW: Implemented a dependencies checker. The addon will now alert you if you use a dependency that is deprecated or too older.
+[1.6.0]
+- NEW: Implemented a new border system for frames. By the way, this will fix some issues with the tracker border
+- DELETED: Removed IFrame file that was no longer used.
 
 Options:
- - NEW: The dependencies version will now be colored in different color, in function if they are deprecated or too older.
-
- The color code is the following:
- - Green: The dependency version is OK, and the future addon updates will work property with.
- - Yellow: The dependency version is OK for the current addon version, but will become outdated for the next addon updates.
- - Red: The dependency version is already outdated, so the addon will not work correctly.
-
- NOTE: I've implemented this system in order to alert you as quickly as possible when a dependency version of Eska Quest Tracker will become too old.
-
-[1.5.9]
-- World quests no longer display the level text ("0").
-- CHANGES: The background color of world quests that are tracked (the color used will be now less aggressive).
-
-Options:
-- FIX: An issue where the size of quest header displayed isn't correct.
-- CHANGES: Text and values displayed in the menu context to avoid any misleading.
-
-[1.5.8]
-* Tagged as release
-
-- FIX: An issue where the description isn't displayed for some achievements (e.g, raid boss mythic achievements).
-- FIX: An issue where the achievement height is incorrect after a loading.
-- FIX: An issue where the description of all achievements is wrapped after to have tracked one, causing also height problem.
-- CHANGES: Tuned the poistion of achievement description and its objectives.
-- NEW: Added a new element ID "achievement.description" for customizing the achievement description text.
-- CHANGES: Reduced the minimum value allowed for the tracker width in the options, it's now 200 (from 270). Using too small values isn't recommended.
-- FIX: An issue where sometimes world quests overlaps on others frames.
-- FIX: The tracker can no longer be moved off screen.
-- NEW: Implemented the tracking of world quests (disabled by default).
-- NEW: Quests can now be linked to chat with shift+left clicking on a quest header when the text box of chat is opened.
-- NEW: Added a new command "Link to chat" in the context menu of quests.
-- CHANGES: The options have been completely rewamped in order to be more user friendly.
-- NEW: Added an option for changing the dungeon icon size.
-- NEW: Added an option for changing the left clicking behavior on a quest header.
-- NEW: Added the states in the options, allowing to change properties when an element has a specific state (e.g, progress or completed for objectives).
-- NEW: You can now create, delete and copy a Theme.
-- NEW: Themes can now be exported and imported, allowing you to share them.
-- NEW: Implemented the message box.
-- UPDATE: Eska and Transparence themes to apply new changes.
-
-NOTE: Following to theme system rework and some db structure changes, i couldn't migrate your appearance properties (e.g, tracker background) from 1.4 to new version (1.5), so you will lost them.
-Sorry for that, in the future, i will no longer encounter this issue.
-
-More info on the new features and changes can be found here.
-https://wow.curseforge.com/projects/eska-quest-tracker/pages/patch-changes-overview/15
+- NEW: Added a way for setting the width of tracker border.

@@ -42,7 +42,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true)}
   function Refresh(self, skinFlags, callSuper)
     if callSuper then
       Super.Refresh(self, skinFlags)
@@ -65,7 +65,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     self:Draw()
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_DungeonCache) do
       obj:Refresh(skinFlags)

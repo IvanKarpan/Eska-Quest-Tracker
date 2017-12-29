@@ -167,7 +167,7 @@ class "Objective" inherit "Frame" extend "IReusable"
 		end
 	end
 
-	__Arguments__ { Argument(Theme.SkinFlags, true, 127)}
+	__Arguments__ { Argument(Theme.SkinFlags, true, ALL)}
 	function Refresh(self, skinFlags)
 		local state = self.isCompleted and "completed" or "progress"
 
@@ -181,7 +181,7 @@ class "Objective" inherit "Frame" extend "IReusable"
 	end
 
 
-	__Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+	__Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
 	__Static__() function RefreshAll(skinFlags)
 		for obj in pairs(_ObjectiveCache) do
 			obj:Refresh(skinFlags)

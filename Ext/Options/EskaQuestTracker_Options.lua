@@ -84,6 +84,8 @@ function CreateBlockRecipes(self, prefix, recipeGroup)
     local refresherPrefix = elements[#elements]
     local lastElement = firstToUpper(elements[#elements])
 
+    local ALL_FRAME_OPTIONS = ThemeElementRecipe.OptionFlags.FRAME_BACKGROUND_COLOR
+
 
     OptionBuilder:AddRecipe(ThemeDropDownRecipe("Select a theme", lastElement.."/SelectThemeToEdit/Children"), recipeGroup)
     OptionBuilder:AddRecipe(TabRecipe("", lastElement.."/Tabs"):SetOrder(1), lastElement.."/SelectThemeToEdit/Children")
@@ -526,7 +528,7 @@ function AddTrackerRecipes(self)
    OptionBuilder:AddRecipe(RangeGroupRecipe():SetText("Width"):BindOption("tracker-width"):SetRange(200, 500), "Tracker/Size")
    OptionBuilder:AddRecipe(RangeGroupRecipe():SetText("Height"):BindOption("tracker-height"):SetRange(64, 1024), "Tracker/Size")
 
-   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("tracker.frame"):SetRefresher("tracker/refresher"):SetOrder(3), "Tracker/General")
+   OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("tracker.frame"):SetRefresher("tracker/refresher"):SetOrder(3):SetFlags(ThemeElementRecipe.ALL_FRAME_OPTIONS), "Tracker/General")
    --OptionBuilder:AddRecipe(RangeGroupRecipe())
    OptionBuilder:AddRecipe(InlineGroupRecipe("Blizzard Objective Tracker", "Blizzard/ObjectiveTracker"), "Tracker/General")
    OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Replace completely the blizzard objective tracker"):SetWidth(1.0):BindOption("replace-blizzard-objective-tracker"):SetOrder(4), "Blizzard/ObjectiveTracker")
@@ -539,7 +541,7 @@ function AddTrackerRecipes(self)
    -- Tracker Scrollbar Thumb
    local ALL_TEXTURE_OPTIONS = ThemeElementRecipe.ALL_TEXTURE_OPTIONS
    local ALL_TEXT_OPTIONS = ThemeElementRecipe.ALL_TEXT_OPTIONS
-   local ALL_FRAME_OPTIONS = ThemeElementRecipe.ALL_FRAME_OPTIONS
+   local ALL_FRAME_OPTIONS = ThemeElementRecipe.OptionFlags.FRAME_BACKGROUND_COLOR
 
    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("tracker.scrollbar.thumb"):SetRefresher("tracker/refresher"):SetFlags(ALL_TEXTURE_OPTIONS), "Tracker/ScrollbarThumb")
 end
@@ -547,7 +549,7 @@ end
 function AddBlockRecipes(self)
   local ALL_TEXTURE_OPTIONS = ThemeElementRecipe.ALL_TEXTURE_OPTIONS
   local ALL_TEXT_OPTIONS = ThemeElementRecipe.ALL_TEXT_OPTIONS
-  local ALL_FRAME_OPTIONS = ThemeElementRecipe.ALL_FRAME_OPTIONS
+  local ALL_FRAME_OPTIONS = ThemeElementRecipe.OptionFlags.FRAME_BACKGROUND_COLOR
 
   OptionBuilder:AddRecipe(TreeItemRecipe("Blocks", "Blocks/Children"):SetID("blocks"):SetOrder(20), "RootTree")
     OptionBuilder:AddRecipe(ThemeDropDownRecipe("Select a theme", "Blocks/SelectThemeToEdit/Children"), "Blocks/Children")
@@ -556,7 +558,7 @@ function AddBlockRecipes(self)
     OptionBuilder:AddRecipe(TabItemRecipe("Header", "Blocks/Header"):SetID("scrollbar"):SetOrder(2), "Blocks/Tabs")
     OptionBuilder:AddRecipe(TabItemRecipe("Stripe", "Blocks/Stripe"):SetID("scrollbar-thumb"):SetOrder(3), "Blocks/Tabs")
 
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("block.frame"):SetRefresher("block/refresher"), "Blocks/General")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("block.frame"):SetRefresher("block/refresher"):SetFlags(ALL_FRAME_OPTIONS), "Blocks/General")
 
     OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("block.header"):SetRefresher("block/refresher"):SetFlags(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS), "Blocks/Header")
     OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("block.stripe"):SetRefresher("block/refresher"):SetFlags(ALL_TEXTURE_OPTIONS), "Blocks/Stripe")
@@ -566,8 +568,7 @@ end
 function AddObjectiveRecipes(self)
   local ALL_TEXTURE_OPTIONS = ThemeElementRecipe.ALL_TEXTURE_OPTIONS
   local ALL_TEXT_OPTIONS = ThemeElementRecipe.ALL_TEXT_OPTIONS
-  local ALL_FRAME_OPTIONS = ThemeElementRecipe.ALL_FRAME_OPTIONS
-
+  local ALL_FRAME_OPTIONS = ThemeElementRecipe.OptionFlags.FRAME_BACKGROUND_COLOR
   -- Objective
   OptionBuilder:AddRecipe(TreeItemRecipe("Objective", "Objective/Children"):SetID("objective"):SetOrder(50), "RootTree")
     OptionBuilder:AddRecipe(ThemeDropDownRecipe("", "Objective/SelectThemeToEdit/Children"), "Objective/Children")

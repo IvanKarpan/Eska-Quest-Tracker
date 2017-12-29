@@ -466,6 +466,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
   enum "OptionFlags" {
     "FRAME_BACKGROUND_COLOR",
     "FRAME_BORDER_COLOR",
+    "FRAME_BORDER_WIDTH",
     -- TEXT Optons
     "TEXT_SIZE",
     "TEXT_COLOR",
@@ -476,9 +477,10 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
   }
 
   __Static__() property "ALL_FRAME_OPTIONS" {
-    DEFAULT = OptionFlags.FRAME_BACKGROUND_COLOR + OptionFlags.FRAME_BORDER_COLOR,
+    DEFAULT = OptionFlags.FRAME_BACKGROUND_COLOR + OptionFlags.FRAME_BORDER_COLOR + OptionFlags.FRAME_BORDER_WIDTH,
     SET = false
   }
+  
 
   __Static__() property "ALL_TEXT_OPTIONS" {
     DEFAULT = OptionFlags.TEXT_SIZE + OptionFlags.TEXT_COLOR + OptionFlags.TEXT_FONT + OptionFlags.TEXT_TRANSFORM,
@@ -572,8 +574,9 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     do
       local hasFrameBackgroundColor = ValidateFlags(self.flags, OptionFlags.FRAME_BACKGROUND_COLOR)
       local hasFrameBorderColor = ValidateFlags(self.flags, OptionFlags.FRAME_BORDER_COLOR)
+      local hasFrameBorderWidth = ValidateFlags(self.flags, OptionFlags.FRAME_BORDER_WIDTH)
       -- If there is a frame option, create the group
-      if hasFrameBackgroundColor or hasFrameBorderColor then
+      if hasFrameBackgroundColor or hasFrameBorderColor or hasFrameBorderWidth then
         local group = CreateGroup("Frame properties")
         parent:AddChild(group)
 
@@ -642,6 +645,39 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
             self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
           end)
         end
+        
+        if hasFrameBorderWidth then 
+          local borderWidth = _AceGUI:Create("Slider")
+          
+          local width = theme:GetElementProperty(elementID, "border-width", self.inheritedFromElement)
+          borderWidth:SetValue(width or 10)
+          
+          local row = CreateRow("Border Width", borderWidth)
+          group:AddChild(row)
+          
+          local function refresh() 
+            local width = theme:GetElementProperty(elementID, "border-width", self.inheritedFromElement)
+            borderWidth:SetValue(width or 10)
+            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+          end
+          
+          if theme:GetElementPropertyFromDB(elementID, "border-width") then 
+            ShowReset(row, "border-width", refresh)
+          end 
+          
+          borderWidth:SetCallback("OnValueChanged", function(_, _, width)
+            ShowReset(row, "border-width", refresh)
+            theme:SetElementPropertyToDB(elementID, "border-width", width)
+            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+          end)
+          
+          borderWidth:SetCallback("OnMouseUp", function(_, _, width)
+            ShowReset(row, "border-width", refresh)
+            theme:SetElementPropertyToDB(elementID, "border-width", width)
+            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+          end)
+          
+        end 
       end
     end
 

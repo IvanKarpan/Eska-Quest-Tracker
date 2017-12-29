@@ -9,7 +9,7 @@ namespace "EQT"
 --============================================================================--
 -- @TODO : - Add the ms precision
 --============================================================================--
-class "Affix" extend "IFrame" "IReusable"
+class "Affix" inherit "Frame" extend "IReusable"
   ------------------------------------------------------------------------------
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127), Argument(Boolean, true, true)}
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true)}
   function Refresh(self, skinFlags, callSuper)
     if callSuper then
       Super.Refresh(self, skinFlags)
@@ -163,7 +163,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_KeystoneCache) do
       obj:Refresh(skinFlags)

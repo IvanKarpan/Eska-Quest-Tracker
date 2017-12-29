@@ -337,7 +337,7 @@ end
 -- == Quest Popup
 -- ========================================================================== --
 -- @TODO : Maybe move this class in an another file ?
-class "QuestPopup" extend "IFrame"
+class "QuestPopup" inherit "Frame"
 
   local function UpdateType(self, new)
     if new == "OFFER" then

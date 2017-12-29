@@ -136,7 +136,7 @@ class "QuestBlock" inherit "Block"
     self.height = self.baseHeight + height + 10
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_QuestBlockCache) do
       obj:Refresh(skinFlags)

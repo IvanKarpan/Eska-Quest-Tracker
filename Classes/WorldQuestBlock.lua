@@ -79,7 +79,7 @@ class "WorldQuestBlock" inherit "Block"
     self.height = self.baseHeight + height
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, 127) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_WorldQuestBlockCache) do
       obj:Refresh(skinFlags)
