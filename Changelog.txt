@@ -1,5 +1,6 @@
 [1.6.0]
 - NEW: Implemented a new border system for frames. By the way, this will fix some issues with the tracker border
+- NEW: The quest categories can now be disabled.
 - DELETED: Removed IFrame file that was no longer used.
 
 Options:
