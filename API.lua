@@ -1238,7 +1238,7 @@ _REGISTERED_FRAMES = {}
     TEXTURE_COLOR = 256,
   }
 
-  __Arguments__ { Class, Table, Argument(String, true), Argument(String, true), Argument(SkinFlags, true, ALL) }
+  __Arguments__ { Class, Table, Argument(String, true), Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
   __Static__() function SkinFrame(self, frame, originText, state, flags)
     -- Get the selected theme
     local theme = Themes:GetSelected()
@@ -1278,7 +1278,7 @@ _REGISTERED_FRAMES = {}
     end
   end
 
-  __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true), Argument(SkinFlags, true, ALL) }
+  __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
   __Static__() function SkinText(self, fontstring, originText, state, flags)
     local theme = Themes:GetSelected()
 
@@ -1343,7 +1343,7 @@ _REGISTERED_FRAMES = {}
     fontstring:SetText(txt)
   end
 
-  __Arguments__{ Class, Table, Argument(String, true), Argument(SkinFlags, true, ALL) }
+  __Arguments__{ Class, Table, Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
   __Static__() function SkinTexture(self, texture, state, flags)
     local theme = Themes:GetSelected()
 
