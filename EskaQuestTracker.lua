@@ -199,7 +199,8 @@ function DrawBlocks(self)
       obj.frame:SetPoint("TOPLEFT", previousBlock.frame, "BOTTOMLEFT", 0, -15)
       obj.frame:SetPoint("TOPRIGHT", previousBlock.frame, "BOTTOMRIGHT")
     end
-    obj.OnDrawRequest()
+    --obj.OnDrawRequest()
+    --obj:Draw()
     previousBlock = obj
   end
 
@@ -403,8 +404,6 @@ _LibSharedMedia:Register("font", "DejaVuSansCondensed Italic", [[Interface\AddOn
 _Backdrops = {
   Common = {
     bgFile = [[Interface\AddOns\EskaQuestTracker\Media\Textures\Frame-Background]],
-    edgeFile = [[Interface\AddOns\EskaQuestTracker\Media\Textures\Frame-Border]],
-    tile = false, tileSize = 32, edgeSize = 3,
     insets = { left = 0, right = 0, top = 0, bottom = 0}
   },
   CommonWithBiggerBorder = {
@@ -413,6 +412,7 @@ _Backdrops = {
     tile = false, tileSize = 32, edgeSize = 6,
     insets = { left = 0, right = 0, top = 0, bottom = 0}
   }
+
 
 }
 

@@ -244,7 +244,7 @@ class "QuestBlock" inherit "Block"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_QuestBlockCache) do
       obj:Refresh(skinFlags)

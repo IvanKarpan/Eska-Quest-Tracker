@@ -145,15 +145,17 @@ class "ObjectiveTracker" inherit "BorderFrame"
 
 
   function SetScrollbarVisible(self, visible)
-    self.scrollFrame:ClearAllPoints()
-    self.scrollFrame:SetPoint("TOPLEFT")
+    --self.scrollFrame:ClearAllPoints()
+    self.scrollFrame:SetPoint("TOP")
+    self.scrollFrame:SetPoint("LEFT")
+    self.scrollFrame:SetPoint("BOTTOM")
 
     if visible then
       self.scrollbar:Show()
-      self.scrollFrame:SetPoint("BOTTOMRIGHT", self.scrollbar, "BOTTOMLEFT")
+      self.scrollFrame:SetPoint("RIGHT", self.scrollbar, "LEFT")
     else
       self.scrollbar:Hide()
-      self.scrollFrame:SetPoint("BOTTOMRIGHT")
+      self.scrollFrame:SetPoint("RIGHT")
     end
 
     -- Update the content size
@@ -172,7 +174,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true) }
   function Refresh(self, skinFlags, callSuper)
     Theme:SkinFrame(self.frame, nil, nil, skinFlags)
     Theme:SkinFrame(self.scrollbar, nil, nil, skinFlags)
@@ -180,7 +182,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     self:ExtraSkinFeatures()
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(skinFlags)
     if _Obj then
       _Obj:Refresh(skinFlags)
@@ -209,7 +211,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     self:SetSize(Options:Get("tracker-width"), Options:Get("tracker-height"))
     self:SetParent(UIParent)
     self.frame = CreateFrame("Frame", "EQT-TrackerFrame")
-    self.frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+    self.frame:SetBackdrop(_Backdrops.Common)
     self.frame:SetBackdropColor(0, 1, 0, 0)
     self.frame:SetBackdropBorderColor(0, 0, 0, 0)
     self:GetFrameContainer():SetClampedToScreen(true)
@@ -249,7 +251,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     scrolldownbutton:ClearAllPoints()
 
     -- customize the scroll bar
-    scrollbar:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+    scrollbar:SetBackdrop(_Backdrops.Common)
     scrollbar:ClearAllPoints()
     scrollbar:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT")
     scrollbar:SetPoint("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT")
@@ -260,14 +262,17 @@ class "ObjectiveTracker" inherit "BorderFrame"
     thumb:SetWidth(8)
 
     local content = CreateFrame("Frame", "EQT-ObjectiveTrackerFrameContent")
-    content:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+    --content:SetBackdrop(_Backdrops.Common)
 
-    content:SetBackdropBorderColor(0, 0, 0, 0)
-    content:SetBackdropColor(1, 0, 0, 0)
+    --content:SetBackdropBorderColor(0, 0, 0, 0)
+    --content:SetBackdropColor(1, 0, 0, 1)
     scrollFrame:SetScrollChild(content)
-    content:SetHeight(self.contentHeight)
+    --content:SetBackdropColor(0, 1, 1, 1)
+    content:SetParent(scrollFrame)
     content:SetPoint("LEFT")
     content:SetPoint("RIGHT")
+    content:SetPoint("TOP")
+    content:SetHeight(self.contentHeight)
 
     self.content = content
     self.scrollFrame = scrollFrame

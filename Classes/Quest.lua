@@ -86,7 +86,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.frame.headerName:SetPoint("RIGHT")
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true)}
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
   function Refresh(self, skinFlags, callSuper)
     local state = nil
     if self.isTracked then state = "tracked" end
@@ -145,7 +145,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_QuestCache) do
       obj:Refresh(skinFlags)

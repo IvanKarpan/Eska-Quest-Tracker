@@ -128,7 +128,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true) }
   function Refresh(self, skinFlags, callSuper)
     Theme:SkinFrame(self.frame, nil, nil, skinFlags)
     Theme:SkinFrame(self.frame.header, nil, nil, skinFlags)
@@ -168,7 +168,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     Theme:RegisterFrame(class._prefix..".icon", self.frame.ftex)
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(SkinFlags)
     for obj in pairs(_AchievementCache) do
       obj:Refresh(skinFlags)
@@ -357,7 +357,7 @@ class "AchievementBlock" inherit "Block"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_AchievementBlockCache) do
       obj:Refresh(skinFlags)

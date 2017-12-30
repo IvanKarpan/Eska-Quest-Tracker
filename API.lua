@@ -1099,7 +1099,6 @@ class "BorderFrame" inherit "Frame"
   ------------------------------------------------------------------------------
   --                   Refresh & Skin Methods                                 --
   ------------------------------------------------------------------------------
-  --__Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
   function ExtraSkinFeatures(self, skinFlags)
     -- Call the super function
     Super.ExtraSkinFeatures(self)
@@ -1266,7 +1265,7 @@ _REGISTERED_FRAMES = {}
 
       if frame.SetBackdropBorderColor and (ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, SkinFlags.FRAME_BORDER_COLOR)) then
         --color = theme:GetElementProperty(elementID, "border-color", inheritElementID)
-        frame:SetBackdropBorderColor(0, 0, 0, 0)
+        frame:SetBackdropBorderColor(0, 0, 1, 0)
       end
 
       if frame.text then

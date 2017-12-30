@@ -17,7 +17,7 @@ class "BonusQuest" inherit "Quest"
     Super.Draw(self)
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_BonusQuestCache) do
       obj:Refresh(skinFlags)
@@ -108,7 +108,7 @@ class "BonusObjectives" inherit "Block"
     self.height = self.baseHeight + height
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_BonusObjectivesCache) do
       obj:Refresh(skinFlags)

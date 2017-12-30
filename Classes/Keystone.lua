@@ -153,7 +153,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true)}
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
   function Refresh(self, skinFlags, callSuper)
     if callSuper then
       Super.Refresh(self, skinFlags)
@@ -163,7 +163,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_KeystoneCache) do
       obj:Refresh(skinFlags)

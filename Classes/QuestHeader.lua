@@ -114,13 +114,13 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL), Argument(Boolean, true, true)}
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
   function Refresh(self, skinFlags, callSuper)
     Theme:SkinFrame(self.frame, nil, nil, skinFlags)
     Theme:SkinText(self.frame.name, self.name, nil, skinFlags)
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, ALL) }
+  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
   __Static__() function RefreshAll(skinFlags)
     for obj in pairs(_QuestHeaderCache) do
       obj:Refresh(skinFlags)
