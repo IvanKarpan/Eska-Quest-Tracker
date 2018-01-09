@@ -153,20 +153,19 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
-  function Refresh(self, skinFlags, callSuper)
-    if callSuper then
-      Super.Refresh(self, skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function SkinFeatures(self, info, alreadyInit)
+    if alreadyInit then
+      Super.SkinFeatures(self, info)
     end
 
     Theme:SkinText(self.frame.level, string.format("LEVEL %i", self.level), nil, skinFlags)
-
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
-  __Static__() function RefreshAll(skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_KeystoneCache) do
-      obj:Refresh(skinFlags)
+      obj:Refresh(skinInfo)
     end
   end
 
@@ -256,14 +255,13 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
     self.baseHeight = self.height + 64
 
-    -- Important : Always use 'This' to avoid issues when this class is inherited
-    -- by other classes.
-    This.RegisterFramesForThemeAPI(self)
-    -- Here the false boolean say to refresh function to not call the refresh super function
-    -- because it's already done by the super constructor
-    This.Refresh(self, nil, false)
-
+    -- Keep it in the cache for later.
     _KeystoneCache[self] = true
+    -- Important: Always use 'This' to avoid issues when this class is inherited by
+    -- other classes.
+    This.RegisterFramesForThemeAPI(self)
+    -- Important: Don't forgot 'This' as argument to this method !
+    self:InitRefresh(This)
   end
 endclass "Keystone"
 -- ========================================================================== --

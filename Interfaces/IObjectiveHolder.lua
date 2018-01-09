@@ -101,6 +101,7 @@ function DrawObjectives(self, f, custom)
         objective.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT")
         objective.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
       end
+      objective:CalculateHeight()
       height = height + objective.height
       previousFrame = objective.frame
     end
@@ -110,6 +111,33 @@ function DrawObjectives(self, f, custom)
 
     self.height = self.baseHeight + height -- +  5
 end
+
+function DrawNewObjectives(self, f, custom)
+  if not f then
+    if self.frame then
+      f = self.frame
+    else
+      return
+    end
+  end
+
+  local previousFrame
+  for index, objective in self.objectives:GetIterator() do
+    if not objective:IsShown() then
+      objective:Show()
+    end
+
+    if index == 1 and not custom then
+      objective.frame:SetPoint("TOPLEFT", f, "BOTTOMLEFT")
+      objective.frame:SetPoint("TOPRIGHT", f, "BOTTOMRIGHT")
+    elseif index > 1 then
+      objective.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -self.objectivesSpacing)
+      objective.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
+    end
+    previousFrame = objective.frame
+  end
+end
+
 
   function GetObjectivesHeight(self)
     local totalHeight = 0
@@ -128,6 +156,7 @@ end
   -- Properties
   -- ======================================================================== --
   property "numObjectives" { TYPE = Number, DEFAULT = 0, HANDLER = SetNumObjectives }
+  property "objectivesSpacing" { TYPE = Number, DEFAULT = 0}
   -- ======================================================================== --
   -- Constructors
   -- ======================================================================== --

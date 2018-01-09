@@ -114,16 +114,20 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
-  function Refresh(self, skinFlags, callSuper)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function SkinFeatures(self, info, alreadyInit)
+    if alreadyInit then
+      Super.SkinFeatures(self, info)
+    end
+
     Theme:SkinFrame(self.frame, nil, nil, skinFlags)
     Theme:SkinText(self.frame.name, self.name, nil, skinFlags)
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
-  __Static__() function RefreshAll(skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_QuestHeaderCache) do
-      obj:Refresh(skinFlags)
+      obj:Refresh(skinInfo)
     end
   end
 
@@ -168,12 +172,13 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
     self.baseHeight = self.height
     self.quests = ObjectArray(Quest)
 
-    -- Important : Always use 'This' to avoid issues when this class is inherited
-    -- by other classes.
-    This.RegisterFramesForThemeAPI(self)
-    This.Refresh(self)
-
+    -- Keep it in the cache for later.
     _QuestHeaderCache[self] = true
+    -- Important: Always use 'This' to avoid issues when this class is inherited by
+    -- other classes.
+    This.RegisterFramesForThemeAPI(self)
+    -- Important: Don't forgot 'This' as argument to this method !
+    self:InitRefresh(This)
   end
 endclass "QuestHeader"
 --============================================================================--

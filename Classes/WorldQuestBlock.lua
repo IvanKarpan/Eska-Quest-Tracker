@@ -79,10 +79,10 @@ class "WorldQuestBlock" inherit "Block"
     self.height = self.baseHeight + height
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
-  __Static__() function RefreshAll(skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_WorldQuestBlockCache) do
-      obj:Refresh(skinFlags)
+      obj:Refresh(skinInfo)
     end
   end
   ------------------------------------------------------------------------------
@@ -98,6 +98,7 @@ class "WorldQuestBlock" inherit "Block"
 
     self.worldQuests = ObjectArray(WorldQuest)
 
+    -- Keep it in the cache for later.
     _WorldQuestBlockCache[self] = true
   end
 endclass "WorldQuestBlock"

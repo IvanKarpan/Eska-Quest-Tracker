@@ -286,6 +286,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
 
     function self:OnWidthChanged(new, old)
       self:UpdateScrollbarVisibility()
+      Scorpio.FireSystemEvent("EQT_CONTENT_SIZE_CHANGED")
     end
 
     -- OnHeightChanged event hander
@@ -299,6 +300,8 @@ class "ObjectiveTracker" inherit "BorderFrame"
     -- OnBorderWidthChanged
     function self:OnBorderWidthChanged()
       self:UpdateScrollbarVisibility()
+
+      Scorpio.FireSystemEvent("EQT_CONTENT_SIZE_CHANGED")
     end
   end
 

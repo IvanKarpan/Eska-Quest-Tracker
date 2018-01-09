@@ -22,7 +22,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ {}
+  --[[__Arguments__ {}
   function Draw(self)
     local iconHeight = Options:Get("dungeon-icon-height")
     if self.numObjectives > 0 then
@@ -40,17 +40,79 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     if self.height < self.baseHeight + iconHeight then
       self.height = self.baseHeight + iconHeight + 8
     end
-  end
+  end--]]
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
-  function Refresh(self, skinFlags, callSuper)
-    if callSuper then
-      Super.Refresh(self, skinFlags)
+  function Draw(self)
+    local previousFrame
+    for index, obj in self.objectives:GetIterator() do
+      obj:ClearAllPoints()
+      if index == 1 then
+        --obj:SetPoint("TOPLEFT", self.frame.ftex, "TOPRIGHT")
+        --obj:SetPoint("TOPRIGHT", self.frame.header, "BOTTOMRIGHT")
+        obj:SetPoint("TOP", self.frame.header, "BOTTOM")
+        obj:SetPoint("LEFT", self.frame.ftex, "RIGHT")
+        obj:SetPoint("RIGHT")
+        --obj:SetPoint("TOPRIGHT", self.frame.header, "BOTTOMRIGHT")
+      else
+        obj:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT")
+        obj:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
+      end
+      obj:CalculateHeight()
+      previousFrame = obj.frame
     end
 
-    Theme:SkinFrame(self.frame.ftex, nil, nil, skinFlags)
-    Theme:SkinText(self.frame.name, self.name, nil, skinFlags)
+    self:CalculateHeight()
   end
+
+  function CalculateHeight(self)
+      local height = self.baseHeight
+
+      -- Get the iconHeight
+      local iconHeight = Options:Get("dungeon-icon-height")
+      -- Get the height of objectives
+      local objectivesHeight = self:GetObjectivesHeight()
+
+      height = height + max(iconHeight, objectivesHeight) + 8
+
+      self.height = height
+  end
+
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function SkinFeatures(self, info, alreadyInit)
+    -- Call the parent if the object is already init.
+    if alreadyInit then
+      Super.SkinFeatures(self, info)
+    end
+
+    Theme:NewSkinFrame(self.frame.ftex, info)
+    Theme:NewSkinText(self.frame.name, Theme.SKIN_TEXT_ALL_FLAGS, self.name)
+  end
+
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function ExtraSkinFeatures(self, info, alreadyInit)
+      if alreadyInit then
+        Super.ExtraSkinFeatures(self, info)
+      end
+      local theme = Themes:GetSelected()
+      if not theme then return end
+
+      if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
+        local name = self.frame.name
+        local elementID = name.elementID
+        local inheritElementID = name.inheritElementID
+        if elementID then
+          local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
+          local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
+          local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
+
+          name:SetPoint("TOPLEFT", offsetX, offsetY)
+
+          name:SetJustifyV(_JUSTIFY_V_FROM_ANCHOR[location])
+          name:SetJustifyH(_JUSTIFY_H_FROM_ANCHOR[location])
+        end
+      end
+  end
+
 
   __Arguments__ { }
   function RefreshIconSize(self)
@@ -65,10 +127,10 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     self:Draw()
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
-  __Static__() function RefreshAll(skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_DungeonCache) do
-      obj:Refresh(skinFlags)
+      obj:Refresh(skinInfo)
     end
   end
 
@@ -132,14 +194,13 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
 
     self.baseHeight = self.height
 
-    -- Important : Always use 'This' to avoid issues when this class is inherited
-    -- by other classes.
-    This.RegisterFramesForThemeAPI(self)
-    -- Here the false boolean say to refresh function to not call the refresh super function
-    -- because it's already done by the super constructor
-    This.Refresh(self, nil, false)
-
+    -- Keep it in the cache for later.
     _DungeonCache[self] = true
+    -- Important: Always use 'This' to avoid issues when this class is inherited by
+    -- other classes.
+    This.RegisterFramesForThemeAPI(self)
+    -- Important: Don't forgot 'This' as argument to this method !
+    self:InitRefresh(This)
   end
 endclass "Dungeon"
 

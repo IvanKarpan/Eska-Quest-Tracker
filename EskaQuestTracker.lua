@@ -148,6 +148,7 @@ function CheckDBMigration()
   end
 end
 
+--[[
 function RegisterBlock(self, block)
     if not self.blocks[block.id] then
       self.blocks[block.id] = block
@@ -172,9 +173,108 @@ function RegisterBlock(self, block)
 
     block.OnHeightChanged = function(self, new, old, prop)
       if block.isActive then
-        _Addon:DrawBlocks()
+        --_Addon:DrawBlocks()
+        block.OnDrawRequest()
       end
     end
+end
+--]]
+
+
+
+--[[
+function RegisterBlock(self, block)
+  if not self.blocks[block.id] then
+    self.blocks[block.id] = block
+    block:SetParent(self.ObjectiveTracker.content)
+    self:RequestDrawBlock()
+    self:CalculateHeight()
+
+    block.OnActiveChanged = function(block, new)
+      if new then
+        self:Show()
+        --self:CalculateHeight()
+      else
+        self:Hide()
+      end
+
+      self:RequestDrawBlock()
+    end
+
+    -- TODO: same thing for block.OnPriorityChanged
+    block.OnHeightChanged = function(block, new, old)
+      if block.isActive then
+        self.height = new - old
+      end
+    end
+  end
+end --]]
+
+-- Register a Blocks (must be a class inherited of Block)
+-- TODO: Make Blocks API: Blocks:Register()
+function RegisterBlock(self, block)
+  if not self.blocks[block.id] then
+    self.blocks[block.id] = block
+
+    -- Set the parent to block
+    block:SetParent(self.ObjectiveTracker.content)
+
+    -- Register block events
+    block.OnActiveChanged = function(block, isActive)
+      if isActive then
+        block:Show()
+      else
+        block:Hide()
+      end
+      -- Call directly DrawBlocks because it uncommon two blocks changes its activty in short time.
+      self:DrawBlocks()
+      -- Need to recalculate height
+      self:CalculateHeight()
+    end
+
+    block.OnHeightChanged = function(block, newHeight, oldHeight)
+      -- Don't do that if the block is inactive
+      if block.isActive then
+        newHeight = math.ceil(newHeight)
+        oldHeight = math.ceil(oldHeight)
+        -- Not needed to call CalculateHeight, the diff is enought !
+        self.ObjectiveTracker.contentHeight = self.ObjectiveTracker.contentHeight + (newHeight - oldHeight)
+      end
+    end
+
+    -- IMPORTANT: Don't call DrawBlocks directly for avoid useless call.
+    self:RequestDrawBlock()
+    --self:DrawBlocks()
+    --Objective.UpdateSize()
+  end
+end
+
+
+function CalculateHeight(self)
+  local height = 0
+  for index, obj in self.blocks:Filter("k,v=>v.isActive").Values:ToList():GetIterator() do
+    height = obj.height
+  end
+  self.ObjectiveTracker.contentHeight = height
+end
+
+do
+  local triggered = false
+  __Thread__()
+  function RequestDrawBlock(self, calculateHeight)
+    if triggered then
+      return
+    else
+      triggered = true
+    end
+    Delay(0.25)
+    self:DrawBlocks()
+    if calculateHeight then
+      self:CalculateHeight()
+    end
+
+    triggered = false
+  end
 end
 
 function SortBlocks(self)
@@ -184,6 +284,26 @@ function SortBlocks(self)
                     :Sort("x,y=>x.priority<y.priority")
 end
 
+function DrawBlocks(self)
+  for index, obj in self:SortBlocks():GetIterator() do
+    obj:ClearAllPoints()
+
+    if index == 1 then
+      --obj:SetPoint("TOPLEFT", self.ObjectiveTracker.content, "TOPLEFT")
+      --obj:SetPoint("TOPRIGHT", self.ObjectiveTracker.content, "TOPRIGHT")
+      obj:SetPoint("TOP")
+      obj:SetPoint("LEFT")
+      obj:SetPoint("RIGHT")
+    else
+      obj:SetPoint("TOPLEFT", previousBlock.frame, "BOTTOMLEFT")
+      obj:SetPoint("TOPRIGHT", previousBlock.frame, "BOTTOMRIGHT")
+    end
+
+    previousBlock = obj
+  end
+end
+
+--[[
 function DrawBlocks(self)
   local height = 0
   local previousBlock
@@ -208,6 +328,7 @@ function DrawBlocks(self)
   self.ObjectiveTracker.contentHeight = height + 5
 
 end
+--]]
 
 __SystemEvent__()
 function BLIZZARD_TRACKER_VISIBLITY_CHANGED(isVisible)

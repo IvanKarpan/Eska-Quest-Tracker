@@ -24,17 +24,43 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
-  function Refresh(self, skinFlags, callSuper)
-    if callSuper then
-      Super.Refresh(self)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function SkinFeatures(self, info, alreadyInit)
+    if alreadyInit then
+      Super.SkinFeatures(self, info)
     end
+
     Theme:SkinFrame(self.frame.stage)
 
     -- Text
     Theme:SkinText(self.frame.name, self.name)
     Theme:SkinText(self.frame.stageName, self.stageName)
     Theme:SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
+  end
+
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function ExtraSkinFeatures(self, info, alreadyInit)
+      if alreadyInit then
+        Super.ExtraSkinFeatures(self, info)
+      end
+      local theme = Themes:GetSelected()
+      if not theme then return end
+
+      if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
+        local name = self.frame.name
+        local elementID = name.elementID
+        local inheritElementID = name.inheritElementID
+        if elementID then
+          local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
+          local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
+          local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
+
+          name:SetPoint("TOPLEFT", offsetX, offsetY)
+
+          name:SetJustifyV(_JUSTIFY_V_FROM_ANCHOR[location])
+          name:SetJustifyH(_JUSTIFY_H_FROM_ANCHOR[location])
+        end
+      end
   end
 
   function GetBonusObjective(self, index)
@@ -56,9 +82,10 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     self.numObjectives = nil
   end
 
-  __Static__() function RefreshAll()
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_ScenarioCache) do
-      obj:Refresh()
+      obj:Refresh(skinInfo)
     end
   end
 
@@ -125,15 +152,13 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     self.height = self.height + stage:GetHeight()
     self.baseHeight = self.height
 
-    -- Important : Always use 'This' to avoid issues when this class is inherited
-    -- by other classes.
-    This.RegisterFramesForThemeAPI(self)
-    -- Here the false boolean say to refresh function to not call the refresh super function
-    -- because it's already done by the super constructor
-    This.Refresh(self, nil, false)
-
+    -- Keep it in the cache for later.
     _ScenarioCache[self] = true
-
+    -- Important: Always use 'This' to avoid issues when this class is inherited by
+    -- other classes.
+    This.RegisterFramesForThemeAPI(self)
+    -- Important: Don't forgot 'This' as argument to this method !
+    self:InitRefresh(This)
   end
 endclass "Scenario"
 

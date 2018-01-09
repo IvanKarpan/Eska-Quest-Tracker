@@ -80,24 +80,26 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   __Arguments__{}
   function CalculateHeight(self)
     -- Reset the height to baseHeight
-    self.height = self.baseHeight
+    local height = self.baseHeight
 
     -- Get the descript height if enabled
     if self.showDesc then
-      self.height = self.height + self:GetDescriptionHeight()
+      height = height + self:GetDescriptionHeight()
     end
 
     -- Adds the total height of objectives
-    self.height = self.height + self:GetObjectivesHeight()
+    height = height + self:GetObjectivesHeight()
 
     -- Add a offset
     local offset = 8
-    self.height = self.height + offset
+    height = height + offset
 
     -- Then to finish, set a minimun height (icon height)
     if self.height < 46 + offset then
-      self.height = 46 + offset
+      height = 46 + offset
     end
+
+    self.height = height
   end
 
 
@@ -127,19 +129,26 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self:CalculateHeight()
   end
 
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  function Refresh(self, skinInfo)
+    self:SkinFeatures()
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true) }
-  function Refresh(self, skinFlags, callSuper)
-    Theme:SkinFrame(self.frame, nil, nil, skinFlags)
-    Theme:SkinFrame(self.frame.header, nil, nil, skinFlags)
-
-    Theme:SkinText(self.frame.headerName, self.name, nil, skinFlags)
-    Theme:SkinText(self.frame.description, self.desc, nil, skinFlags)
-
-    Theme:SkinFrame(self.frame.ftex, nil, nil, skinFlags)
-
-    -- if show desc, we are forced to update height
+    -- if show desc we are forced to update height
     self:CalculateHeight()
+  end
+
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function SkinFeatures(self, info, alreadyInit)
+    -- Call the parent if the object is already init.
+    if alreadyInit then
+      Super.SkinFeatures(self, info)
+    end
+
+    Theme:NewSkinFrame(self.frame, info)
+    Theme:NewSkinFrame(self.frame.header, info)
+    Theme:NewSkinText(self.frame.headerName, info, self.name)
+    Theme:NewSkinText(self.frame.description, info, self.desc)
+    Theme:NewSkinFrame(self.frame.ftex, info)
   end
 
   function Reset(self)
@@ -168,10 +177,10 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     Theme:RegisterFrame(class._prefix..".icon", self.frame.ftex)
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
-  __Static__() function RefreshAll(SkinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_AchievementCache) do
-      obj:Refresh(skinFlags)
+      obj:Refresh(skinInfo)
     end
   end
   ------------------------------------------------------------------------------
@@ -268,12 +277,13 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.height = 46
     self.baseHeight = 21
 
-    -- Important : Always use 'This' to avoid issues when this class is inherited
-    -- by other classes.
-    This.RegisterFramesForThemeAPI(self)
-    This.Refresh(self)
-
+    -- Keep it in the cache for later.
     _AchievementCache[self] = true
+    -- Important: Always use 'This' to avoid issues when this class is inherited by
+    -- other classes.
+    This.RegisterFramesForThemeAPI(self)
+    -- Important: Don't forgot 'This' as argument to this method !
+    self:InitRefresh(This)
   end
 
 endclass "Achievement"
@@ -384,6 +394,7 @@ class "AchievementBlock" inherit "Block"
 
     self.achievements = ObjectArray(Achievement)
 
+    -- Keep it in the cache for later.
     _AchievementBlockCache[self] = true
   end
 

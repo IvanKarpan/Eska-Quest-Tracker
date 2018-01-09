@@ -9,23 +9,62 @@ namespace "EQT"
 --============================================================================--
 class "Block" inherit "Frame"
   event "OnActiveChanged"
+  event "OnPriorityChanged"
+
   _BlockCache = setmetatable( {}, { __mode = "k"})
   ------------------------------------------------------------------------------
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
   function SetText(self, new)
-    Theme:SkinText(self.frame.header.text, new)
+    Theme:NewSkinText(self.frame.header.text, Theme.SkinTextFlags.TEXT_TRANSFORM, new)
   end
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
-  function Refresh(self, skinFlags, callSuper)
-    Theme:SkinFrame(self.frame, nil, nil, skinFlags)
-    Theme:SkinFrame(self.frame.header, self.text, nil, skinFlags)
-    Theme:SkinTexture(self.frame.header.stripe, nil, skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
+    for obj in pairs(_BlockCache) do
+      obj:Refresh(skinInfo)
+    end
   end
 
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function SkinFeatures(self, info, alreadyInit)
+    if alreadyInit then
+      Super.SkinFeatures(self, info)
+    end
+
+    Theme:NewSkinFrame(self.frame, info)
+    Theme:NewSkinFrame(self.frame.header, info)
+    Theme:NewSkinText(self.frame.header.text, info, self.text)
+    Theme:NewSkinTexture(self.frame.header.stripe, info)
+  end
+
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function ExtraSkinFeatures(self, info, alreadyInit)
+    if alreadyInit then
+      Super.ExtraSkinFeatures(self, info)
+    end
+
+    local theme = Themes:GetSelected()
+    if not theme then return end
+
+    if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
+      local headerText = self.frame.header.text
+      local elementID = self.frame.header.elementID
+      local inheritElementID = self.frame.header.inheritElementID
+      if elementID then
+        local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
+        local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
+        local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
+
+        headerText:SetPoint("TOPLEFT", offsetX, offsetY)
+
+        headerText:SetJustifyV(_JUSTIFY_V_FROM_ANCHOR[location])
+        headerText:SetJustifyH(_JUSTIFY_H_FROM_ANCHOR[location])
+      end
+    end
+  end
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
@@ -36,20 +75,13 @@ class "Block" inherit "Frame"
     Theme:RegisterFrame(class._prefix..".header", self.frame.header, "block.header")
     Theme:RegisterTexture(class._prefix..".stripe", self.frame.header.stripe, "block.stripe")
   end
-
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
-  __Static__() function RefreshAll(skinFlags)
-    for obj in pairs(_BlockCache) do
-      obj:Refresh(skinFlags)
-    end
-  end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
   property "id" { TYPE = String }
   property "text" { TYPE = String, DEFAULT = "Default Header Text", HANDLER = SetText}
   property "isActive" { TYPE = Boolean, DEFAULT = true, EVENT = "OnActiveChanged" }
-  property "priority" { TYPE = Number, DEFAULT = 100 }
+  property "priority" { TYPE = Number, DEFAULT = 100, EVENT = "OnPriorityChanged" }
 
   __Static__() property "_THEME_CLASS_ID" { DEFAULT = "block" }
   __Static__() property "_prefix" { DEFAULT = "block" }
@@ -70,6 +102,7 @@ class "Block" inherit "Frame"
     headerFrame:SetFrameStrata("HIGH")
     headerFrame:SetHeight(34) -- 24
     headerFrame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
+    headerFrame:SetBackdropBorderColor(0,0,0,0)
     frame.header = headerFrame
 
     local stripe = headerFrame:CreateTexture()
@@ -91,12 +124,13 @@ class "Block" inherit "Frame"
     self.height = 34
     self.baseHeight = self.height
 
-    -- Important : Always use 'This' to avoid issues when this class is inherited
-    -- by other classes.
-    This.RegisterFramesForThemeAPI(self)
-    This.Refresh(self)
-
+    -- Keep it in the cache for later.
     _BlockCache[self] = true
+    -- Important: Always use 'This' to avoid issues when this class is inherited by
+    -- other classes.
+    This.RegisterFramesForThemeAPI(self)
+    -- Important: Don't forgot 'This' as argument to this method !
+    self:InitRefresh(This)
   end
 
   __Arguments__{ String, Number }

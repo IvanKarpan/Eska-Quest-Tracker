@@ -47,6 +47,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     return self.questItem
   end
 
+  --[[
   __Arguments__{}
   function Draw(self)
     if not self:IsShown() then
@@ -74,6 +75,43 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     else
       self:DrawObjectives(self.frame.header)
     end
+  end --]]
+  --[[function Draw(self)
+    if self.numObjectives > 0 then
+      local obj = self.objectives[1]
+      if obj then
+        obj.frame:SetPoint("TOPLEFT", self.frame, "TOPLEFT", 0, -21)
+        obj.frame:SetPoint("RIGHT", self.frame, "RIGHT")
+      end
+      self:DrawNewObjectives(self.frame.header, true)
+    end
+    self:CalculateHeight()
+  end--]]
+  function Draw(self)
+    --print("[QUEST]", "DRAW")
+    local previousFrame
+    for index, obj in self.objectives:GetIterator() do
+      obj:ClearAllPoints()
+      if index == 1 then
+        obj:SetPoint("TOP", 0, -21)
+        obj:SetPoint("RIGHT")
+        obj:SetPoint("LEFT")
+      else
+        obj:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT")
+        obj:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
+      end
+      obj:CalculateHeight()
+      previousFrame = obj.frame
+    end
+    self:CalculateHeight()
+  end
+
+  function CalculateHeight(self)
+    local height = self.baseHeight
+
+    height = height + self:GetObjectivesHeight()
+
+    self.height = height
   end
 
   function ShowLevel(self)
@@ -86,19 +124,27 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.frame.headerName:SetPoint("RIGHT")
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true)}
-  function Refresh(self, skinFlags, callSuper)
+
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function SkinFeatures(self, info, alreadyInit)
+    -- In orter to avoid useless function calls, this is important to call not the super
+    -- when the object has not finished its intialization.
+    -- So put always this check in Refresh, SkinFeature, ExtraSkinFeatures Methods.
+    if alreadyInit then
+      Super.SkinFeatures(self, skinInfo)
+    end
+
     local state = nil
     if self.isTracked then state = "tracked" end
 
-    Theme:SkinFrame(self.frame, nil, state, skinFlags)
-    Theme:SkinFrame(self.frame.header, nil, state, skinFlags)
-    Theme:SkinText(self.frame.headerName, self.name, state, skinFlags)
-
+    Theme:NewSkinFrame(self.frame, info)
+    Theme:NewSkinFrame(self.frame.header, info)
+    Theme:NewSkinText(self.frame.headerName, info, self.name, state)
 
     if Options:Get("quest-show-level") then
       self:ShowLevel()
-      Theme:SkinText(self.frame.headerLevel, self.level > 0 and self.level or "", state, skinFlags)
+      --Theme:SkinText(self.frame.headerLevel, self.level > 0 and self.level or "", state, skinFlags)
+      Theme:NewSkinText(self.frame.headerLevel, info, self.level > 0 and self.level or "", state)
 
       if Options:Get("quest-color-level-by-difficulty") then
         local color = GetQuestDifficultyColor(self.level)
@@ -108,6 +154,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       self:HideLevel()
     end
   end
+
 
   function Reset(self)
     --for _, objective in self.objectives:GetIterator() do
@@ -145,10 +192,10 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
 
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
-  __Static__() function RefreshAll(skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_QuestCache) do
-      obj:Refresh(skinFlags)
+      obj:Refresh(skinInfo)
     end
   end
 
@@ -290,12 +337,13 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.height = 21
     self.baseHeight = self.height
 
-    -- Important : Always use 'This' to avoid issues when this class is inherited
-    -- by other classes.
-    This.RegisterFramesForThemeAPI(self)
-    This.Refresh(self)
-
+    -- Keep it in the cache for later.
     _QuestCache[self] = true
+    -- Important: Always use 'This' to avoid issues when this class is inherited by
+    -- other classes.
+    This.RegisterFramesForThemeAPI(self)
+    -- Important: Don't forgot 'This' as argument to this method !
+    self:InitRefresh(This)
   end
 endclass "Quest"
 --============================================================================--

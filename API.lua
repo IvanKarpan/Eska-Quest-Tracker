@@ -561,6 +561,11 @@ interface "API"
       return str:gsub("%s+", "")
     end
 
+    function CalculateTextHeight(self, fontstring)
+      local _, fontHeight = fontstring:GetFont()
+      local numLines = fontstring:GetNumLines()
+      return fontHeight * numLines
+    end
 
     -- The below code is based on the Encode7Bit and encodeB64 from LibCompress
     -- and WeakAuras 2
@@ -703,459 +708,7 @@ interface "API"
   end
 
 endinterface "API"
---------------------------------------------------------------------------------
---                   Base Frame class                                         --
---        All the frames must inherit from this class                         --
---------------------------------------------------------------------------------
-class "Frame"
-  _FrameCache = setmetatable({}, { __mode = "k" })
-  event "OnDrawRequest"
-  event "OnWidthChanged"
-  event "OnHeightChanged"
-  event "OnSizeChanged"
-  ------------------------------------------------------------------------------
-  --                             Handlers                                     --
-  ------------------------------------------------------------------------------
-  local function UpdateHeight(self, new, old)
-    local frame = self:GetFrameContainer()
-    if frame then
-      frame:SetHeight(new)
-    end
-    return OnHeightChanged(self, new, old)
-  end
 
-  local function UpdateWidth(self, new, old)
-    local frame = self:GetFrameContainer()
-    if frame then
-      frame:SetWidth(new)
-    end
-    return OnWidthChanged(self, new, old)
-  end
-
-  local function OnDrawRequestHandler(self)
-    if not self.needToBeRedraw then
-      self.needToBeRedraw = true
-      Scorpio.Delay(0.25, function()
-          local aborted = false
-          if ObjectIsInterface(self, IReusable) and self.isReusable then
-            aborted = true
-          end
-
-          if self.Draw and not aborted then self:Draw()  end
-          self.needToBeRedraw = false
-      end)
-    end
-  end
-
-  ------------------------------------------------------------------------------
-  --                        Size Methods                                      --
-  ------------------------------------------------------------------------------
-  __Arguments__ { Number }
-  function SetWidth(self, width)
-    self.width = width
-    return OnSizeChanged(self, width, self.height)
-  end
-
-  __Arguments__ { Number }
-  function SetHeight(self, height)
-    self.height = height
-    return OnSizeChanged(self, self.width, height)
-  end
-
-  __Arguments__ { Number, Number }
-  function SetSize(self, width, height)
-    self.width = width
-    self.height = height
-    return OnSizeChanged(self, width, height)
-  end
-
-  ------------------------------------------------------------------------------
-  --                        SetPoint Methods                                  --
-  ------------------------------------------------------------------------------
-  -- It's highly advised to use these functions for anchoring frames
-  __Arguments__ { String, Table, String, Argument(Number, true), Argument(Number, true)}
-  function SetPoint(self, point, relativeTo, relativePoint, xOffset, yOffset)
-    self:GetFrameContainer():SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
-  end
-
-  __Arguments__ { String, Frame, String, Argument(Number, true), Argument(Number, true)}
-  function SetPoint(self, point, relativeTo, relativePoint, xOffset, yOffset)
-    This.SetPoint(self, point, relativeTo:GetFrameContainer(), relativePoint, xOffset, yOffset)
-  end
-
-  __Arguments__ { String }
-  function SetPoint(self, point)
-    self:GetFrameContainer():SetPoint(point)
-  end
-
-  function ClearAllPoints(self)
-    self:GetFrameContainer():ClearAllPoints()
-  end
-
-  ------------------------------------------------------------------------------
-  --                 Visibility Methods                                       --
-  ------------------------------------------------------------------------------
-  function Show(self)
-    self:GetFrameContainer():Show()
-  end
-
-  function Hide(self)
-    self:GetFrameContainer():Hide()
-  end
-
-  function IsShown(self)
-    return self:GetFrameContainer():IsShown()
-  end
-
-  function Toggle(self)
-    if self:IsShown() then
-      self:Hide()
-    else
-      self:Show()
-    end
-  end
-
-  ------------------------------------------------------------------------------
-  --                    SetParent Methods                                     --
-  ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Table, true) }
-  function SetParent(self, parent)
-    self:GetFrameContainer():SetParent(parent)
-  end
-
-  __Arguments__ { Frame }
-  function SetParent(self, parent)
-    This.SetParent(parent:GetFrameContainer())
-  end
-
-  ------------------------------------------------------------------------------
-  --                   Refresh & Skin Methods                                 --
-  ------------------------------------------------------------------------------
-  --function Refresh(self)
-    --self:ExtraSkinFeatures()
-  --end
-
-  -- This function make some extra stuff that isn't not implemented in the skin
-  -- system
-  function ExtraSkinFeatures(self)
-    -- Insert here extra skn feature if you need it
-  end
-
-
-  ------------------------------------------------------------------------------
-  --                   Other Methods                                          --
-  ------------------------------------------------------------------------------
-  -- Return the frame which must be used for anchor/show features
-  -- May be overrided to change the frame
-  function GetFrameContainer(self)
-    return self.frame
-  end
-
-  ------------------------------------------------------------------------------
-  --                   Static Functions                                       --
-  ------------------------------------------------------------------------------
-  -- This function return if the frame must be interactive (i.e, answer to click events)
-  -- NOTE: This function is used to prevent the button can be clicked outside of scrolling.
-  __Arguments__ { Class, Argument(Table) }
-  __Static__() function MustBeInteractive(self, frame)
-
-    local yTop = frame:GetTop()
-    local yBot = frame:GetBottom()
-
-    if yTop == nil or yBot == nil then
-      return false
-    end
-
-    local scrollFrame = _G["EQT-ObjectiveTrackerFrameScrollFrame"]
-
-    if not scrollFrame or not frame then
-      return false
-    end
-
-    -- if the frame is completely included in the tracker, it can be interactive
-    if yTop <= scrollFrame:GetTop() and yBot >= scrollFrame:GetBottom() then
-      return true
-    end
-
-    -- if the frame is completely out of tracker, it can't be interactive
-    if (yTop > scrollFrame:GetTop() and yBot > scrollFrame:GetTop()) or (yTop < scrollFrame:GetBottom() and yBot < scrollFrame:GetBottom()) then
-      return false
-    end
-
-    local offsetTop = 0
-    local offsetBot = 0
-
-    -- Top check & compute
-    if yTop > scrollFrame:GetTop() and (yBot <= scrollFrame:GetTop() and yBot >= scrollFrame:GetBottom()) then
-      offsetTop =  scrollFrame:GetTop() - yTop
-    end
-
-    -- Bottom check & compute
-    if yBot < scrollFrame:GetBottom() and (yTop >= scrollFrame:GetBottom() and yTop <= scrollFrame:GetTop()) then
-      offsetBot = scrollFrame:GetBottom() - yBot
-    end
-
-
-    return frame:IsMouseOver(offsetTop, offsetBot, 0, 0)
-  end
-
-  -- Static functin that refresh and reskin all frames.
-  -- NOTE: Don't call it too often and only if really needed
-  --- (e.g, the user select an another theme)
-  __Static__() function RefreshAll()
-    for obj in pairs(_FrameWithBorderCache) do
-      if obj.Refresh then
-        obj:Refresh()
-      end
-    end
-  end
-
-  ------------------------------------------------------------------------------
-  --                         Properties                                       --
-  ------------------------------------------------------------------------------
-  property "frame" {TYPE = Table }
-  property "width" { TYPE = Number, HANDLER = UpdateWidth }
-  property "height" { TYPE = Number, HANDLER = UpdateHeight }
-  property "baseHeight" { TYPE = Number, DEFAULT = 0 }
-  property "baseWidth" { TYPE = Number, DEFAULT = 0 }
-  property "needToBeRedraw" { TYPE = Boolean, DEFAULT = false } -- use internally
-  ------------------------------------------------------------------------------
-  --                       Constructors                                       --
-  ------------------------------------------------------------------------------
-  function Frame(self)
-    self.OnDrawRequest = self.OnDrawRequest + OnDrawRequestHandler
-    _FrameCache[self] = true
-  end
-
-endclass "Frame"
-
-class "BorderFrame" inherit "Frame"
-  _BorderFrameCache = setmetatable({}, { __mode = "k" })
-  event "OnBorderWidthChanged"
-  ------------------------------------------------------------------------------
-  --                          Handlers                                        --
-  ------------------------------------------------------------------------------
-  local function UpdateFrame(self, new, old)
-    self:UninstallBorders(old)
-    self:InstallBorders(new)
-
-
-    local container = self:GetFrameContainer()
-    new:SetParent(container)
-    new:Show()
-    self:UpdateBorderAnchors()
-  end
-
-  local function UpdateBorderVisibility(self, new, old)
-    if not self.borders then return end
-
-    if new then
-      self:ShowBorder()
-    else
-      self:HideBorder()
-    end
-    self:UpdateBorderAnchors()
-  end
-
-  local function UpdateBorderWidth(self, new, old)
-    if not self.borders then return end
-
-
-    self:SetBorderWidth(new)
-    OnBorderWidthChanged(self, new, old)
-
-  end
-
-  local function UpdateBorderColor(self, new, old)
-    if not self.borders then return end
-
-    self:SetBorderColor(new)
-  end
-
-  function GetFrameContainer(self)
-    return self.containerFrame
-  end
-
-  ------------------------------------------------------------------------------
-  --                    Border Methods                                        --
-  ------------------------------------------------------------------------------
-  function CreateBorders(self)
-    if not self.borders then
-      local container = self:GetFrameContainer()
-      self.borders = {}
-
-      local borderLeft = container:CreateTexture(nil , "BORDER")
-      borderLeft:SetColorTexture(0, 0, 0)
-      borderLeft:SetWidth(self.borderWidth)
-      borderLeft:Show()
-      self.borders.left = borderLeft
-
-      local borderTop = container:CreateTexture(nil , "BORDER")
-      borderTop:SetColorTexture(0, 0, 0)
-      borderTop:SetHeight(self.borderWidth)
-      borderTop:Show()
-      self.borders.top = borderTop
-
-      local borderRight = container:CreateTexture(nil, "BORDER")
-      borderRight:SetColorTexture(0, 0, 0)
-      borderRight:SetWidth(self.borderWidth)
-      borderRight:Show()
-      self.borders.right = borderRight
-
-      local borderBot = container:CreateTexture(nil, "BORDER")
-      borderBot:SetColorTexture(0, 0, 0)
-      borderBot:SetHeight(self.borderWidth)
-      borderBot:Show()
-      self.borders.bottom = borderBot
-
-      -- Set Anchor Points
-      borderLeft:SetPoint("TOPLEFT")
-      borderLeft:SetPoint("BOTTOMLEFT")
-
-      borderRight:SetPoint("TOPRIGHT")
-      borderRight:SetPoint("BOTTOMRIGHT")
-
-      borderTop:SetPoint("TOPLEFT", borderLeft, "TOPRIGHT")
-      borderTop:SetPoint("TOPRIGHT", borderRight, "TOPLEFT")
-
-      borderBot:SetPoint("BOTTOMLEFT", borderLeft, "BOTTOMRIGHT")
-      borderBot:SetPoint("BOTTOMRIGHT", borderRight, "BOTTOMLEFT")
-
-    end
-  end
-
-  -- The function will install the borders in the frame give.
-  -- The border can be retrieved in doing: frame.borders
-  -- e.g: frame.borders.left will return the border left frame
-  function InstallBorders(self, frame)
-    if self.borders then
-      frame.borders = setmetatable({}, { __mode = "v" } )
-      frame.borders.left = self.borders.left
-      frame.borders.top = self.borders.top
-      frame.borders.right = self.borders.right
-      frame.borders.bottom = self.borders.bottom
-    end
-  end
-
-  -- This method will uninstall the borders from frame given.
-  -- It simply remove metatable containing references to border frames.
-  function UninstallBorders(self, frame)
-    if frame and frame.borders then
-      frame.borders = nil -- @TODO: Check that
-    end
-  end
-
-  function ShowBorder(self)
-    if self.borders then
-      self.borders.top:Show()
-      self.borders.left:Show()
-      self.borders.bottom:Show()
-      self.borders.right:Show()
-    end
-  end
-
-  function HideBorder(self)
-    if self.borders then
-      self.borders.top:Hide()
-      self.borders.left:Hide()
-      self.borders.bottom:Hide()
-      self.borders.right:Hide()
-    end
-  end
-
-  function SetBorderWidth(self, width)
-    if self.borders then
-      self.borders.left:SetWidth(width)
-      self.borders.top:SetHeight(width)
-      self.borders.right:SetWidth(width)
-      self.borders.bottom:SetHeight(width)
-
-      self:UpdateBorderAnchors ()
-    end
-  end
-
-  function SetBorderColor(self, color)
-    if self.borders then
-      self.borders.top:SetColorTexture(color.r, color.g, color.g, color.a)
-      self.borders.left:SetColorTexture(color.r, color.g, color.g, color.a)
-      self.borders.bottom:SetColorTexture(color.r, color.g, color.g, color.a)
-      self.borders.right:SetColorTexture(color.r, color.g, color.g, color.a)
-    end
-  end
-
-  function UpdateBorderAnchors(self)
-    if self.showBorder then
-      self.frame:ClearAllPoints()
-      self.frame:SetPoint("TOP", self.borders.top, "BOTTOM")
-      self.frame:SetPoint("LEFT", self.borders.left, "RIGHT")
-      self.frame:SetPoint("RIGHT", self.borders.right, "LEFT")
-      self.frame:SetPoint("BOTTOM", self.borders.bottom, "TOP")
-    else
-      self.frame:ClearAllPoints()
-      self.frame:SetAllPoints(self:GetFrameContainer())
-    end
-  end
-
-  ------------------------------------------------------------------------------
-  --                   Refresh & Skin Methods                                 --
-  ------------------------------------------------------------------------------
-  function ExtraSkinFeatures(self, skinFlags)
-    -- Call the super function
-    Super.ExtraSkinFeatures(self)
-
-    -- Get the selected theme by user
-    local theme = Themes:GetSelected()
-
-    -- Get the element id and inherit element id if exists
-    local elementID = self.frame.elementID
-    local inheritElementID = self.frame.inheritElementID
-
-    -- If the element ID is nil, don't continue
-    if not elementID then
-      return
-    end
-
-    -- Border width
-    --if System.Reflector.ValidateFlags(skinFlags, )
-    self.borderWidth = theme:GetElementProperty(elementID, "border-width", inheritElementID)
-
-    -- Border color
-    self.borderColor = theme:GetElementProperty(elementID, "border-color", inheritElementID)
-
-  end
-  ------------------------------------------------------------------------------
-  --                        Static Functions                                  --
-  ------------------------------------------------------------------------------
-  __Static__() function RefreshAll()
-    for obj in pairs(_BorderFrameCache) do
-      if obj.Refresh then
-        obj:Refresh()
-      end
-    end
-  end
-
-  ------------------------------------------------------------------------------
-  --                         Properties                                       --
-  ------------------------------------------------------------------------------
-  property "frame"{ TYPE = Table, HANDLER = UpdateFrame }
-  property "containerFrame" { TYPE = Table } -- contains the borders and the content frame
-  property "showBorder" { TYPE = Boolean, DEFAULT = true, HANDLER = UpdateBorderVisibility }
-  property "borderWidth" { TYPE = Number, DEFAULT = 0, HANDLER = UpdateBorderWidth }
-  property "borderColor" { TYPE = Table, DEFAULT = { r = 0, g = 0, b = 0, a = 1}, HANDLER = UpdateBorderColor }
-  ------------------------------------------------------------------------------
-  --                         Constructors                                     --
-  ------------------------------------------------------------------------------
-  function BorderFrame(self)
-    Super(self)
-
-    _BorderFrameCache[self] = true
-
-    self.containerFrame = CreateFrame("Frame")
-    self:CreateBorders()
-  end
-
-
-endclass "BorderFrame"
 --------------------------------------------------------------------------------
 --                          THEME SYSTEM                                      --
 --------------------------------------------------------------------------------
@@ -1238,6 +791,90 @@ _REGISTERED_FRAMES = {}
     TEXTURE_COLOR = 256,
   }
 
+  __Flags__()
+  enum "SkinFrameFlags" {
+    NONE = 0,
+    FRAME_BACKGROUND_COLOR = 1,
+    FRAME_BORDER_COLOR = 2,
+    FRAME_BORDER_WIDTH = 4,
+  }
+
+  __Flags__()
+  enum "SkinTextFlags" {
+    NONE = 0,
+    TEXT_SIZE = 1,
+    TEXT_COLOR = 2,
+    TEXT_FONT = 4,
+    TEXT_TRANSFORM = 8,
+    TEXT_LOCATION = 16
+  }
+
+  __Flags__()
+  enum "SkinTextureFlags" {
+    NONE = 0,
+    TEXTURE_COLOR = 1
+  }
+
+  struct "SkinInfo"
+    __Default__(SkinFrameFlags.FRAME_BACKGROUND_COLOR + SkinFrameFlags.FRAME_BORDER_COLOR + SkinFrameFlags.FRAME_BORDER_WIDTH)
+    frameFlags = SkinFrameFlags
+
+    -- NOTE: We don't include location in the defaut because TEXT_LOCATION is special and need some extra stuff for working correctly.
+    __Default__(SkinTextFlags.TEXT_SIZE + SkinTextFlags.TEXT_COLOR + SkinTextFlags.TEXT_FONT + SkinTextFlags.TEXT_TRANSFORM)
+    textFlags = SkinTextFlags
+
+    __Default__(SkinTextureFlags.TEXTURE_COLOR)
+    textureFlags = SkinTextureFlags
+
+  endstruct "SkinInfo"
+
+
+
+  __Arguments__ { Class, Argument(SkinFlags), Argument(SkinFlags) }
+  __Static__() function ValidateSkinFlags(self, flags, flag)
+    return ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, flag)
+  end
+
+
+  __Static__() property "SKIN_FRAME_ALL_FLAGS" {
+      TYPE = SkinFrameFlags,
+      DEFAULT = SkinFrameFlags.FRAME_BACKGROUND_COLOR +
+                SkinFrameFlags.FRAME_BORDER_COLOR +
+                SkinFrameFlags.FRAME_BORDER_WIDTH,
+      SET = false,
+      }
+
+  __Arguments__ { Class, Table, SkinFrameFlags, Argument(String, true) }
+  __Static__() function NewSkinFrame(self, frame, flags, state)
+    local theme = Themes:GetSelected()
+
+    if not theme then return end -- TODO: Add error msg
+    if not frame then return end -- TODO: Add error msg
+    if not frame.elementID then return end -- TODO: Add error msg
+
+    local elementID = frame.elementID
+    local inheritElementID = frame.inheritElementID
+
+    if state then
+      elementID = elementID.."["..state.."]"
+    end
+
+    if frame.type == "FRAME" then
+      local color
+      -- Background color
+      if frame.SetBackdropColor and ValidateFlags(flags, SkinFrameFlags.FRAME_BACKGROUND_COLOR) then
+        color = theme:GetElementProperty(elementID, "background-color", inheritElementID)
+        frame:SetBackdropColor(color.r, color.g, color.b, color.a)
+      end
+    end
+  end
+
+  __Arguments__ { Class, Table, Argument(SkinInfo, true, SkinInfo()), Argument(String, true) }
+  __Static__() function NewSkinFrame(self, frame, info, state)
+    self:NewSkinFrame(frame, info.frameFlags, state)
+  end
+
+
   __Arguments__ { Class, Table, Argument(String, true), Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
   __Static__() function SkinFrame(self, frame, originText, state, flags)
     -- Get the selected theme
@@ -1278,6 +915,121 @@ _REGISTERED_FRAMES = {}
     end
   end
 
+  __Static__() property "SKIN_TEXT_ALL_FLAGS" {
+      TYPE = SkinTextFlags,
+      DEFAULT = SkinTextFlags.TEXT_SIZE +
+                SkinTextFlags.TEXT_COLOR +
+                SkinTextFlags.TEXT_FONT +
+                SkinTextFlags.TEXT_TRANSFORM,
+      SET = false,
+      }
+
+  __Static__() property "SKIN_TEXT_ALL_WITH_LOCATION_FLAGS" {
+      TYPE = SkinTextFlags,
+      DEFAULT = SkinTextFlags.TEXT_SIZE +
+                SkinTextFlags.TEXT_COLOR +
+                SkinTextFlags.TEXT_FONT +
+                SkinTextFlags.TEXT_TRANSFORM +
+                SkinTextFlags.TEXT_LOCATION,
+      SET = false,
+      }
+
+
+  __Arguments__ { Class, Table, SkinTextFlags, Argument(String + Number, true), Argument(String, true)}
+  __Static__() function NewSkinText(self, obj, flags, text, state)
+    local theme = Themes:GetSelected()
+
+    if not theme then return end -- TODO: Add error msg
+    if not obj then return end   -- TODO: Add error msg
+
+    local fontstring
+    if obj.type == "FRAME" then
+      fontstring = obj.text
+    else
+      fontstring = obj
+    end
+
+    if not fontstring then return end -- TODO: Add error msg
+
+    local elementID = fontstring.elementID
+    local inheritElementID = fontstring.inheritElementID
+
+    if not elementID then return end  -- TODO: Add error msg
+
+    if state then
+      elementID = elementID.."["..state.."]"
+    end
+
+
+    -- REMOVE:
+    local font, size = fontstring:GetFont()
+    if not font then
+      font = Theme:GetDefaultProperty("text-font")
+    end
+
+    if not size or size <= 0 then
+      size = Theme:GetDefaultProperty("text-size")
+    end
+
+    local textColor = {}
+    textColor.r, textColor.g, textColor.b, textColor.a = fontstring:GetTextColor()
+
+    if ValidateFlags(flags, SkinTextFlags.TEXT_SIZE) then
+      size = theme:GetElementProperty(elementID, "text-size", inheritElementID)
+    end
+
+    if ValidateFlags(flags, SkinTextFlags.TEXT_FONT) then
+      font = _LibSharedMedia:Fetch("font", theme:GetElementProperty(elementID, "text-font", inheritElementID))
+    end
+    fontstring:SetFont(font, size, "OUTLINE")
+
+    if ValidateFlags(flags, SkinTextFlags.TEXT_COLOR) then
+      textColor = theme:GetElementProperty(elementID, "text-color", inheritElementID)
+    end
+    fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
+
+    --[[
+    -- NOTE: The text location may cause issue, it's why by default it's not included.
+    if ValidateFlags(flags, SkinTextFlags.TEXT_LOCATION) then
+      local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
+      local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
+      local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
+
+      for i = 1, fontstring:GetNumPoints() do
+        local point, relativeTo, relativePoint, xOffset, yOffset = fontstring:GetPoint(i)
+        if i == 1 then
+          fontstring:SetPoint(point, relativeTo, relativePoint, offsetX or xOffset, offsetY or yOffset)
+          break
+        end
+      end
+
+      fontstring:SetJustifyV(_JUSTIFY_V_FROM_ANCHOR[location])
+      fontstring:SetJustifyH(_JUSTIFY_H_FROM_ANCHOR[location])
+    end
+    --]]
+
+    if ValidateFlags(flags, SkinTextFlags.TEXT_TRANSFORM) then
+      if not text then
+        text = fontstring:GetText()
+      end
+
+      local transform = theme:GetElementProperty(elementID, "text-transform", inheritElementID)
+      if transform == "uppercase" then
+        text = text:upper()
+      elseif transform == "lowercase" then
+        text = text:lower()
+      end
+      fontstring:SetText(text)
+    end
+  end
+
+
+  __Arguments__ { Class, Table, Argument(SkinInfo, true, SkinInfo()), Argument(String + Number, true), Argument(String, true)}
+  __Static__() function NewSkinText(self, obj, info, text, state)
+    self:NewSkinText(obj, info.textFlags, text, state)
+  end
+
+
   __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
   __Static__() function SkinText(self, fontstring, originText, state, flags)
     local theme = Themes:GetSelected()
@@ -1316,13 +1068,14 @@ _REGISTERED_FRAMES = {}
     local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
     local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
 
+    --[[
     for i = 1, fontstring:GetNumPoints() do
       local point, relativeTo, relativePoint, xOffset, yOffset = fontstring:GetPoint(i)
       if i == 1 then
         fontstring:SetPoint(point, relativeTo, relativePoint, offsetX or xOffset, offsetY or yOffset)
         break
       end
-    end
+    end --]]
 
     fontstring:SetJustifyV(_JUSTIFY_V_FROM_ANCHOR[location])
     fontstring:SetJustifyH(_JUSTIFY_H_FROM_ANCHOR[location])
@@ -1341,6 +1094,49 @@ _REGISTERED_FRAMES = {}
       txt = txt:lower()
     end
     fontstring:SetText(txt)
+  end
+
+  __Static__() property "SKIN_TEXTURE_ALL_FLAGS" {
+      TYPE = SkinTextureFlags,
+      DEFAULT = SkinTextureFlags.TEXTURE_COLOR,
+      SET = false,
+      }
+
+
+  __Arguments__{ Class, Table, SkinTextureFlags, Argument(String, true)}
+  __Static__() function NewSkinTexture(self, obj, flags, state)
+    local theme = Themes:GetSelected()
+
+    if not theme then return end -- TODO: Add error msg
+    if not obj then return end -- TODO: Add error msg
+
+    local texture
+    if obj.type == "FRAME" then
+      texture = obj.texture
+    else
+      texture = obj
+    end
+
+    if not texture then return end -- TODO: Add error msg
+
+    local elementID = texture.elementID
+    local inheritElementID = texture.inheritElementID
+
+    if not elementID then return end -- TODO: Add error msg
+
+    if state then
+      elementID = elementID.."["..state.."]"
+    end
+
+    if ValidateFlags(flags, SkinTextureFlags.TEXTURE_COLOR) then
+      local color = theme:GetElementProperty(elementID, "texture-color", inheritElementID)
+      texture:SetVertexColor(color.r, color.g, color.b, color.a)
+    end
+  end
+
+  __Arguments__{ Class, Table, Argument(SkinInfo, true, SkinInfo()), Argument(String, true)}
+  __Static__() function NewSkinTexture(self, obj, info, state)
+    self:NewSkinTexture(obj, info.textureFlags, state)
   end
 
   __Arguments__{ Class, Table, Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
@@ -1364,6 +1160,12 @@ _REGISTERED_FRAMES = {}
       texture:SetVertexColor(color.r, color.g, color.b, color.a)
     end
   end
+
+  __Static__() property "SKIN_INFO_ALL_FLAGS" {
+    TYPE = SkinInfo,
+    DEFAULT = function() return SkinInfo(Theme.SKIN_FRAME_ALL_FLAGS, Theme.SKIN_TEXT_ALL_WITH_LOCATION_FLAGS, Theme.SKIN_TEXTURE_ALL_FLAGS) end,
+    SET = false
+  }
 
 
 
@@ -2269,7 +2071,497 @@ class "Themes"
 
 
 endclass "Themes"
+--------------------------------------------------------------------------------
+--                   Base Frame class                                         --
+--        All the frames must inherit from this class                         --
+--------------------------------------------------------------------------------
+class "Frame"
+  _FrameCache = setmetatable({}, { __mode = "k" })
+  event "OnDrawRequest"
+  event "OnWidthChanged"
+  event "OnHeightChanged"
+  event "OnSizeChanged"
+  ------------------------------------------------------------------------------
+  --                             Handlers                                     --
+  ------------------------------------------------------------------------------
+  local function UpdateHeight(self, new, old)
+    local frame = self:GetFrameContainer()
 
+    -- Ceil the values
+    new = math.ceil(new)
+    old = math.ceil(old)
+
+    if frame then
+      frame:SetHeight(new)
+    end
+    return OnHeightChanged(self, new, old)
+  end
+
+  local function UpdateWidth(self, new, old)
+    local frame = self:GetFrameContainer()
+    -- Ceil the values
+    new = math.ceil(new)
+    old = math.ceil(old)
+
+    if frame then
+      frame:SetWidth(new)
+    end
+    return OnWidthChanged(self, new, old)
+  end
+
+  local function OnDrawRequestHandler(self)
+    if not self.needToBeRedraw then
+      self.needToBeRedraw = true
+      Scorpio.Delay(0.25, function()
+          local aborted = false
+          if ObjectIsInterface(self, IReusable) and self.isReusable then
+            aborted = true
+          end
+
+          if self.Draw and not aborted then self:Draw()  end
+          self.needToBeRedraw = false
+      end)
+    end
+  end
+
+  ------------------------------------------------------------------------------
+  --                        Size Methods                                      --
+  ------------------------------------------------------------------------------
+  __Arguments__ { Number }
+  function SetWidth(self, width)
+    self.width = width
+    return OnSizeChanged(self, width, self.height)
+  end
+
+  __Arguments__ { Number }
+  function SetHeight(self, height)
+    self.height = height
+    return OnSizeChanged(self, self.width, height)
+  end
+
+  __Arguments__ { Number, Number }
+  function SetSize(self, width, height)
+    self.width = width
+    self.height = height
+    return OnSizeChanged(self, width, height)
+  end
+
+  ------------------------------------------------------------------------------
+  --                        SetPoint Methods                                  --
+  ------------------------------------------------------------------------------
+  -- It's highly advised to use these functions for anchoring frames
+  __Arguments__ { String, Table, String, Argument(Number, true), Argument(Number, true)}
+  function SetPoint(self, point, relativeTo, relativePoint, xOffset, yOffset)
+    self:GetFrameContainer():SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+  end
+
+  __Arguments__ { String, Frame, String, Argument(Number, true), Argument(Number, true)}
+  function SetPoint(self, point, relativeTo, relativePoint, xOffset, yOffset)
+    This.SetPoint(self, point, relativeTo:GetFrameContainer(), relativePoint, xOffset, yOffset)
+  end
+
+  __Arguments__ { String, Argument(Number, true, 0), Argument(Number, true, 0) }
+  function SetPoint(self, point, offsetX, offsetY)
+    self:GetFrameContainer():SetPoint(point, offsetX, offsetY)
+  end
+
+  function ClearAllPoints(self)
+    self:GetFrameContainer():ClearAllPoints()
+  end
+
+  ------------------------------------------------------------------------------
+  --                 Visibility Methods                                       --
+  ------------------------------------------------------------------------------
+  function Show(self)
+    self:GetFrameContainer():Show()
+  end
+
+  function Hide(self)
+    self:GetFrameContainer():Hide()
+  end
+
+  function IsShown(self)
+    return self:GetFrameContainer():IsShown()
+  end
+
+  function Toggle(self)
+    if self:IsShown() then
+      self:Hide()
+    else
+      self:Show()
+    end
+  end
+
+  ------------------------------------------------------------------------------
+  --                    SetParent Methods                                     --
+  ------------------------------------------------------------------------------
+  __Arguments__ { Argument(Table, true) }
+  function SetParent(self, parent)
+    self:GetFrameContainer():SetParent(parent)
+  end
+
+  __Arguments__ { Frame }
+  function SetParent(self, parent)
+    This.SetParent(parent:GetFrameContainer())
+  end
+
+  ------------------------------------------------------------------------------
+  --                   Refresh & Skin Methods                                 --
+  ------------------------------------------------------------------------------
+  -- This function contains stuff related to skin system.
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function SkinFeatures(self, info, alreadyInit)
+  end
+
+  -- This function is similar to SkinFeatures, and called after SkinFeatures
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function ExtraSkinFeatures(self, info, alreadyInit)
+  end
+
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  function Refresh(self, info)
+      self:SkinFeatures(info)
+      self:ExtraSkinFeatures(info)
+  end
+
+  __Arguments__ { Userdata }
+  function InitRefresh(self, this)
+    this.SkinFeatures(self, Theme.SKIN_INFO_ALL_FLAGS, false)
+    this.ExtraSkinFeatures(self, Theme.SKIN_INFO_ALL_FLAGS, false)
+  end
+  ------------------------------------------------------------------------------
+  --                   Other Methods                                          --
+  ------------------------------------------------------------------------------
+  -- Return the frame which must be used for anchor/show features
+  -- May be overrided to change the frame
+  function GetFrameContainer(self)
+    return self.frame
+  end
+
+  ------------------------------------------------------------------------------
+  --                   Static Functions                                       --
+  ------------------------------------------------------------------------------
+  -- This function return if the frame must be interactive (i.e, answer to click events)
+  -- NOTE: This function is used to prevent the button can be clicked outside of scrolling.
+  __Arguments__ { Class, Argument(Table) }
+  __Static__() function MustBeInteractive(self, frame)
+
+    local yTop = frame:GetTop()
+    local yBot = frame:GetBottom()
+
+    if yTop == nil or yBot == nil then
+      return false
+    end
+
+    local scrollFrame = _G["EQT-ObjectiveTrackerFrameScrollFrame"]
+
+    if not scrollFrame or not frame then
+      return false
+    end
+
+    -- if the frame is completely included in the tracker, it can be interactive
+    if yTop <= scrollFrame:GetTop() and yBot >= scrollFrame:GetBottom() then
+      return true
+    end
+
+    -- if the frame is completely out of tracker, it can't be interactive
+    if (yTop > scrollFrame:GetTop() and yBot > scrollFrame:GetTop()) or (yTop < scrollFrame:GetBottom() and yBot < scrollFrame:GetBottom()) then
+      return false
+    end
+
+    local offsetTop = 0
+    local offsetBot = 0
+
+    -- Top check & compute
+    if yTop > scrollFrame:GetTop() and (yBot <= scrollFrame:GetTop() and yBot >= scrollFrame:GetBottom()) then
+      offsetTop =  scrollFrame:GetTop() - yTop
+    end
+
+    -- Bottom check & compute
+    if yBot < scrollFrame:GetBottom() and (yTop >= scrollFrame:GetBottom() and yTop <= scrollFrame:GetTop()) then
+      offsetBot = scrollFrame:GetBottom() - yBot
+    end
+
+
+    return frame:IsMouseOver(offsetTop, offsetBot, 0, 0)
+  end
+
+  -- Static functin that refresh and reskin all frames.
+  -- NOTE: Don't call it too often and only if really needed
+  --- (e.g, the user select an another theme)
+  __Static__() function RefreshAll()
+    for obj in pairs(_FrameWithBorderCache) do
+      if obj.Refresh then
+        obj:Refresh()
+      end
+    end
+  end
+
+  -- Put here the methods that must be executed when init by the constructor.
+  -- By example, Refresh and similar Methods must be put in this method.
+  -- The reason this method exists is to prevent to call parent's methods in the constructor.
+  -- Only the final class matters.
+  function ExecInitMethods(self)
+    self:Refresh(Theme.SKIN_INFO_ALL_FLAGS)
+  end
+
+  -- This function will say if the ExecInitMethods can be executed safely.
+  -- You should alaways set this code to the end of main constructor:
+  -- if self:CanExecInitMethods(This) then self:ExecInitMethods() end
+  function CanExecInitMethods(self, this)
+    return tostring(System.Reflector.GetObjectClass(self)) == tostring(this)
+  end
+
+  __Arguments__ { Userdata}
+  function IsFinalConstructor(self, this)
+    return tostring(System.Reflector.GetObjectClass(self)) == tostring(this)
+  end
+  ------------------------------------------------------------------------------
+  --                         Properties                                       --
+  ------------------------------------------------------------------------------
+  property "frame" {TYPE = Table }
+  property "width" { TYPE = Number, HANDLER = UpdateWidth }
+  property "height" { TYPE = Number, HANDLER = UpdateHeight }
+  property "baseHeight" { TYPE = Number, DEFAULT = 0 }
+  property "baseWidth" { TYPE = Number, DEFAULT = 0 }
+  property "needToBeRedraw" { TYPE = Boolean, DEFAULT = false } -- use internally
+  ------------------------------------------------------------------------------
+  --                       Constructors                                       --
+  ------------------------------------------------------------------------------
+  function Frame(self)
+    self.OnDrawRequest = self.OnDrawRequest + OnDrawRequestHandler
+    _FrameCache[self] = true
+  end
+
+endclass "Frame"
+
+class "BorderFrame" inherit "Frame"
+  _BorderFrameCache = setmetatable({}, { __mode = "k" })
+  event "OnBorderWidthChanged"
+  ------------------------------------------------------------------------------
+  --                          Handlers                                        --
+  ------------------------------------------------------------------------------
+  local function UpdateFrame(self, new, old)
+    self:UninstallBorders(old)
+    self:InstallBorders(new)
+
+
+    local container = self:GetFrameContainer()
+    new:SetParent(container)
+    new:Show()
+    self:UpdateBorderAnchors()
+  end
+
+  local function UpdateBorderVisibility(self, new, old)
+    if not self.borders then return end
+
+    if new then
+      self:ShowBorder()
+    else
+      self:HideBorder()
+    end
+    self:UpdateBorderAnchors()
+  end
+
+  local function UpdateBorderWidth(self, new, old)
+    if not self.borders then return end
+
+
+    self:SetBorderWidth(new)
+    OnBorderWidthChanged(self, new, old)
+
+  end
+
+  local function UpdateBorderColor(self, new, old)
+    if not self.borders then return end
+
+    self:SetBorderColor(new)
+  end
+
+  function GetFrameContainer(self)
+    return self.containerFrame
+  end
+
+  ------------------------------------------------------------------------------
+  --                    Border Methods                                        --
+  ------------------------------------------------------------------------------
+  function CreateBorders(self)
+    if not self.borders then
+      local container = self:GetFrameContainer()
+      self.borders = {}
+
+      local borderLeft = container:CreateTexture(nil , "BORDER")
+      borderLeft:SetColorTexture(0, 0, 0)
+      borderLeft:SetWidth(self.borderWidth)
+      borderLeft:Show()
+      self.borders.left = borderLeft
+
+      local borderTop = container:CreateTexture(nil , "BORDER")
+      borderTop:SetColorTexture(0, 0, 0)
+      borderTop:SetHeight(self.borderWidth)
+      borderTop:Show()
+      self.borders.top = borderTop
+
+      local borderRight = container:CreateTexture(nil, "BORDER")
+      borderRight:SetColorTexture(0, 0, 0)
+      borderRight:SetWidth(self.borderWidth)
+      borderRight:Show()
+      self.borders.right = borderRight
+
+      local borderBot = container:CreateTexture(nil, "BORDER")
+      borderBot:SetColorTexture(0, 0, 0)
+      borderBot:SetHeight(self.borderWidth)
+      borderBot:Show()
+      self.borders.bottom = borderBot
+
+      -- Set Anchor Points
+      borderLeft:SetPoint("TOPLEFT")
+      borderLeft:SetPoint("BOTTOMLEFT")
+
+      borderRight:SetPoint("TOPRIGHT")
+      borderRight:SetPoint("BOTTOMRIGHT")
+
+      borderTop:SetPoint("TOPLEFT", borderLeft, "TOPRIGHT")
+      borderTop:SetPoint("TOPRIGHT", borderRight, "TOPLEFT")
+
+      borderBot:SetPoint("BOTTOMLEFT", borderLeft, "BOTTOMRIGHT")
+      borderBot:SetPoint("BOTTOMRIGHT", borderRight, "BOTTOMLEFT")
+
+    end
+  end
+
+  -- The function will install the borders in the frame give.
+  -- The border can be retrieved in doing: frame.borders
+  -- e.g: frame.borders.left will return the border left frame
+  function InstallBorders(self, frame)
+    if self.borders then
+      frame.borders = setmetatable({}, { __mode = "v" } )
+      frame.borders.left = self.borders.left
+      frame.borders.top = self.borders.top
+      frame.borders.right = self.borders.right
+      frame.borders.bottom = self.borders.bottom
+    end
+  end
+
+  -- This method will uninstall the borders from frame given.
+  -- It simply remove metatable containing references to border frames.
+  function UninstallBorders(self, frame)
+    if frame and frame.borders then
+      frame.borders = nil -- @TODO: Check that
+    end
+  end
+
+  function ShowBorder(self)
+    if self.borders then
+      self.borders.top:Show()
+      self.borders.left:Show()
+      self.borders.bottom:Show()
+      self.borders.right:Show()
+    end
+  end
+
+  function HideBorder(self)
+    if self.borders then
+      self.borders.top:Hide()
+      self.borders.left:Hide()
+      self.borders.bottom:Hide()
+      self.borders.right:Hide()
+    end
+  end
+
+  function SetBorderWidth(self, width)
+    if self.borders then
+      self.borders.left:SetWidth(width)
+      self.borders.top:SetHeight(width)
+      self.borders.right:SetWidth(width)
+      self.borders.bottom:SetHeight(width)
+
+      self:UpdateBorderAnchors ()
+    end
+  end
+
+  function SetBorderColor(self, color)
+    if self.borders then
+      self.borders.top:SetColorTexture(color.r, color.g, color.g, color.a)
+      self.borders.left:SetColorTexture(color.r, color.g, color.g, color.a)
+      self.borders.bottom:SetColorTexture(color.r, color.g, color.g, color.a)
+      self.borders.right:SetColorTexture(color.r, color.g, color.g, color.a)
+    end
+  end
+
+  function UpdateBorderAnchors(self)
+    if self.showBorder then
+      self.frame:ClearAllPoints()
+      self.frame:SetPoint("TOP", self.borders.top, "BOTTOM")
+      self.frame:SetPoint("LEFT", self.borders.left, "RIGHT")
+      self.frame:SetPoint("RIGHT", self.borders.right, "LEFT")
+      self.frame:SetPoint("BOTTOM", self.borders.bottom, "TOP")
+    else
+      self.frame:ClearAllPoints()
+      self.frame:SetAllPoints(self:GetFrameContainer())
+    end
+  end
+
+  ------------------------------------------------------------------------------
+  --                   Refresh & Skin Methods                                 --
+  ------------------------------------------------------------------------------
+  function ExtraSkinFeatures(self, skinFlags)
+    -- Call the super function
+    Super.ExtraSkinFeatures(self)
+
+    -- Get the selected theme by user
+    local theme = Themes:GetSelected()
+
+    -- Get the element id and inherit element id if exists
+    local elementID = self.frame.elementID
+    local inheritElementID = self.frame.inheritElementID
+
+    -- If the element ID is nil, don't continue
+    if not elementID then
+      return
+    end
+
+    -- Border width
+    --if System.Reflector.ValidateFlags(skinFlags, )
+    self.borderWidth = theme:GetElementProperty(elementID, "border-width", inheritElementID)
+
+    -- Border color
+    self.borderColor = theme:GetElementProperty(elementID, "border-color", inheritElementID)
+
+  end
+  ------------------------------------------------------------------------------
+  --                        Static Functions                                  --
+  ------------------------------------------------------------------------------
+  __Static__() function RefreshAll()
+    for obj in pairs(_BorderFrameCache) do
+      if obj.Refresh then
+        obj:Refresh()
+      end
+    end
+  end
+
+  ------------------------------------------------------------------------------
+  --                         Properties                                       --
+  ------------------------------------------------------------------------------
+  property "frame"{ TYPE = Table, HANDLER = UpdateFrame }
+  property "containerFrame" { TYPE = Table } -- contains the borders and the content frame
+  property "showBorder" { TYPE = Boolean, DEFAULT = true, HANDLER = UpdateBorderVisibility }
+  property "borderWidth" { TYPE = Number, DEFAULT = 0, HANDLER = UpdateBorderWidth }
+  property "borderColor" { TYPE = Table, DEFAULT = { r = 0, g = 0, b = 0, a = 1}, HANDLER = UpdateBorderColor }
+  ------------------------------------------------------------------------------
+  --                         Constructors                                     --
+  ------------------------------------------------------------------------------
+  function BorderFrame(self)
+    Super(self)
+
+    _BorderFrameCache[self] = true
+
+    self.containerFrame = CreateFrame("Frame")
+    self:CreateBorders()
+  end
+
+
+endclass "BorderFrame"
 
 class "State"
   property "id" { TYPE = String }

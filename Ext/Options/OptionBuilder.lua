@@ -480,7 +480,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     DEFAULT = OptionFlags.FRAME_BACKGROUND_COLOR + OptionFlags.FRAME_BORDER_COLOR + OptionFlags.FRAME_BORDER_WIDTH,
     SET = false
   }
-  
+
 
   __Static__() property "ALL_TEXT_OPTIONS" {
     DEFAULT = OptionFlags.TEXT_SIZE + OptionFlags.TEXT_COLOR + OptionFlags.TEXT_FONT + OptionFlags.TEXT_TRANSFORM,
@@ -593,7 +593,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local function refresh()
             local color = theme:GetElementProperty(elementID, "background-color", self.inheritedFromElement)
             backgroundColor:SetColor(color.r, color.g, color.b, color.a)
-            self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BACKGROUND_COLOR, 0, 0))
           end
 
           if theme:GetElementPropertyFromDB(elementID, "background-color") then
@@ -603,13 +603,13 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           backgroundColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "background-color", refresh)
             theme:SetElementPropertyToDB(elementID, "background-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BACKGROUND_COLOR, 0, 0))
           end)
 
           backgroundColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "background-color", refresh)
             theme:SetElementPropertyToDB(elementID, "background-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements(Theme.SkinFlags.FRAME_BACKGROUND_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BACKGROUND_COLOR, 0, 0))
           end)
         end
 
@@ -626,7 +626,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local function refresh()
             local color = theme:GetElementProperty(elementID, "border-color", self.inheritedFromElement)
             borderColor:SetColor(color.r, color.g, color.b, color.a)
-            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BORDER_COLOR, 0, 0))
           end
 
           if theme:GetElementPropertyFromDB(elementID, "border-color") then
@@ -636,48 +636,49 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           borderColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "border-color", refresh)
             theme:SetElementPropertyToDB(elementID, "border-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BORDER_COLOR, 0, 0))
           end)
 
           borderColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "border-color", refresh)
             theme:SetElementPropertyToDB(elementID, "border-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BORDER_COLOR, 0, 0))
           end)
         end
-        
-        if hasFrameBorderWidth then 
+
+        -- TODO: Change the Refresh Element for FRAME_BORDER_WIDTH
+        if hasFrameBorderWidth then
           local borderWidth = _AceGUI:Create("Slider")
-          
+
           local width = theme:GetElementProperty(elementID, "border-width", self.inheritedFromElement)
           borderWidth:SetValue(width or 10)
-          
+
           local row = CreateRow("Border Width", borderWidth)
           group:AddChild(row)
-          
-          local function refresh() 
+
+          local function refresh()
             local width = theme:GetElementProperty(elementID, "border-width", self.inheritedFromElement)
             borderWidth:SetValue(width or 10)
-            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BORDER_COLOR, 0, 0))
           end
-          
-          if theme:GetElementPropertyFromDB(elementID, "border-width") then 
+
+          if theme:GetElementPropertyFromDB(elementID, "border-width") then
             ShowReset(row, "border-width", refresh)
-          end 
-          
+          end
+
           borderWidth:SetCallback("OnValueChanged", function(_, _, width)
             ShowReset(row, "border-width", refresh)
             theme:SetElementPropertyToDB(elementID, "border-width", width)
-            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BORDER_COLOR, 0, 0))
           end)
-          
+
           borderWidth:SetCallback("OnMouseUp", function(_, _, width)
             ShowReset(row, "border-width", refresh)
             theme:SetElementPropertyToDB(elementID, "border-width", width)
-            self:RefreshElements(Theme.SkinFlags.FRAME_BORDER_COLOR)
+            self:RefreshElements(Theme.SkinInfo(Theme.SkinFrameFlags.FRAME_BORDER_COLOR, 0, 0))
           end)
-          
-        end 
+
+        end
       end
     end
 
@@ -703,7 +704,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local function refresh()
             local color = theme:GetElementProperty(elementID, "text-color", self.inheritedFromElement)
             textColor:SetColor(color.r, color.g, color.b, color.a)
-            self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
+            self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_COLOR, 0))
           end
           if theme:GetElementPropertyFromDB(elementID, "text-color") then
             ShowReset(row, "text-color", refresh)
@@ -712,13 +713,13 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           textColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             ShowReset(row, "text-color", refresh)
             theme:SetElementPropertyToDB(elementID, "text-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
+            self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_COLOR, 0))
           end)
 
           textColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
             ShowReset(row, "text-color", refresh)
             theme:SetElementPropertyToDB(elementID, "text-color", { r = r, g = g, b = b, a = a})
-            self:RefreshElements(Theme.SkinFlags.TEXT_COLOR)
+            self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_COLOR, 0))
           end)
         end
 
@@ -733,7 +734,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           group:AddChild(row)
           local function refresh()
             textSize:SetValue(theme:GetElementProperty(elementID, "text-size", self.inheritedFromElement))
-            self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
+            self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_SIZE, 0))
           end
 
           if theme:GetElementPropertyFromDB(elementID, "text-size") then
@@ -743,12 +744,12 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           textSize:SetCallback("OnValueChanged", function(_, _, size)
             ShowReset(row, "text-size", refresh)
             theme:SetElementPropertyToDB(elementID, "text-size", size)
-            self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
+            self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_SIZE, 0))
            end)
            textSize:SetCallback("OnValueConfirmed", function(_, _, size)
              ShowReset(row, "text-size", refresh)
              theme:SetElementPropertyToDB(elementID, "text-size", size)
-             self:RefreshElements(Theme.SkinFlags.TEXT_SIZE)
+             self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_SIZE, 0))
             end)
         end
 
@@ -760,7 +761,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local row = CreateRow("Text Font", textFont)
           group:AddChild(row)
 
-          local function refresh() textFont:SetValue(GetFontIndex(theme:GetElementProperty(elementID, "text-font", self.inheritedFromElement))) ; self:RefreshElements(Theme.SkinFlags.TEXT_FONT) end
+          local function refresh() textFont:SetValue(GetFontIndex(theme:GetElementProperty(elementID, "text-font", self.inheritedFromElement))) ; self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_FONT, 0)) end
 
           if theme:GetElementPropertyFromDB(elementID, "text-font") then
             ShowReset(row, "text-font", refresh)
@@ -769,7 +770,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           textFont:SetCallback("OnValueChanged", function(_, _, value)
             ShowReset(row, "text-font", refresh)
             theme:SetElementPropertyToDB(elementID, "text-font", _Fonts[value])
-            self:RefreshElements(Theme.SkinFlags.TEXT_FONT)
+            self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_FONT, 0))
           end)
         end
 
@@ -781,7 +782,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           local row = CreateRow("Text Transform", textTransform)
           group:AddChild(row)
 
-          local function refresh() textTransform:SetValue(theme:GetElementProperty(elementID, "text-transform", self.inheritedFromElement)) ; self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM) end
+          local function refresh() textTransform:SetValue(theme:GetElementProperty(elementID, "text-transform", self.inheritedFromElement)) ; self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_TRANSFORM, 0)) end
 
           if theme:GetElementPropertyFromDB(elementID, "text-transform") then
             ShowReset(row, "text-transform", refresh)
@@ -790,7 +791,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
           textTransform:SetCallback("OnValueChanged", function(_, _, transform)
             ShowReset(row, "text-transform", refresh)
             theme:SetElementPropertyToDB(elementID, "text-transform", transform)
-            self:RefreshElements(Theme.SkinFlags.TEXT_TRANSFORM)
+            self:RefreshElements(Theme.SkinInfo(0, Theme.SkinTextFlags.TEXT_TRANSFORM, 0))
           end)
         end
       end
@@ -813,7 +814,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         local function refresh()
           local color = theme:GetElementProperty(elementID, "texture-color", self.inheritedFromElement)
           textureColor:SetColor(color.r, color.g, color.b, color.a)
-          self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
+          self:RefreshElements(Theme.SkinInfo(0, 0, Theme.SkinTextureFlags.TEXTURE_COLOR))
         end
 
         if theme:GetElementPropertyFromDB(elementID, "texture-color") then
@@ -823,13 +824,13 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
         textureColor:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
           ShowReset(row, "texture-color", refresh)
           theme:SetElementPropertyToDB(elementID, "texture-color", { r = r, g = g, b = b, a = a})
-          self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
+          self:RefreshElements(Theme.SkinInfo(0, 0, Theme.SkinTextureFlags.TEXTURE_COLOR))
         end)
 
         textureColor:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
           ShowReset(row, "texture-color", refresh)
           theme:SetElementPropertyToDB(elementID, "texture-color", { r = r, g = g, b = b, a = a})
-          self:RefreshElements(Theme.SkinFlags.TEXTURE_COLOR)
+          self:RefreshElements(Theme.SkinInfo(0, 0, Theme.SkinTextureFlags.TEXTURE_COLOR))
         end)
       end
     end
@@ -857,8 +858,8 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     return self
   end
 
-  __Arguments__ {  Argument(Theme.SkinFlags, true, 127) }
-  function RefreshElements(self, flags)
+  __Arguments__ {  Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  function RefreshElements(self, skinInfo)
     if self.refresherIsGroup then
       Continue(function()
         local startTime = debugprofilestop()
@@ -868,7 +869,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     else
       Continue(function()
         --   local startTime = debugprofilestop()
-        CallbackHandlers:Call(self.refresher, flags)
+        CallbackHandlers:Call(self.refresher, skinInfo)
         --print(format("myFunction executed in %f ms", debugprofilestop()-startTime))
       end)
     end
