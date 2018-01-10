@@ -145,21 +145,18 @@ class "ObjectiveTracker" inherit "BorderFrame"
 
 
   function SetScrollbarVisible(self, visible)
-    --self.scrollFrame:ClearAllPoints()
-    self.scrollFrame:SetPoint("TOP")
-    self.scrollFrame:SetPoint("LEFT")
-    self.scrollFrame:SetPoint("BOTTOM")
-
     if visible then
       self.scrollbar:Show()
       self.scrollFrame:SetPoint("RIGHT", self.scrollbar, "LEFT")
+      self.content:SetWidth(self:GetFrameContainer():GetWidth() - 2 * self.borderWidth - self.scrollbar:GetWidth())
     else
       self.scrollbar:Hide()
       self.scrollFrame:SetPoint("RIGHT")
+      self.content:SetWidth(self:GetFrameContainer():GetWidth() - 2 * self.borderWidth)
     end
 
-    -- Update the content size
-    self.content:SetWidth(self.scrollFrame:GetWidth())
+    -- Event for objectives
+    Scorpio.FireSystemEvent("EQT_SCROLLBAR_VISIBILITY_CHANDED")
   end
 
 
@@ -174,18 +171,24 @@ class "ObjectiveTracker" inherit "BorderFrame"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL), Argument(Boolean, true, true) }
-  function Refresh(self, skinFlags, callSuper)
-    Theme:SkinFrame(self.frame, nil, nil, skinFlags)
-    Theme:SkinFrame(self.scrollbar, nil, nil, skinFlags)
-    Theme:SkinTexture(self.scrollbar.thumb, nil, skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  function Refresh(self, skinInfo, callSuper)
+    --Theme:SkinFrame(self.frame, nil, nil, skinFlags)
+    --Theme:SkinFrame(self.scrollbar, nil, nil, skinFlags)
+    --Theme:SkinTexture(self.scrollbar.thumb, nil, skinFlags)
+    Theme:NewSkinFrame(self.frame, skinInfo)
+    Theme:NewSkinFrame(self.scrollbar, skinInfo)
+    Theme:NewSkinTexture(self.scrollbar.thumb, skinInfo)
+    self:UpdateScrollbarVisibility()
+
+
     self:ExtraSkinFeatures()
   end
 
-  __Arguments__ { Argument(Theme.SkinFlags, true, Theme.SkinFlags.ALL) }
-  __Static__() function RefreshAll(skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Static__() function RefreshAll(skinInfo)
     if _Obj then
-      _Obj:Refresh(skinFlags)
+      _Obj:Refresh(skinInfo)
     end
   end
 

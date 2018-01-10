@@ -161,13 +161,16 @@ class "QuestBlock" inherit "Block"
         if not quest:IsShown() then
           quest:Show()
         end
-
+        quest:ClearAllPoints()
         if index == 1 then
-          quest.frame:SetPoint("TOPLEFT", self.frame, "TOPLEFT", 0, -36) -- -36
-          quest.frame:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT")
+          --quest.frame:SetPoint("TOPLEFT", self.frame, "TOPLEFT", 0, -36) -- -36
+          --quest.frame:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT")
+          quest:SetPoint("TOP", 0, -36)
+          quest:SetPoint("LEFT")
+          quest:SetPoint("RIGHT")
         else
-          quest.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -10)
-          quest.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
+          quest:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -10)
+          quest:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
         end
 
         previousFrame = quest.frame

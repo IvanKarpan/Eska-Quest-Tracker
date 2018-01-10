@@ -275,8 +275,8 @@ function UpdateQuest(self, questID)
         local text, type, finished = GetQuestObjectiveInfo(quest.id, index, false)
         local objective = quest:GetObjective(index)
 
-        objective.isCompleted = finished
         objective.text = text
+        objective.isCompleted = finished
 
         if type == "progressbar" then
           local progress = GetQuestProgressBarPercent(quest.id)

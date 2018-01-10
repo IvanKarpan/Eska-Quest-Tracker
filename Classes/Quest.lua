@@ -16,9 +16,9 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
-      Theme:SkinText(self.frame.headerName, new)
+      Theme:NewSkinText(self.frame.headerName, Theme.SkinTextFlags.TEXT_TRANSFORM, new)
     elseif prop == "level" then
-      Theme:SkinText(self.frame.headerLevel, new > 0 and new or "")
+      Theme:NewSkinText(self.frame.headerLevel, Theme.SkinTextFlags.TEXT_TRANSFORM, new > 0 and new or "")
       if Options:Get("quest-color-level-by-difficulty") then
         local color = GetQuestDifficultyColor(new)
         self.frame.headerLevel:SetTextColor(color.r, color.g, color.b)
@@ -27,9 +27,9 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       self.OnDistanceChanged(self, new)
     elseif prop == "isTracked" then
       if new then
-        Theme:SkinFrame(self.frame, nil, "tracked")
+        Theme:NewSkinFrame(self.frame, "tracked")
       else
-        Theme:SkinFrame(self.frame)
+        Theme:NewSkinFrame(self.frame)
       end
     end
   end
@@ -41,56 +41,50 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     if not self.questItem then
       self.questItem = _ObjectManager:GetQuestItem()
       self.questItem:SetParent(self.frame)
-      -- self:Show()
     end
 
     return self.questItem
   end
 
-  --[[
-  __Arguments__{}
   function Draw(self)
     if not self:IsShown() then
       self:Show()
     end
 
-    if self.questItem then
-      if not self.questItem:IsShown() then
-        self.questItem:Show()
-      end
-
-      local obj = self.objectives[1]
-      if obj then
-        self.questItem:Show()
-        self.questItem.frame:SetPoint("TOPLEFT", self.frame.header, "BOTTOMLEFT", 5, -5)
-
-        obj.frame:SetPoint("TOPLEFT", self.questItem.frame, "TOPRIGHT")
-        obj.frame:SetPoint("TOPRIGHT", self.frame.header, "BOTTOMRIGHT")
-
-        self:DrawObjectives(self.frame.header, true)
-        if self.height < self.questItem.height + self.baseHeight + 10 then
-          self.height = self.baseHeight + self.questItem.height + 10
-        end
-      end
-    else
-      self:DrawObjectives(self.frame.header)
+    if self.questItem and not self.questItem:IsShown() then
+      self.questItem:Show()
     end
-  end --]]
-  --[[function Draw(self)
-    if self.numObjectives > 0 then
-      local obj = self.objectives[1]
-      if obj then
-        obj.frame:SetPoint("TOPLEFT", self.frame, "TOPLEFT", 0, -21)
-        obj.frame:SetPoint("RIGHT", self.frame, "RIGHT")
+
+    local previousFrame
+    for index, obj in self.objectives:GetIterator() do
+      obj:Show()
+      obj:ClearAllPoints()
+      if index == 1 then
+        obj:SetPoint("TOP", 0, -21)
+        if self.questItem then
+          self.questItem.frame:SetPoint("TOPLEFT", self.frame.header, "BOTTOMLEFT", 5, -5)
+          obj:SetPoint("LEFT", self.questItem.frame, "RIGHT")
+        else
+          obj:SetPoint("LEFT")
+        end
+
+        obj:SetPoint("RIGHT")
+      else
+        obj:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT")
+        obj:SetPoint("RIGHT")
       end
-      self:DrawNewObjectives(self.frame.header, true)
+      obj:CalculateHeight()
+      previousFrame = obj.frame
     end
     self:CalculateHeight()
-  end--]]
+  end
+
+--[[
   function Draw(self)
     --print("[QUEST]", "DRAW")
     local previousFrame
     for index, obj in self.objectives:GetIterator() do
+      obj:Show()
       obj:ClearAllPoints()
       if index == 1 then
         obj:SetPoint("TOP", 0, -21)
@@ -105,6 +99,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     end
     self:CalculateHeight()
   end
+  --]]
 
   function CalculateHeight(self)
     local height = self.baseHeight

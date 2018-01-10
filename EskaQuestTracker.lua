@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.6.0"
+Scorpio                   "EskaQuestTracker"                             "1.6.1"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -148,68 +148,6 @@ function CheckDBMigration()
   end
 end
 
---[[
-function RegisterBlock(self, block)
-    if not self.blocks[block.id] then
-      self.blocks[block.id] = block
-      block.frame:SetParent(self.ObjectiveTracker.content)
-
-      block.OnActiveChanged = function (self, new, old, prop)
-        if new then
-          self.frame:Show()
-          self.frame:SetHeight(self.height)
-        else
-          self.frame:Hide()
-          --self.frame:ClearAllPoints()
-        end
-
-        _Addon:DrawBlocks()
-      end
-
-      if block.isActive then
-        _Addon:DrawBlocks()
-      end
-    end
-
-    block.OnHeightChanged = function(self, new, old, prop)
-      if block.isActive then
-        --_Addon:DrawBlocks()
-        block.OnDrawRequest()
-      end
-    end
-end
---]]
-
-
-
---[[
-function RegisterBlock(self, block)
-  if not self.blocks[block.id] then
-    self.blocks[block.id] = block
-    block:SetParent(self.ObjectiveTracker.content)
-    self:RequestDrawBlock()
-    self:CalculateHeight()
-
-    block.OnActiveChanged = function(block, new)
-      if new then
-        self:Show()
-        --self:CalculateHeight()
-      else
-        self:Hide()
-      end
-
-      self:RequestDrawBlock()
-    end
-
-    -- TODO: same thing for block.OnPriorityChanged
-    block.OnHeightChanged = function(block, new, old)
-      if block.isActive then
-        self.height = new - old
-      end
-    end
-  end
-end --]]
-
 -- Register a Blocks (must be a class inherited of Block)
 -- TODO: Make Blocks API: Blocks:Register()
 function RegisterBlock(self, block)
@@ -244,8 +182,6 @@ function RegisterBlock(self, block)
 
     -- IMPORTANT: Don't call DrawBlocks directly for avoid useless call.
     self:RequestDrawBlock()
-    --self:DrawBlocks()
-    --Objective.UpdateSize()
   end
 end
 
@@ -289,8 +225,6 @@ function DrawBlocks(self)
     obj:ClearAllPoints()
 
     if index == 1 then
-      --obj:SetPoint("TOPLEFT", self.ObjectiveTracker.content, "TOPLEFT")
-      --obj:SetPoint("TOPRIGHT", self.ObjectiveTracker.content, "TOPRIGHT")
       obj:SetPoint("TOP")
       obj:SetPoint("LEFT")
       obj:SetPoint("RIGHT")
@@ -302,33 +236,6 @@ function DrawBlocks(self)
     previousBlock = obj
   end
 end
-
---[[
-function DrawBlocks(self)
-  local height = 0
-  local previousBlock
-  for index, obj in self:SortBlocks():GetIterator() do
-    obj:ClearAllPoints()
-    --print(index, obj.id, obj.priority)
-    height = height + obj.height
-
-    if index == 1 then
-      obj.frame:SetPoint("TOPLEFT", self.ObjectiveTracker.content, "TOPLEFT")
-      obj.frame:SetPoint("TOPRIGHT", self.ObjectiveTracker.content, "TOPRIGHT")
-    else
-      obj.frame:SetPoint("TOPLEFT", previousBlock.frame, "BOTTOMLEFT", 0, -15)
-      obj.frame:SetPoint("TOPRIGHT", previousBlock.frame, "BOTTOMRIGHT")
-    end
-    --obj.OnDrawRequest()
-    --obj:Draw()
-    previousBlock = obj
-  end
-
-
-  self.ObjectiveTracker.contentHeight = height + 5
-
-end
---]]
 
 __SystemEvent__()
 function BLIZZARD_TRACKER_VISIBLITY_CHANGED(isVisible)

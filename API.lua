@@ -2491,7 +2491,7 @@ class "BorderFrame" inherit "Frame"
 
   function UpdateBorderAnchors(self)
     if self.showBorder then
-      self.frame:ClearAllPoints()
+      --self.frame:ClearAllPoints()
       self.frame:SetPoint("TOP", self.borders.top, "BOTTOM")
       self.frame:SetPoint("LEFT", self.borders.left, "RIGHT")
       self.frame:SetPoint("RIGHT", self.borders.right, "LEFT")
@@ -2505,9 +2505,12 @@ class "BorderFrame" inherit "Frame"
   ------------------------------------------------------------------------------
   --                   Refresh & Skin Methods                                 --
   ------------------------------------------------------------------------------
-  function ExtraSkinFeatures(self, skinFlags)
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function ExtraSkinFeatures(self, info, alreadyInit)
     -- Call the super function
-    Super.ExtraSkinFeatures(self)
+    if alreadyInit then
+      Super.ExtraSkinFeatures(self)
+    end
 
     -- Get the selected theme by user
     local theme = Themes:GetSelected()
@@ -2520,9 +2523,7 @@ class "BorderFrame" inherit "Frame"
     if not elementID then
       return
     end
-
     -- Border width
-    --if System.Reflector.ValidateFlags(skinFlags, )
     self.borderWidth = theme:GetElementProperty(elementID, "border-width", inheritElementID)
 
     -- Border color

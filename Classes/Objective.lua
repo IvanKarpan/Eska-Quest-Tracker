@@ -202,7 +202,6 @@ class "Objective" inherit "Frame" extend "IReusable"
     end--]]
     local textHeight = self.frame.text:GetHeight()
 
-
     local diff = (textHeight + 4) - self.baseHeight
     if diff < 0 then diff = 0 end
       height = height + diff
@@ -226,8 +225,6 @@ class "Objective" inherit "Frame" extend "IReusable"
 
     self:CalculateHeight()
   end
-
-  property "superRefresh"
 
 
   __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
@@ -309,6 +306,7 @@ class "Objective" inherit "Frame" extend "IReusable"
     text:SetPoint("TOP", 0, -4)
     text:SetJustifyH("LEFT")
     text:SetWordWrap(true)
+    text:SetNonSpaceWrap(false)
     self.frame.text = text
 
     self.baseHeight = 20 -- 16
@@ -370,5 +368,10 @@ endclass "Objective"
 
   __SystemEvent__()
   function EQT_CONTENT_SIZE_CHANGED()
+    Objective.UpdateSize()
+  end
+
+  __SystemEvent__()
+  function EQT_SCROLLBAR_VISIBILITY_CHANDED()
     Objective.UpdateSize()
   end
