@@ -1,6 +1,7 @@
 [1.6.2]
 - FIX: An issue where the Quest Item buttons are not displayed.
 - FIX: The Item Bar inherits now of SecureFrameTemplate for avoiding some taint issues.
+- FIX: An issue where the quests have incorrect height when they have a quest item.
 
 [1.6.1]
 - NEW! Added Objective Wrapping (enabled by default for testing).

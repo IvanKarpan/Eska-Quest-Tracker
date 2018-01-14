@@ -62,7 +62,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       if index == 1 then
         obj:SetPoint("TOP", 0, -21)
         if self.questItem then
-          self.questItem.frame:SetPoint("TOPLEFT", self.frame.header, "BOTTOMLEFT", 5, -5)
+          self.questItem.frame:SetPoint("TOPLEFT", self.frame.header, "BOTTOMLEFT", 5, -2)
           obj:SetPoint("LEFT", self.questItem.frame, "RIGHT")
         else
           obj:SetPoint("LEFT")
@@ -79,32 +79,25 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self:CalculateHeight()
   end
 
---[[
-  function Draw(self)
-    --print("[QUEST]", "DRAW")
-    local previousFrame
-    for index, obj in self.objectives:GetIterator() do
-      obj:Show()
-      obj:ClearAllPoints()
-      if index == 1 then
-        obj:SetPoint("TOP", 0, -21)
-        obj:SetPoint("RIGHT")
-        obj:SetPoint("LEFT")
-      else
-        obj:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT")
-        obj:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
-      end
-      obj:CalculateHeight()
-      previousFrame = obj.frame
-    end
-    self:CalculateHeight()
-  end
-  --]]
-
   function CalculateHeight(self)
     local height = self.baseHeight
 
-    height = height + self:GetObjectivesHeight()
+    local objectivesHeight = self:GetObjectivesHeight()
+
+    if self.questItem then
+      local itemHeight = self.questItem.height
+      if objectivesHeight > itemHeight + 2 then
+        height = height + objectivesHeight
+      else
+        height = height + itemHeight + 2
+      end
+    else
+      height = height + objectivesHeight
+    end
+
+    -- offset
+    height = height + 2
+
 
     self.height = height
   end
