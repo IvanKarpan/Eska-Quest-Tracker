@@ -4,7 +4,7 @@
 - FIX: An issue where the quests have incorrect height when they have a quest item.
 
 [1.6.1]
-- NEW! Added Objective Wrapping (enabled by default for testing).
+- NEW: Added Objective Wrapping (enabled by default for testing).
 - API: Made some revision to the Skin API.
 NOTE: The main focus of this build is to bring some revision to Skin API. As a consquence, all code frames must be converted in order to use the new version.
 I've made my best to keep things working, this is why you may encounter some issues related to Skin features (Text Size, Text Font, Background Color, ...)
