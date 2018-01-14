@@ -1,3 +1,7 @@
+[1.6.2]
+- FIX: An issue where the Quest Item buttons are not displayed.
+- FIX: The Item Bar inherits now of SecureFrameTemplate for avoiding some taint issues.
+
 [1.6.1]
 - NEW! Added Objective Wrapping (enabled by default for testing).
 - API: Made some revision to the Skin API.

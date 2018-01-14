@@ -111,7 +111,7 @@ class "ItemBar" inherit "Frame"
   function ItemBar(self)
     Super(self)
 
-    local frame = CreateFrame("Frame", "EQT-ItemBar", UIParent)
+    local frame = CreateFrame("Frame", "EQT-ItemBar", UIParent, "SecureFrameTemplate")
     frame:SetPoint("CENTER")
     frame:SetBackdrop(_Backdrops.Common)
     frame:SetBackdropColor(0, 0, 0, 0.5)
@@ -190,7 +190,7 @@ function OnEnable(self)
   local offsetY = Options:Get("item-bar-offset-y")
   local directionGrowth = Options:Get("item-bar-direction-growth")
   --_Addon.ItemBar.frame:SetPoint("TOPRIGHT", _Addon.ObjectiveTracker.frame, "TOPLEFT", -5, -20)
-  _Addon.ItemBar.frame:SetPoint(GetAnchorPoint(position, directionGrowth), _Addon.ObjectiveTracker.frame, position, offsetX, offsetY)
+  _Addon.ItemBar.frame:SetPoint(GetAnchorPoint(position, directionGrowth), _Addon.ObjectiveTracker:GetFrameContainer(), position, offsetX, offsetY)
 end
 
 
