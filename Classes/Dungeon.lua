@@ -45,6 +45,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   function Draw(self)
     local previousFrame
     for index, obj in self.objectives:GetIterator() do
+      obj:Show()
       obj:ClearAllPoints()
       if index == 1 then
         --obj:SetPoint("TOPLEFT", self.frame.ftex, "TOPRIGHT")

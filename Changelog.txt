@@ -1,3 +1,6 @@
+[1.6.3]
+- FIX: An issue where sometimes the objectives are not displayed in dungeons.
+
 [1.6.2]
 - FIX: An issue where the Quest Item buttons are not displayed.
 - FIX: The Item Bar inherits now of SecureFrameTemplate for avoiding some taint issues.
