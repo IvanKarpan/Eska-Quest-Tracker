@@ -1,5 +1,7 @@
 [1.6.3]
 - FIX: An issue where sometimes the objectives are not displayed in dungeons.
+- FIX: Removed the options that have been created unintentially by the OptionBuilder (e.g, all border width and border color options of all frames execept the Tracker).
+NOTE: I'm aware achievements are completely broken at the moment, i'm looking for fixing that.
 
 [1.6.2]
 - FIX: An issue where the Quest Item buttons are not displayed.

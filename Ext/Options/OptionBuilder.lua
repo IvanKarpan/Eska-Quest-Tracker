@@ -481,6 +481,11 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     SET = false
   }
 
+  __Static__() property "DEFAULT_FRAME_OPTIONS" {
+    DEFAULT = OptionFlags.FRAME_BACKGROUND_COLOR,
+    SET = false
+  }
+
 
   __Static__() property "ALL_TEXT_OPTIONS" {
     DEFAULT = OptionFlags.TEXT_SIZE + OptionFlags.TEXT_COLOR + OptionFlags.TEXT_FONT + OptionFlags.TEXT_TRANSFORM,
@@ -879,7 +884,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
 
   property "elementID" { TYPE = String }
   property "inheritedFromElement" { TYPE = String }
-  property "flags" { TYPE = OptionFlags, DEFAULT = function() return ThemeElementRecipe.ALL_FRAME_OPTIONS end }
+  property "flags" { TYPE = OptionFlags, DEFAULT = function() return ThemeElementRecipe.DEFAULT_FRAME_OPTIONS end }
   property "refresher" { TYPE = String, DEFAULT = "refresher"}
   property "refresherIsGroup" { TYPE = Boolean, DEFAULT = true }
 
