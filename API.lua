@@ -2173,6 +2173,16 @@ class "Frame"
   --                 Visibility Methods                                       --
   ------------------------------------------------------------------------------
   function Show(self)
+    if ObjectIsInterface(self, IReusable) then
+      if not self.isReusable then
+        self:ForceShow()
+      end
+    else
+      self:ForceShow()
+    end
+  end
+
+  function ForceShow(self)
     self:GetFrameContainer():Show()
   end
 
