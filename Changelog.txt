@@ -1,3 +1,7 @@
+[1.6.4]
+- FIX: Achievements will now work as intended.
+NOTE: For achievements, the "Hide completed" option does not do its job, i'll look on that for the next build.
+
 [1.6.3]
 - FIX: An issue where sometimes the objectives are not displayed in dungeons.
 - FIX: Removed the options that have been created unintentially by the OptionBuilder (e.g, all border width and border color options of all frames execept the Tracker).

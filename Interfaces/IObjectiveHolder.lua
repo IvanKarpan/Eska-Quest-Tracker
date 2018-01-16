@@ -144,6 +144,12 @@ end
     if self.objectives then
       for index, objective in self.objectives:GetIterator() do totalHeight = totalHeight + objective.height end
     end
+
+    -- include dotted height if shown
+    if self.dotted and self.dotted:IsShown() then
+      totalHeight = totalHeight + self.dotted.height
+    end
+
     return totalHeight
   end
 

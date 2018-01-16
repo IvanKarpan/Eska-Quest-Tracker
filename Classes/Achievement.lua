@@ -7,18 +7,20 @@ Scorpio             "EskaQuestTracker.Classes.Achievement"                    ""
 --============================================================================--
 namespace "EQT"
 --============================================================================--
+
 class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
-  _AchievementCache = setmetatable( {}, { __mode = "k" } )
+  _AchievementCache = setmetatable( {}, { __mode = "k" })
   ------------------------------------------------------------------------------
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
     if prop == "name" then
-      Theme:SkinText(self.frame.headerName, new)
+      Theme:NewSkinText(self.frame.headerName, Theme.SkinTextFlags.TEXT_TRANSFORM, new)
     elseif prop == "icon" then
       self.frame.ftex.texture:SetTexture(new)
     elseif prop == "desc" then
-      Theme:SkinText(self.frame.description, new)
+      Theme:NewSkinText(self.frame.description, Theme.SkinTextFlags.TEXT_TRANSFORM, new)
+      self:CalculateHeight()
     elseif prop == "showDesc" then
       if new then
         self:ShowDescription()
@@ -40,101 +42,72 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ {}
-  function Draw(self)
-    if self.numObjectives > 0 then
-      self:UpdateFirstObjectiveAnchors()
-      self:DrawObjectives(self.frame, true)
-    end
-
-    -- Update the height (avoid a incorrect value by CalculateHeight)
-    self.frame.description:SetHeight(0)
-
-    self:CalculateHeight()
-  end
-
-  __Arguments__{}
-  function UpdateFirstObjectiveAnchors(self)
-    if self.numObjectives > 0 then
-      local obj = self.objectives[1]
-      if obj then
-        obj:ClearAllPoints()
-        if self.showDesc then
-          --obj.frame:SetPoint("TOPLEFT", self.frame.description, "BOTTOMLEFT", -5, 0)
-          obj.frame:SetPoint("TOP", self.frame.description, "BOTTOM")
-          obj.frame:SetPoint("LEFT", self.frame.description, "LEFT", -5, 0) -- -5 counter the offset +5 of description
-          obj.frame:SetPoint("TOPRIGHT", self.frame.description, "BOTTOMRIGHT")
-        else
-          obj.frame:SetPoint("TOPLEFT", self.frame.header, "BOTTOMLEFT")
-          obj.frame:SetPoint("TOPRIGHT", self.frame.header, "BOTTOMRIGHT")
-        end
-      end
-    end
-  end
-
-  __Arguments__{}
-  function GetDescriptionHeight(self)
-    return self.frame.description:GetHeight()
-  end
-
-  __Arguments__{}
-  function CalculateHeight(self)
-    -- Reset the height to baseHeight
-    local height = self.baseHeight
-
-    -- Get the descript height if enabled
-    if self.showDesc then
-      height = height + self:GetDescriptionHeight()
-    end
-
-    -- Adds the total height of objectives
-    height = height + self:GetObjectivesHeight()
-
-    -- Add a offset
-    local offset = 8
-    height = height + offset
-
-    -- Then to finish, set a minimun height (icon height)
-    if self.height < 46 + offset then
-      height = 46 + offset
-    end
-
-    self.height = height
-  end
-
-
-  __Arguments__{}
   function ShowDescription(self)
     if self.frame.description:IsShown() then
       return
     end
 
-    self:UpdateFirstObjectiveAnchors()
-
     self.frame.description:Show()
-
-    self:CalculateHeight()
+    self:Draw()
   end
 
-  __Arguments__{}
   function HideDescription(self)
     if not self.frame.description:IsShown() then
       return
     end
 
-    self:UpdateFirstObjectiveAnchors()
-
     self.frame.description:Hide()
+    self:Draw()
+  end
+  function Draw(self)
+    if not self:IsShown() then
+      self:Show()
+    end
+
+    local previousFrame
+    for index, obj in self.objectives:GetIterator() do
+      obj:ClearAllPoints()
+      if not obj:IsShown() then
+        obj:Show()
+      end
+      if index == 1 then
+        if self.showDesc then
+          obj:SetPoint("TOP", self.frame.description, "BOTTOM")
+          obj:SetPoint("LEFT", self.frame.description, "LEFT")
+          obj:SetPoint("RIGHT")
+        else
+          obj:SetPoint("TOP", self.frame.header, "BOTTOM")
+          obj:SetPoint("LEFT", self.frame.ftex.texture, "RIGHT")
+          obj:SetPoint("RIGHT")
+        end
+      else
+        obj:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT")
+        obj:SetPoint("RIGHT")
+      end
+      obj:CalculateHeight()
+      previousFrame = obj.frame
+    end
 
     self:CalculateHeight()
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
-  function Refresh(self, skinInfo)
-    self:SkinFeatures()
 
-    -- if show desc we are forced to update height
-    self:CalculateHeight()
+  function CalculateHeight(self)
+    -- Reset the height to baseHeight
+    local height = self.baseHeight
+    -- Get the objectives height
+    local objectivesHeight = self:GetObjectivesHeight()
+
+    -- Get the description height if enabled
+    if self.showDesc then
+      -- Update the height (avoid a incorrect value by CalculateHeight)
+      self.frame.description:SetHeight(0)
+      height = max(height, self.frame.description:GetHeight() + objectivesHeight + 21)
+    else
+      height = max(height, objectivesHeight + 21)
+    end
+
+    self.height = height
   end
 
   __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
@@ -149,6 +122,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     Theme:NewSkinText(self.frame.headerName, info, self.name)
     Theme:NewSkinText(self.frame.description, info, self.desc)
     Theme:NewSkinFrame(self.frame.ftex, info)
+    self:CalculateHeight()
   end
 
   function Reset(self)
@@ -183,6 +157,12 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       obj:Refresh(skinInfo)
     end
   end
+
+  __Static__() function UpdateSize()
+    for obj in pairs(_AchievementCache) do
+      obj:CalculateHeight()
+    end
+  end
   ------------------------------------------------------------------------------
   --                            Properties                                    --
   ------------------------------------------------------------------------------
@@ -192,35 +172,35 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   property "desc" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps }
   property "showDesc" { TYPE = Boolean, DEFAULT = true, HANDLER = UpdateProps }
   __Static__() property "_prefix" { DEFAULT = "achievement"}
-  ------------------------------------------------------------------------------
-  --                            Constructors                                  --
-  ------------------------------------------------------------------------------
+
   function Achievement(self)
     Super(self)
 
-    local frame = CreateFrame("Frame")
-    frame:SetBackdrop(_Backdrops.Common)
+    self.frame = CreateFrame("Frame")
+    self.frame:SetBackdrop(_Backdrops.Common)
 
-    local ftex = CreateFrame("Frame", nil, frame)
+    local ftex = CreateFrame("Frame", nil, self.frame)
     ftex:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
     ftex:SetPoint("TOPLEFT")
     ftex:SetHeight(46)
     ftex:SetWidth(46)
-    frame.ftex = ftex
+    self.frame.ftex = ftex
 
     local texture = ftex:CreateTexture()
     texture:SetPoint("CENTER")
     texture:SetHeight(44)
     texture:SetWidth(44)
     texture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    ftex.texture = texture
+    self.frame.ftex.texture = texture
 
-    local headerFrame = CreateFrame("Button", nil, frame)
+    local headerFrame = CreateFrame("Button", nil, self.frame)
     headerFrame:SetBackdrop(_Backdrops.Common)
     headerFrame:SetPoint("TOPRIGHT")
     headerFrame:SetPoint("TOPLEFT", ftex, "TOPRIGHT")
     headerFrame:SetHeight(21)
     headerFrame:RegisterForClicks("RightButtonUp", "LeftButtonUp")
+    self.frame.header = headerFrame
+
     headerFrame:SetScript("OnClick", function(_, button, down)
       if not Frame:MustBeInteractive(headerFrame) then
         return
@@ -249,6 +229,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       end
     end)
 
+
     local headerText = headerFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     headerText:GetFontObject():SetShadowOffset(0.5, 0)
     headerText:GetFontObject():SetShadowColor(0, 0, 0, 0.4)
@@ -256,26 +237,20 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     headerText:SetPoint("RIGHT")
     headerText:SetPoint("TOP")
     headerText:SetPoint("BOTTOM")
+    self.frame.headerName = headerText
 
-    local description = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    description:SetPoint("TOP", headerFrame, "BOTTOM")
-    --description:SetPoint("TOPRIGHT", headerFrame, "BOTTOMRIGHT")
-    description:SetPoint("LEFT", ftex, "RIGHT", 5, 0)
+    local description = self.frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    description:SetPoint("TOP", 0, -21)
+    description:SetPoint("LEFT", 51, 0)
     description:SetPoint("RIGHT")
     description:SetText("")
     description:SetJustifyH("LEFT")
     description:SetWordWrap(true)
-    --description:SetNonSpaceWrap(true)
-    --description:Hide()
-    frame.description = description
+    self.frame.description = description
 
 
-    frame.headerName = headerText
-    frame.header = headerFrame
-
-    self.frame = frame
-    self.height = 46
-    self.baseHeight = 21
+    self.baseHeight = 46
+    self.height = self.baseHeight
 
     -- Keep it in the cache for later.
     _AchievementCache[self] = true
@@ -286,9 +261,8 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self:InitRefresh(This)
   end
 
+
 endclass "Achievement"
-
-
 
 
 --============================================================================--
@@ -343,27 +317,40 @@ class "AchievementBlock" inherit "Block"
   __Arguments__{}
   function Draw(self)
     local previousFrame
-    local height = 0
-
     for index, achievement in self.achievements:GetIterator() do
       achievement:ClearAllPoints()
-      if index == 1 then
-        achievement.frame:SetPoint("TOPLEFT", 0, -40)
-        achievement.frame:SetPoint("TOPRIGHT", 0, -40)
-      else
-        achievement.frame:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -5)
-        achievement.frame:SetPoint("TOPRIGHT", previousFrame, "BOTTOMRIGHT")
+      if not achievement:IsShown() then
+        achievement:Show()
       end
 
-      -- Refresh the text Height (avoid the text is wrapped)
-      achievement.frame.description:SetHeight(0)
-      achievement:Show()
-      achievement:Draw()
+      if index == 1 then
+        achievement:SetPoint("TOP", 0, -36)
+        achievement:SetPoint("LEFT")
+        achievement:SetPoint("RIGHT")
+      else
+        achievement:SetPoint("TOPLEFT", previousFrame, "BOTTOMLEFT", 0, -5)
+        achievement:SetPoint("RIGHT")
+      end
 
-      height = height + achievement.height
       previousFrame = achievement.frame
     end
-    self.height = self.baseHeight + height + 10
+
+    self:CalculateHeight()
+  end
+
+  __Arguments__{}
+  function CalculateHeight(self)
+    local height = self.baseHeight
+    local offset = 5
+
+    for index, achievement in self.achievements:GetIterator() do
+      height = height + achievement.height
+      if index > 1 then
+        height = height + offset
+      end
+    end
+
+    self.height = height + 2
   end
 
 
@@ -411,4 +398,14 @@ function OnLoad(self)
   CallbackHandlers:Register("achievements/refresher", CallbackHandler(AchievementBlock.RefreshAll))
   CallbackHandlers:Register("achievement/refresher", CallbackHandler(Achievement.RefreshAll), "refresher")
 
+end
+
+__SystemEvent__()
+function EQT_CONTENT_SIZE_CHANGED()
+  Achievement.UpdateSize()
+end
+
+__SystemEvent__()
+function EQT_SCROLLBAR_VISIBILITY_CHANDED()
+  Achievement.UpdateSize()
 end
