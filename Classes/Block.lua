@@ -21,7 +21,7 @@ class "Block" inherit "Frame"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_BlockCache) do
       obj:Refresh(skinInfo)
@@ -51,13 +51,12 @@ class "Block" inherit "Frame"
 
     if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
       local headerText = self.frame.header.text
-      local elementID = self.frame.header.elementID
-      local inheritElementID = self.frame.header.inheritElementID
+      local elementID = headerText.elementID
+      local inheritElementID = headerText.inheritElementID
       if elementID then
         local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
         local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
         local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
-
         headerText:SetPoint("TOPLEFT", offsetX, offsetY)
 
         headerText:SetJustifyV(_JUSTIFY_V_FROM_ANCHOR[location])

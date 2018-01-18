@@ -1,3 +1,6 @@
+[1.6.5]
+- FIX: An issue where blocks header is not displayed.
+
 [1.6.4]
 - FIX: Achievements will now work as intended.
 NOTE: For achievements, the "Hide completed" option does not do its job, i'll look on that for the next build.

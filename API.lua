@@ -707,6 +707,14 @@ interface "API"
     return copy
   end
 
+  function AddFlag(self, flags, flag)
+    if not ValidateFlags(flags, flag) then
+      flags = flags + flag
+    end
+
+    return flags
+  end
+
 endinterface "API"
 
 --------------------------------------------------------------------------------
@@ -961,14 +969,12 @@ _REGISTERED_FRAMES = {}
     end
 
 
+
     -- REMOVE:
     local font, size = fontstring:GetFont()
     if not font then
-      font = Theme:GetDefaultProperty("text-font")
-    end
-
-    if not size or size <= 0 then
-      size = Theme:GetDefaultProperty("text-size")
+      flags = API:AddFlag(flags, SkinTextFlags.TEXT_FONT)
+      flags = API:AddFlag(flags, SkinTextFlags.TEXT_SIZE)
     end
 
     local textColor = {}
@@ -987,6 +993,8 @@ _REGISTERED_FRAMES = {}
       textColor = theme:GetElementProperty(elementID, "text-color", inheritElementID)
     end
     fontstring:SetTextColor(textColor.r, textColor.g, textColor.b, textColor.a)
+
+
 
     --[[
     -- NOTE: The text location may cause issue, it's why by default it's not included.
@@ -1021,6 +1029,7 @@ _REGISTERED_FRAMES = {}
       end
       fontstring:SetText(text)
     end
+
   end
 
 
