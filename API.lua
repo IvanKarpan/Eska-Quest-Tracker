@@ -2257,6 +2257,12 @@ class "Frame"
     return self.frame
   end
 
+  -- Returns the current state. Nil if there is no state.
+  -- This method may be overrided if the frame uses states. 
+  function GetCurrentState(self)
+    return nil
+  end
+
   ------------------------------------------------------------------------------
   --                   Static Functions                                       --
   ------------------------------------------------------------------------------
@@ -2624,5 +2630,5 @@ function OnLoad(self)
   States:Add(State("completed", "Completed", Color(0, 1, 0)))
   States:Add(State("progress", "Progress", Color(0.5, 0.5, 0.5)))
   States:Add(State("tracked", "Tracked", Color(1.0, 0.5, 0)))
-
+  States:Add(State("failed", "Failed", Color(1.0, 0, 0)))
 end

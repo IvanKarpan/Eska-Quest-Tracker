@@ -14,12 +14,14 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
   local function UpdateProps(self, new, old, prop)
+    local state = self:GetCurrentState()
+
     if prop == "name" then
-      Theme:NewSkinText(self.frame.headerName, Theme.SkinTextFlags.TEXT_TRANSFORM, new)
+      Theme:NewSkinText(self.frame.headerName, Theme.SkinTextFlags.TEXT_TRANSFORM, new, state)
     elseif prop == "icon" then
       self.frame.ftex.texture:SetTexture(new)
     elseif prop == "desc" then
-      Theme:NewSkinText(self.frame.description, Theme.SkinTextFlags.TEXT_TRANSFORM, new)
+      Theme:NewSkinText(self.frame.description, Theme.SkinTextFlags.TEXT_TRANSFORM, new, state)
       self:CalculateHeight()
     elseif prop == "showDesc" then
       if new then
@@ -27,6 +29,8 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       else
         self:HideDescription()
       end
+    elseif prop == "failed" then
+      self:Refresh()
     end
   end
 
@@ -92,6 +96,11 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   end
 
 
+  function GetCurrentState(self)
+    return self.failed and "failed" or nil
+  end
+
+
   function CalculateHeight(self)
     -- Reset the height to baseHeight
     local height = self.baseHeight
@@ -107,7 +116,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       height = max(height, objectivesHeight + 21)
     end
 
-    self.height = height
+    self.height = height + 2
   end
 
   __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
@@ -117,11 +126,13 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       Super.SkinFeatures(self, info)
     end
 
-    Theme:NewSkinFrame(self.frame, info)
-    Theme:NewSkinFrame(self.frame.header, info)
-    Theme:NewSkinText(self.frame.headerName, info, self.name)
-    Theme:NewSkinText(self.frame.description, info, self.desc)
-    Theme:NewSkinFrame(self.frame.ftex, info)
+    local state = self:GetCurrentState()
+
+    Theme:NewSkinFrame(self.frame, info, state)
+    Theme:NewSkinFrame(self.frame.header, info, state)
+    Theme:NewSkinText(self.frame.headerName, info, self.name, state)
+    Theme:NewSkinText(self.frame.description, info, self.desc, state)
+    Theme:NewSkinFrame(self.frame.ftex, info, state)
     self:CalculateHeight()
   end
 
@@ -137,6 +148,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.icon = nil
     self.desc = nil
     self.showDesc = nil
+    self.failed = nil
   end
 
   function RegisterFramesForThemeAPI(self)
@@ -171,6 +183,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   property "icon" { TYPE = String + Number, DEFAULT = nil, HANDLER = UpdateProps }
   property "desc" { TYPE = String, DEFAULT = "", HANDLER = UpdateProps }
   property "showDesc" { TYPE = Boolean, DEFAULT = true, HANDLER = UpdateProps }
+  property "failed" { TYPE = Boolean, DEFAULT = false, HANDLER = UpdateProps }
   __Static__() property "_prefix" { DEFAULT = "achievement"}
 
   function Achievement(self)

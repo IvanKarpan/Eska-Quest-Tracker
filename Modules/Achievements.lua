@@ -10,6 +10,7 @@ namespace "EQT"
 GetTrackedAchievements    = GetTrackedAchievements
 GetAchievementInfo        = GetAchievementInfo
 GetAchievementNumCriteria = GetAchievementNumCriteria
+IsAchievementEligible     = IsAchievementEligible
 -- ========================================================================== --
 function OnLoad(self)
   _Enabled = self:HasAchievement()
@@ -126,6 +127,7 @@ function UpdateAchievement(self, achievement)
         local objective = achievement:GetObjective(numShownCriteria)
         objective.isCompleted = criteriaCompleted
         objective.text = criteriaString
+        objective.failed = not eligible
         if ( description and bit.band(flags, EVALUATION_TREE_FLAG_PROGRESS_BAR) == EVALUATION_TREE_FLAG_PROGRESS_BAR ) then
           objective:ShowProgress()
           objective.text = description
@@ -143,6 +145,7 @@ function UpdateAchievement(self, achievement)
     end
   elseif numObjectives == 0 then
     achievement.numObjectives = 0
+    achievement.failed = not IsAchievementEligible(achievement.id)
   end
 end
 

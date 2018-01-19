@@ -96,7 +96,7 @@ function CreateBlockRecipes(self, prefix, recipeGroup)
     OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".frame", "block.frame"):SetRefresher(refresherPrefix.."/refresher"):SetOrder(10), lastElement.."/General")
 
 
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".header", "block.header"):SetRefresher(refresherPrefix.."/refresher"):SetFlags(ThemeElementRecipe.ALL_FRAME_OPTIONS + ThemeElementRecipe.ALL_TEXT_OPTIONS), lastElement.."/Header")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".header", "block.header"):SetRefresher(refresherPrefix.."/refresher"):SetFlags(ALL_FRAME_OPTIONS + ThemeElementRecipe.ALL_TEXT_OPTIONS), lastElement.."/Header")
     OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement(prefix..".stripe", "block.stripe"):SetRefresher(refresherPrefix.."/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXTURE_OPTIONS), lastElement.."/Stripe")
 
 end
@@ -578,8 +578,8 @@ function AddObjectiveRecipes(self)
 
     --OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Enable text wrapping"):BindOption("objective-text-wrapping"):SetOrder(1), "Objective/General")
 
-    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("completed", "progress"):SetRecipeGroup("Objective/General/States"), "Objective/General")
-    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("completed", "progress"):SetRecipeGroup("Objective/Square/States"), "Objective/Square")
+    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("completed", "progress", "failed"):SetRecipeGroup("Objective/General/States"), "Objective/General")
+    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("completed", "progress", "failed"):SetRecipeGroup("Objective/Square/States"), "Objective/Square")
 
     OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("objective.frame"):SetRefresher("objective/refresher"):SetFlags(ALL_FRAME_OPTIONS + ALL_TEXT_OPTIONS), "Objective/General/States")
     OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("objective.square"):SetRefresher("objective/refresher"):SetFlags(ALL_FRAME_OPTIONS + ALL_TEXTURE_OPTIONS), "Objective/Square/States")

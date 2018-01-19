@@ -10,7 +10,7 @@ namespace "EQT"
 EskaTheme = Theme()
 EskaTheme.name    = "Eska"
 EskaTheme.author  = "Skamer"
-EskaTheme.version = "1.5.9"
+EskaTheme.version = "1.6.6"
 EskaTheme.stage   = "Release"
 Themes:Register(EskaTheme)
 -- ========================================================================== --
@@ -128,7 +128,10 @@ EskaTheme:SetElementProperty("objective.*", "text-offsetX", 5)
   EskaTheme:SetElementProperty("objective.square[completed]", "background-color", { r = 0, g = 1, b = 0})
   -- in progress color
   EskaTheme:SetElementProperty("objective.frame[progress]", "text-color", { r = 148/255, g = 148/255, b = 148/255 })
-    EskaTheme:SetElementProperty("objective.square[progress]", "background-color", { r = 148/255, g = 148/255, b = 148/255 })
+  EskaTheme:SetElementProperty("objective.square[progress]", "background-color", { r = 148/255, g = 148/255, b = 148/255 })
+  -- faied color
+  EskaTheme:SetElementProperty("objective.frame[failed]", "text-color", { r = 1, g = 0, b = 0 })
+  EskaTheme:SetElementProperty("objective.square[failed]", "background-color", { r = 1, g = 0, b = 0 })
 -- ========================================================================== --
 -- == Quest header properties
 -- ========================================================================== --
@@ -152,3 +155,5 @@ EskaTheme:SetElementProperty("achievement.description", "text-size", 11)
 EskaTheme:SetElementProperty("achievement.description", "text-font", "PT Sans Bold")
 EskaTheme:SetElementProperty("achievement.description", "text-color", { r = 1, g = 1, b = 1, a = 1 })
 EskaTheme:SetElementProperty("achievement.description", "text-location", "LEFT")
+-- change the description color when failed
+EskaTheme:SetElementProperty("achievement.description[failed]", "text-color", { r = 1, g = 0, b = 0, a = 1})

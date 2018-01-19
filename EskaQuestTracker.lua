@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                             "1.6.5"
+Scorpio                   "EskaQuestTracker"                             "1.6.6"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -190,6 +190,10 @@ function CalculateHeight(self)
   local height = 0
   for index, obj in self.blocks:Filter("k,v=>v.isActive").Values:ToList():GetIterator() do
     height = obj.height
+
+    if index > 1 then
+      height = height + 4
+    end
   end
   self.ObjectiveTracker.contentHeight = height
 end
@@ -229,7 +233,7 @@ function DrawBlocks(self)
       obj:SetPoint("LEFT")
       obj:SetPoint("RIGHT")
     else
-      obj:SetPoint("TOPLEFT", previousBlock.frame, "BOTTOMLEFT")
+      obj:SetPoint("TOPLEFT", previousBlock.frame, "BOTTOMLEFT", 0, -4)
       obj:SetPoint("TOPRIGHT", previousBlock.frame, "BOTTOMRIGHT")
     end
 

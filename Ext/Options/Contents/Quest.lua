@@ -46,6 +46,7 @@ function AddQuestRecipes(self)
    OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Use difficulty color"):BindOption("quest-color-level-by-difficulty", false), "Quest/Level")
    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("quest.level"):SetRefresher("quest/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "Quest/Level")
    -- Category
+   OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Enable"):BindOption("quest-categories-enabled"), "Quest/Category")
    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("questHeader.frame"), "Quest/Category")
    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("questHeader.name"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "Quest/Category")
 end

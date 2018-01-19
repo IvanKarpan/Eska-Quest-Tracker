@@ -80,6 +80,12 @@ class "Objective" inherit "Frame" extend "IReusable"
   -- Theme:RegisterText
   -- Theme:Register
   -- Theme:SkinText()
+  local function UpdateProps(self, new, old, prop)
+    local state = self:GetCurrentState()
+    if prop == "failed" then
+      self:Refresh()
+    end
+  end
 
   local function SetText(self, new)
     Theme:NewSkinText(self.frame.text, Theme.SkinTextFlags.TEXT_TRANSFORM, new, self.isCompleted and "completed" or "progress")
@@ -188,6 +194,18 @@ class "Objective" inherit "Frame" extend "IReusable"
 		end
 	end
 
+  function GetCurrentState(self)
+      if self.failed then
+        return "failed"
+      end
+
+      if self.isCompleted then
+        return "completed"
+      end
+
+      return "progress"
+  end
+
   function CalculateHeight(self)
     local height = self.baseHeight
 
@@ -208,7 +226,7 @@ class "Objective" inherit "Frame" extend "IReusable"
 
     -- if the objective has a progress
     if self:HasProgress() then
-      height = height + 22
+      height = height + 26
     end
 
     -- if the objective has a timer
@@ -234,7 +252,7 @@ class "Objective" inherit "Frame" extend "IReusable"
       Super.SkinFeatures(self, info)
     end
 
-    local state = self.isCompleted and "completed" or "progress"
+    local state = self:GetCurrentState()
     Theme:NewSkinFrame(self.frame, info, state)
     Theme:NewSkinFrame(self.frame.square, info, state)
 
@@ -279,6 +297,7 @@ class "Objective" inherit "Frame" extend "IReusable"
   property "text" { TYPE = String, DEFAULT = "", HANDLER = SetText }
   property "type" { TYPE = String, DEFAULT = ""}
   property "isCompleted" { TYPE = Boolean, DEFAULT = false, HANDLER = SetCompleted }
+  property "failed" { TYPE = Boolean, DEFAULT = false, HANDLER = UpdateProps }
   __Static__() property "_prefix" { DEFAULT = "objective"}
   ------------------------------------------------------------------------------
   --                            Constructors                                  --

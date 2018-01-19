@@ -22,19 +22,25 @@ function AddAchievementRecipes(self)
     OptionBuilder:AddRecipe(TabItemRecipe("Name", "Achievement/Name"):SetID("name"):SetOrder(30), "Achievement/Tabs")
     OptionBuilder:AddRecipe(TabItemRecipe("Description", "Achievement/Description"):SetID("description"):SetOrder(40), "Achievement/Tabs")
     OptionBuilder:AddRecipe(TabItemRecipe("Icon", "Achievement/Icon"):SetID("icon"):SetOrder(50), "Achievement/Tabs")
+
     -- General
     OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Hide completed criteria"):BindOption("achievement-hide-criteria-completed"):SetOrder(10), "Achievement/General")
     OptionBuilder:AddRecipe(RangeGroupRecipe():SetText("Max criteria displayed"):BindOption("achievement-max-criteria-displayed"):SetRange(0, 20):SetOrder(30), "Achievement/General")
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.frame"):SetRefresher("achievement/refresher"), "Achievement/General")
+    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("none", "failed"):SetRecipeGroup("Achievement/General/States"), "Achievement/General")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.frame"):SetRefresher("achievement/refresher"), "Achievement/General/States")
     -- Header
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.header"):SetRefresher("achievement/refresher"), "Achievement/Header")
+    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("none", "failed"):SetRecipeGroup("Achievement/Header/States"), "Achievement/Header")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.header"):SetRefresher("achievement/refresher"), "Achievement/Header/States")
     -- Name
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.name"):SetRefresher("achievement/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "Achievement/Name")
+    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("none", "failed"):SetRecipeGroup("Achievement/Name/States"), "Achievement/Name")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.name"):SetRefresher("achievement/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "Achievement/Name/States")
     -- Description
         OptionBuilder:AddRecipe(CheckBoxRecipe():SetText("Show Description"):BindOption("achievement-show-description"):SetOrder(10), "Achievement/Description")
-        OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.description"):SetRefresher("achievement/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "Achievement/Description")
+        OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("none", "failed"):SetRecipeGroup("Achievement/Description/States"), "Achievement/Description")
+        OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.description"):SetRefresher("achievement/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXT_OPTIONS), "Achievement/Description/States")
     -- Icon
-    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.icon"):SetRefresher("achievement/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXTURE_OPTIONS), "Achievement/Icon")
+    OptionBuilder:AddRecipe(SelectStateRecipe():SetStates("none", "failed"):SetRecipeGroup("Achievement/Icon/States"), "Achievement/Icon")
+    OptionBuilder:AddRecipe(ThemeElementRecipe():BindElement("achievement.icon"):SetRefresher("achievement/refresher"):SetFlags(ThemeElementRecipe.ALL_TEXTURE_OPTIONS), "Achievement/Icon/States")
 end
 
 

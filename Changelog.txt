@@ -1,3 +1,16 @@
+[1.6.6]
+- NEW: The achievements and objectives can now be displayed as failed. By default, objectives and the achievements description will be red.
+- UPDATED: Eska and Transparence to apply changes for failed achievements and objectives.
+- CHANGES: Increased slightly the objectives height when they have a progress bar.
+- CHANGES: Added an offset between each blocks.
+
+Options:
+- NEW: Added the state "failed" for objective and achievement options.
+- NEW: Added an option for disabling/enabling the quest categories (in Quest->Category).
+- REMOVED: Some options that have been created unintentially for all blocks.
+
+NOTE: This alpha build is the last as alpha and well stable, the next build will be the beta for preparing the release.
+
 [1.6.5]
 - FIX: An issue where blocks header is not displayed.
 

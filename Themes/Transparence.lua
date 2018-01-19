@@ -10,7 +10,7 @@ namespace "EQT"
 TransparenceTheme = Theme()
 TransparenceTheme.name     = "Transparence"
 TransparenceTheme.author   = "Skamer"
-TransparenceTheme.version  = "1.5.9"
+TransparenceTheme.version  = "1.6.6"
 TransparenceTheme.stage    = "Release"
 Themes:Register(TransparenceTheme)
 -- ========================================================================== --
@@ -117,6 +117,9 @@ TransparenceTheme:SetElementProperty("objective.*", "text-offsetX", 5)
   -- in progress color
   TransparenceTheme:SetElementProperty("objective.frame[progress]", "text-color", { r = 148/255, g = 148/255, b = 148/255 })
   TransparenceTheme:SetElementProperty("objective.square[progress]", "background-color", { r = 148/255, g = 148/255, b = 148/255 })
+  -- failed color
+  TransparenceTheme:SetElementProperty("objective.frame[failed]", "text-color", { r = 1, g = 0, b = 0 })
+  TransparenceTheme:SetElementProperty("objective.square[failed]", "background-color", { r = 1, g = 0, b = 0 })
 -- ========================================================================== --
 -- == Quest header properties
 -- ========================================================================== --
@@ -140,3 +143,5 @@ TransparenceTheme:SetElementProperty("achievement.description", "text-size", 11)
 TransparenceTheme:SetElementProperty("achievement.description", "text-font", "PT Sans Bold")
 TransparenceTheme:SetElementProperty("achievement.description", "text-color", { r = 1, g = 1, b = 1, a = 1 })
 TransparenceTheme:SetElementProperty("achievement.description", "text-location", "LEFT")
+-- change the description color when failed
+TransparenceTheme:SetElementProperty("achievement.description[failed]", "text-color", { r = 1, g = 0, b = 0, a = 1})
