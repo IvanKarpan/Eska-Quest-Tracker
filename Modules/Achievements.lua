@@ -66,13 +66,22 @@ end
 
 __SystemEvent__()
 function TRACKED_ACHIEVEMENT_LIST_CHANGED(achievementID, isAdded)
-  if isAdded and not _AchievementBlock:GetAchievement(achievementID) then
-    local achievement = _ObjectManager:Get(Achievement)
-    achievement.id =  achievementID
-    _AchievementBlock:AddAchievement(achievement)
-    _M:UpdateAchievement(achievement)
-  elseif not isAdded then
-    _AchievementBlock:RemoveAchievement(achievementID)
+  -- NOTE: When an achievement has failed, TRACKED_ACHIEVEMENT_LIST_CHANGED is triggered with
+  -- achievementID and isAdded having a nil value
+  if achievementID then
+    if isAdded and not _AchievementBlock:GetAchievement(achievementID) then
+      local achievement = _ObjectManager:Get(Achievement)
+      achievement.id =  achievementID
+      _AchievementBlock:AddAchievement(achievement)
+      _M:UpdateAchievement(achievement)
+    elseif not isAdded then
+      _AchievementBlock:RemoveAchievement(achievementID)
+    end
+  else
+    -- NOTE: When an anchievement has failed, achievementID and isAdded have a nil value.
+    -- We must update all for the achievement eligibility is correctly updated.
+    -- Infortunnaly we don't know which achievement has an eligibility change.
+    _M:UpdateAll()
   end
 end
 
