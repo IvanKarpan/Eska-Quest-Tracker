@@ -1,51 +1,18 @@
-[1.6.6]
-- NEW: The achievements and objectives can now be displayed as failed. By default, objectives and the achievements description will be red.
-- FIX: An error when an achievement has failed.
-- UPDATED: Eska and Transparence to apply changes for failed achievements and objectives.
-- CHANGES: Increased slightly the objectives height when they have a progress bar.
-- CHANGES: Added an offset between each blocks.
+[1.6.7]
+* tagged as beta
+- NEW: All objectives text will now be wrapped.
+- NEW: Achievements and objectives can now be displayed as failed. By default, their text or their description will be red.
+- UPDATED: Eska and Transparence themes to apply changes for failed achievements and objectives.
+- NEW: Quests can now be displayed without their category.
+- NEW: Implemented a new border system for frames. By the way, this will fix the issues with tracker border.
+- FIX: Ticket #8.
+- FIX: Ticket #10.
+- FIX: Ticket #12.
+- CHANGE: The Item bar inherits now of SecureFrameTemplate.
+- Made some optimizations in the code.
 
 Options:
-- NEW: Added the state "failed" for objective and achievement options.
-- NEW: Added an option for disabling/enabling the quest categories (in Quest->Category).
-- REMOVED: Some options that have been created unintentially for all blocks.
-
-NOTE: This alpha build is the last as alpha and well stable, the next build will be the beta for preparing the release.
-
-[1.6.5]
-- FIX: An issue where blocks header is not displayed.
-
-[1.6.4]
-- FIX: Achievements will now work as intended.
-NOTE: For achievements, the "Hide completed" option does not do its job, i'll look on that for the next build.
-
-[1.6.3]
-- FIX: An issue where sometimes the objectives are not displayed in dungeons.
-- FIX: Removed the options that have been created unintentially by the OptionBuilder (e.g, all border width and border color options of all frames execept the Tracker).
-NOTE: I'm aware achievements are completely broken at the moment, i'm looking for fixing that.
-
-[1.6.2]
-- FIX: An issue where the Quest Item buttons are not displayed.
-- FIX: The Item Bar inherits now of SecureFrameTemplate for avoiding some taint issues.
-- FIX: An issue where the quests have incorrect height when they have a quest item.
-
-[1.6.1]
-- NEW: Added Objective Wrapping (enabled by default for testing).
-- API: Made some revision to the Skin API.
-NOTE: The main focus of this build is to bring some revision to Skin API. As a consquence, all code frames must be converted in order to use the new version.
-I've made my best to keep things working, this is why you may encounter some issues related to Skin features (Text Size, Text Font, Background Color, ...)
-The goal of this revision is to make optimizations, improve the code logic and prepare the work for new options.
-
-Currently, the options has not been updated to include new features, this is planned to be done in a future alpha build once things are well set.
-I forgot to talk about that in the previous build, you can use this command to remove the quest categories: /run EQT.Options:Set("quest-categories-enabled", false)
-
-[1.6.0.1]
-- FIX: An error that preventing the addon to work.
-
-[1.6.0]
-- NEW: Implemented a new border system for frames. By the way, this will fix some issues with the tracker border
-- NEW: The quest categories can now be disabled.
-- DELETED: Removed IFrame file that was no longer used.
-
-Options:
-- NEW: Added a way for setting the width of tracker border.
+ - REMOVED: All border options for all frames except Tracker.
+ - NEW: Added a new border option for Tracker: Border Width.
+ - NEW: Added a way for disabling/enabling quest categories (in Quest -> Category).
+ - NEW: Added a new state "Failed" for customizing objectives and achievements when failed.
