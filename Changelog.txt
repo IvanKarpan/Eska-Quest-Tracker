@@ -1,5 +1,6 @@
 [1.6.6]
 - NEW: The achievements and objectives can now be displayed as failed. By default, objectives and the achievements description will be red.
+- FIX: An error when an achievement has failed.
 - UPDATED: Eska and Transparence to apply changes for failed achievements and objectives.
 - CHANGES: Increased slightly the objectives height when they have a progress bar.
 - CHANGES: Added an offset between each blocks.
