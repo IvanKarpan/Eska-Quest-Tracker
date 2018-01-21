@@ -1,5 +1,5 @@
-[1.6.7]
-* tagged as beta
+[1.6.8]
+* tagged as release
 - NEW: All objectives text will now be wrapped.
 - NEW: Achievements and objectives can now be displayed as failed. By default, their text or their description will be red.
 - UPDATED: Eska and Transparence themes to apply changes for failed achievements and objectives.
