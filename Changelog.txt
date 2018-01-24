@@ -1,3 +1,6 @@
+[1.6.9]
+- CHANGE: Lower the frame strata of objective tracker (the value will now be the same as before). 
+
 [1.6.8]
 * tagged as release
 - NEW: All objectives text will now be wrapped.

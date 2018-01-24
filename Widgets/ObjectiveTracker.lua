@@ -218,6 +218,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     self.frame:SetBackdropColor(0, 1, 0, 0)
     self.frame:SetBackdropBorderColor(0, 0, 0, 0)
     self:GetFrameContainer():SetClampedToScreen(true)
+    self:GetFrameContainer():SetFrameStrata("LOW")
 
     -- Restore the position contained in the DB if exists
     if Options:Exists("tracker-xPos") and Options:Exists("tracker-yPos") then
