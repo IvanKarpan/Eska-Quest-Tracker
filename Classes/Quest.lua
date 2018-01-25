@@ -143,6 +143,34 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     end
   end
 
+  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  function ExtraSkinFeatures(self, info, alreadyInit)
+    -- In orter to avoid useless function calls, this is important to call not the super
+    -- when the object has not finished its intialization.
+    -- So put always this check in Refresh, SkinFeature, ExtraSkinFeatures Methods.
+    if alreadyInit then
+      Super.SkinFeatures(self, skinInfo)
+    end
+
+    local theme = Themes:GetSelected()
+    if not theme then return end
+
+    if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
+      local headerName = self.frame.headerName
+      local elementID = headerName.elementID
+      local inheritElementID = headerName.inheritElementID
+      if elementID then
+        local location = theme:GetElementProperty(elementID, "text-location", inheritElementID)
+        local offsetX = theme:GetElementProperty(elementID, "text-offsetX", inheritElementID)
+        local offsetY = theme:GetElementProperty(elementID, "text-offsetY", inheritElementID)
+        headerName:SetPoint("TOPLEFT", offsetX, offsetY)
+
+        headerName:SetJustifyV(_JUSTIFY_V_FROM_ANCHOR[location])
+        headerName:SetJustifyH(_JUSTIFY_H_FROM_ANCHOR[location])
+      end
+    end
+  end
+
 
   function Reset(self)
     --for _, objective in self.objectives:GetIterator() do

@@ -1,5 +1,8 @@
+[1.6.10]
+- FIX: The command "/run EQT.Themes:GetSelected():SetElementPropertyToDB("quest.name", "text-location", "LEFT")" for setting the quest name to left.
+
 [1.6.9]
-- CHANGE: Lower the frame strata of objective tracker (the value will now be the same as before). 
+- CHANGE: Lower the frame strata of objective tracker (the value will now be the same as before).
 
 [1.6.8]
 * tagged as release
