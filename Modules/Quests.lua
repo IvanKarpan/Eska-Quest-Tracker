@@ -54,9 +54,7 @@ function OnEnable(self)
   UPDATE_BLOCK_VISIBILITY()
 
   -- [FIX] Super track the closest quest for the players having not the blizzad objective quest.
-  if GetSuperTrackedQuestID() == 0 then
-    QuestSuperTracking_ChooseClosestQuest()
-  end
+  QuestSuperTracking_ChooseClosestQuest()
 end
 
 function OnDisable(self)
@@ -84,6 +82,8 @@ function QUEST_ACCEPTED(index, questID)
 
   -- Add it in the quest watched
   AddQuestWatch(index)
+
+  QuestSuperTracking_OnQuestTracked(questID)
 end
 
 __SystemEvent__ "QUEST_LOG_UPDATE" "ZONE_CHANGED" "EQT_SHOW_ONLY_QUESTS_IN_ZONE"
@@ -98,6 +98,11 @@ function QUEST_LOG_UPDATE()
   for questID in pairs(QUESTS_CACHE) do
     _M:UpdateQuest(questID)
   end
+end
+
+__SystemEvent__()
+function QUEST_POI_UPDATE()
+  QuestSuperTracking_OnPOIUpdate()
 end
 
 
@@ -162,6 +167,7 @@ function QUEST_WATCH_LIST_CHANGED(questID, isAdded)
     QUESTS_CACHE[questID] = nil
     _QuestBlock:RemoveQuest(questID)
     _Addon.ItemBar:RemoveItem(questID)
+    QuestSuperTracking_OnQuestUntracked()
   end
 end
 
@@ -258,6 +264,7 @@ function UpdateQuest(self, questID)
     quest.isOnMap = isOnMap
     quest.isTask = isTask
     quest.isBounty = isBounty
+    quest.isCompleted = isComplete
 
     -- is the quest has an item quest ?
     local itemLink, itemTexture = GetQuestLogSpecialItemInfo(questLogIndex)
@@ -299,6 +306,7 @@ function UpdateQuest(self, questID)
 
     if isNew then
       _QuestBlock:AddQuest(quest)
+      quest.IsCompletedChanged = function() QuestSuperTracking_OnQuestCompleted() end
     end
 end
 

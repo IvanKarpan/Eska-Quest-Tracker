@@ -1,3 +1,6 @@
+[1.6.11]
+- FIX: Ticket #13. The yellow arrow on minimap for quest tracking will now work as intended.
+
 [1.6.10]
 - FIX: The command "/run EQT.Themes:GetSelected():SetElementPropertyToDB("quest.name", "text-location", "LEFT")" for setting the quest name to left.
 

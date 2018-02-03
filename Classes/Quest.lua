@@ -11,6 +11,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   _QuestCache = setmetatable( {}, { __mode = "v" } )
   event "OnDistanceChanged"
   event "IsOnMapChanged"
+  event "IsCompletedChanged"
   ------------------------------------------------------------------------------
   --                                Handlers                                  --
   ------------------------------------------------------------------------------
@@ -201,6 +202,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       self.questItem = nil
     end
 
+    self.IsCompletedChanged = nil
 
     -- Reset variables
     --self.objectives =  ObjectArray(Objective)
@@ -238,6 +240,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   property "isOnMap" { TYPE = Boolean, DEFAULT = false, EVENT = "IsOnMapChanged" }
   property "isInArea" { TYPE = Boolean, DEFAULT = false }
   property "isTracked" { TYPE = Boolean, DEFAULT = false, HANDLER = UpdateProps }
+  property "isCompleted" { TYPE = Boolean, DEFAULT = false, EVENT = "IsCompletedChanged"}
 
   __Static__() property "_prefix" { DEFAULT = "quest" }
   ------------------------------------------------------------------------------
