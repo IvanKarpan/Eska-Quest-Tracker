@@ -28,7 +28,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
       self.OnDistanceChanged(self, new)
     elseif prop == "isTracked" then
       if new then
-        Theme:NewSkinFrame(self.frame, "tracked")
+        Theme:NewSkinFrame(self.frame, nil, "tracked")
       else
         Theme:NewSkinFrame(self.frame)
       end
