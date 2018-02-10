@@ -123,7 +123,7 @@ function UpdateAchievement(self, achievement)
       local criteriaString, criteriaType, criteriaCompleted, quantity, totalQuantity, name, flags, assetID, quantityString, criteriaID, eligible, duration, elapsed = GetAchievementCriteriaInfo(achievement.id, index)
       local mustBeShown = true
       if criteriaCompleted and Options:Get("achievement-hide-criteria-completed") then
-        break
+        mustBeShown = false
       end
       if maxCriteriaDisplayed > 0 and numShownCriteria == maxCriteriaDisplayed then
         mustBeShown = false
