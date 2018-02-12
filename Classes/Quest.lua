@@ -330,6 +330,12 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
           end)
           _Addon.MenuContext:AddItem("Link to chat", nil, function() ChatFrame_OpenChat(GetQuestLink(self.id)) end)
           _Addon.MenuContext:AddItem(MenuItemSeparator())
+
+          -- Abandon (Only for Quests)
+          if not QuestUtils_IsQuestWorldQuest(self.id) and CanAbandonQuest(self.id) then
+            _Addon.MenuContext:AddItem("Abandon", nil, function() QuestMapQuestOptions_AbandonQuest(self.id) end)
+            _Addon.MenuContext:AddItem(MenuItemSeparator())
+          end
           _Addon.MenuContext:AddItem("Help", nil, function() print("Put a Help handler here !") end).disabled = true
         end
       end

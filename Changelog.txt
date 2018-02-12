@@ -1,5 +1,9 @@
+[1.6.14]
+- NEW: Added an "Abandon" action in the context menu for quests.
+
 [1.6.13]
 - FIX: The completed criterias will now be correctly hidden when "hide completed criterias" option is enabled for achievements.
+
 [1.6.12]
 - FIX: Ticket #14. An error when "Show tracked world quests" was enabled.
 
