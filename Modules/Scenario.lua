@@ -155,13 +155,20 @@ function RunTimer(self)
   end
 end
 
-function UpdateScenario()
+function UpdateScenario(self, isNewStage)
   if not IsInScenario() then return end
 
   local title, currentStage, numStages, flags, _, _, _, xp, money = GetInfo();
   _Scenario.name = title
   _Scenario.currentStage = currentStage
   _Scenario.numStages = numStages
+
+  if isNewStage then
+    LevelUpDisplay_PlayScenario()
+    if currentStage > 1 and currentStage <= numStages then
+      PlaySound(SOUNDKIT.UI_SCENARIO_STAGE_END)
+    end
+  end
 end
 
 
@@ -171,8 +178,8 @@ function OBJECTIVES_UPDATE()
 end
 
 __SystemEvent__()
-function SCENARIO_UPDATE()
-  _M:UpdateScenario()
+function SCENARIO_UPDATE(...)
+  _M:UpdateScenario(...)
   _M:UpdateObjectives()
 end
 

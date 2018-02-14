@@ -1,3 +1,7 @@
+[1.6.15]
+- FIX: The LevelUpDisplay frame will now be correctly displayed in the scenario.
+- FIX: A sound will now be played when a stage change happens in the scenario.
+
 [1.6.14]
 - NEW: Added an "Abandon" action in the context menu for quests.
 
