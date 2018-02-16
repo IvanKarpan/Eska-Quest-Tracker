@@ -31,6 +31,7 @@ function OnLoad(self)
   -- Register the options
   Options:Register("sort-quests-by-distance", true, "quests/sortingByDistance")
   Options:Register("show-only-quests-in-zone", false, "quests/showOnlyQuestInZone")
+  Options:Register("quest-popup-location", "TOP")
 
   -- Register the callbacks for options
   CallbackHandlers:Register("quests/sortingByDistance", CallbackHandler(function(enabled) if enabled then self:UpdateDistance() end end))
@@ -373,6 +374,7 @@ class "QuestPopup" inherit "Frame"
   function QuestPopup(self)
     local frame = CreateFrame("Frame")
     frame:SetHeight(32)
+    frame:SetFrameStrata("FULLSCREEN_DIALOG")
     frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
     --frame:SetBackdropColor(1.0, 216/255, 0, 0.5)
     frame:SetBackdropColor(127/255, 0, 0, 0.5)
@@ -449,8 +451,15 @@ endclass "QuestPopup"
 function ShowPopup(self, questID, popupType)
   if not _M.popup then
     _M.popup = QuestPopup()
-    _M.popup.frame:SetPoint("BOTTOMLEFT", _Addon.ObjectiveTracker.frame, "TOPLEFT")
-    _M.popup.frame:SetPoint("BOTTOMRIGHT", _Addon.ObjectiveTracker.frame, "TOPRIGHT")
+
+    local location = Options:Get("quest-popup-location")
+    if location == "TOP" or not location then
+      _M.popup.frame:SetPoint("BOTTOMLEFT", _Addon.ObjectiveTracker.frame, "TOPLEFT")
+      _M.popup.frame:SetPoint("BOTTOMRIGHT", _Addon.ObjectiveTracker.frame, "TOPRIGHT")
+    elseif location == "BOTTOM" then
+      _M.popup.frame:SetPoint("TOPLEFT", _Addon.ObjectiveTracker.frame, "BOTTOMLEFT")
+      _M.popup.frame:SetPoint("TOPRIGHT", _Addon.ObjectiveTracker.frame, "BOTTOMRIGHT")
+    end
   else
     _M.popup:Show()
   end

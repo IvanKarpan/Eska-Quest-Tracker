@@ -1,3 +1,9 @@
+[1.6.16]
+  - CHANGE: The quest popup frame will now use the same frame strata as others dialog box.
+  - NEW: Added a new option command for changing the quest popup location (relative to tracker):
+  /run EQT.Options:Set("quest-popup-location", "BOTTOM")
+  The values accepted are "BOTTOM" and "TOP" (default value). A /reload is needed to apply this change.
+
 [1.6.15]
 - FIX: The LevelUpDisplay frame will now be correctly displayed in the scenario.
 - FIX: A sound will now be played when a stage change happens in the scenario.
