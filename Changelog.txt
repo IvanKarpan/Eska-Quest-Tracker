@@ -1,3 +1,6 @@
+[1.6.17]
+  - FIX: An lua error that prevents the timer is displayed.
+
 [1.6.16]
   - CHANGE: The quest popup frame will now use the same frame strata as others dialog box.
   - NEW: Added a new option command for changing the quest popup location (relative to tracker):
