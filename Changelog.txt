@@ -1,3 +1,6 @@
+[1.6.18]
+  - FIX: Fixed an lua error preventing the achievement block options to work.
+
 [1.6.17]
   - FIX: An lua error that prevents the timer is displayed.
 
