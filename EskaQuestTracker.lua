@@ -3,7 +3,7 @@
 -- @Author   : Skamer <https://mods.curse.com/members/DevSkamer>              --
 -- @Website  : https://wow.curseforge.com/projects/eska-quest-tracker         --
 -- ========================================================================== --
-Scorpio                   "EskaQuestTracker"                            "1.6.18"
+Scorpio                   "EskaQuestTracker"                            "1.6.19"
 -- ========================================================================== --
 import "EQT"
 import "System.Collections"
@@ -322,8 +322,8 @@ local deprecatedAlertText = "Your |cffFF6A00%s|r version is deprecated. That mea
 local requiredAlertText = "Your |cffFF6A00%s|r version is too older for the addon works. Update it now !"
 
 function CheckPLoopVersion(self, printCheck)
-  local deprecatedVersion = 190 -- The version below will be considered as deprecated
-  local requiredVersion = 190   -- The version below will be considered as outdated and not working with the current addon version.
+  local deprecatedVersion = 201 -- The version below will be considered as deprecated
+  local requiredVersion = 201   -- The version below will be considered as outdated and not working with the current addon version.
 
   if printCheck == nil then
     printCheck = true
@@ -344,8 +344,8 @@ function CheckPLoopVersion(self, printCheck)
 end
 
 function CheckScorpioVersion(self, printCheck)
-  local deprecatedVersion = 15 -- The version below will be considered as deprecated
-  local requiredVersion = 13   -- The version below will be considered as outdated and not working with the current addon version.
+  local deprecatedVersion = 17 -- The version below will be considered as deprecated
+  local requiredVersion = 17   -- The version below will be considered as outdated and not working with the current addon version.
 
   if printCheck == nil then
     printCheck = true
@@ -401,8 +401,7 @@ function OpenOptions(self)
     local loaded, reason = LoadAddOn("EskaQuestTracker_Options")
     if not loaded then return end
   end
-
-    local options = _M:GetModule("Options")
+    local options = _Modules["Options"]
     options:Open()
 end
 

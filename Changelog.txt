@@ -1,3 +1,6 @@
+[1.6.19]
+  - Update: The addon now support the new major PLoop version (there is important you get the lastest version of PLoop and Scorpio in order the addon works).
+
 [1.6.18]
   - FIX: Fixed an lua error preventing the achievement block options to work.
 
