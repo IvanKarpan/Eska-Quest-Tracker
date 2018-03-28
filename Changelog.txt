@@ -1,3 +1,6 @@
+[1.6.21]
+  - FIX: An LUA error triggered by the quest.
+
 [1.6.20]
   - FIX: An LUA error triggered by the group finder support.
 
