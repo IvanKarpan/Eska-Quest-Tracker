@@ -6,6 +6,7 @@
 Scorpio             "EskaQuestTracker.Classes.Achievement"                    ""
 --============================================================================--
 namespace "EQT"
+_EQTAddon = _Addon
 --============================================================================--
 
 class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
@@ -225,14 +226,14 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
           AchievementFrame_ToggleAchievementFrame()
         end
       elseif button == "RightButton" then
-        if _Addon.MenuContext:IsShown() then
-          _Addon.MenuContext:Hide()
+        if _EQTAddon.MenuContext:IsShown() then
+          _EQTAddon.MenuContext:Hide()
         else
-          _Addon.MenuContext:Show()
-          _Addon.MenuContext:ClearAnchorFrames():AnchorTo(self.frame.ftex, headerFrame):UpdateAnchorPoint()
-          _Addon.MenuContext:Clear()
-          _Addon.MenuContext:AddItem("Open Achievement", nil, function() SelectAchievement(self.id) end)
-          _Addon.MenuContext:AddItem("Stop Tracking", nil, function()
+          _EQTAddon.MenuContext:Show()
+          _EQTAddon.MenuContext:ClearAnchorFrames():AnchorTo(self.frame.ftex, headerFrame):UpdateAnchorPoint()
+          _EQTAddon.MenuContext:Clear()
+          _EQTAddon.MenuContext:AddItem("Open Achievement", nil, function() SelectAchievement(self.id) end)
+          _EQTAddon.MenuContext:AddItem("Stop Tracking", nil, function()
             RemoveTrackedAchievement(self.id);
             if AchievementFrame then
               AchievementFrameAchievements_ForceUpdate();
