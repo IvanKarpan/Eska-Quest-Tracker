@@ -6,7 +6,7 @@
 Scorpio           "EskaQuestTracker.Options.OptionBuilder"                    ""
 --============================================================================--
 namespace "EQT"
-import "System.Reflector"
+ValidateFlags = Enum.ValidateFlags
 --============================================================================--
 __Flags__()
 enum "TextOptionFlags" {
@@ -24,7 +24,6 @@ __Abstract__()
 class "OptionRecipe"
 
 
-  __Require__()
   function Build(self, parent, info) end
 
 
@@ -74,7 +73,7 @@ class "OptionRecipe"
 
   __Arguments__ { String, String }
   function OptionRecipe(self, text, recipeGroup)
-    This(self)
+    this(self)
 
     self.text = text
     self.recipeGroup = recipeGroup
@@ -358,7 +357,7 @@ class "CheckBoxRecipe" inherit "OptionRecipe" extend "InstallOptionHandler"
 
   --[[__Arguments__ { Argument(Number, true) }
   function CheckBoxRecipe(self, width)
-    Super(self)
+    super(self)
     self.width = width
 
   end--]]
@@ -840,7 +839,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
       end
     end
   end
-  __Arguments__ { String, Argument(String, true)}
+  __Arguments__ { String, Variable.Optional(String) }
   function BindElement(self, elementID, inheritFrom)
     self.elementID = elementID
     self.inheritedFromElement = inheritFrom
@@ -848,7 +847,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     return self
   end
 
-  __Arguments__ { String, Argument(Boolean, true, false)}
+  __Arguments__ { String, Variable.Optional(Boolean, false)}
   function SetRefresher(self, refresher, isGroup)
     self.refresher = refresher
     self.refresherIsGroup = isGroup
@@ -863,7 +862,7 @@ class "ThemeElementRecipe" inherit "OptionRecipe"
     return self
   end
 
-  __Arguments__ {  Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo())}
   function RefreshElements(self, skinInfo)
     if self.refresherIsGroup then
       Continue(function()
@@ -1092,7 +1091,7 @@ class "CreateThemeRecipe" inherit "OptionRecipe"
       if themeToCopy and themeToCopy ~= "none" then
         Themes:CreateDBTheme(themeName, themeAuthor, themeVersion, themeStage, themeToCopy, includeDBValues)
         --local themeParent = Themes:Get(themeToCopy)
-        --local theme = System.Reflector.Clone(themeParent, true)
+        --local theme = System.Toolset.clone(themeParent, true)
         --print("Child", theme:GetElementProperty("block.header", "text-size"), "Parent:", themeParent:GetElementProperty("block.header", "text-size"))
       else
         local theme = Themes:CreateDBTheme(themeName, themeAuthor, themeVersion, themeStage)
@@ -1444,7 +1443,7 @@ class "SelectStateRecipe" inherit "OptionRecipe"
 
   __Arguments__ { String }
   function SetState(self, stateID)
-    return This.SetStates(self, stateID)
+    return SetStates(self, stateID)
   end
 
   __Arguments__ { { Type = String, IsList = true} }
@@ -1468,7 +1467,7 @@ class "SelectStateRecipe" inherit "OptionRecipe"
 
 
   function SelectStateRecipe(self)
-    Super(self)
+    super(self)
     self.states = setmetatable({}, { __mode = "v"} )
   end
 
@@ -1489,19 +1488,18 @@ class "OptionBuilder"
 
   _COMMON_VARIABLES = Dictionary()
 
-  __Arguments__ { Class, String, Argument(Any, true) }
+  __Arguments__ { ClassType, String, Variable.Optional()}
   __Static__() function SetVariable(self, id, value)
     _COMMON_VARIABLES[id] = value
   end
 
-  __Arguments__ { Class, String }
+  __Arguments__ { ClassType, String }
   __Static__() function GetVariable(self, id)
     return _COMMON_VARIABLES[id]
   end
 
 
-
-  __Static__() __Arguments__{ Class, OptionRecipe, Argument(String, true) }
+  __Static__() __Arguments__ { ClassType, OptionRecipe, Variable.Optional(String) }
   function AddRecipe(self, recipe, group)
     -- If the group is availaible, add into _GROUP_RECIPES container
     if group then
@@ -1516,7 +1514,7 @@ class "OptionBuilder"
     end
   end
 
-  __Static__() __Arguments__{ Class, Argument(String, true) }
+  __Static__() __Arguments__{ ClassType, Variable.Optional(String) }
   function GetRecipes(self, group)
     if group and _GROUP_RECIPES[group] then
       return _GROUP_RECIPES[group]:Sort("a,b=>a.order<b.order")
@@ -1526,22 +1524,22 @@ class "OptionBuilder"
   end
 
   -- Create ShortCuts
-  __Static__() __Arguments__{ Class, OptionRecipe }
+  __Static__() __Arguments__{ ClassType, OptionRecipe }
   function AddTrackerRecipe(self, recipe)
     self:AddRecipe(recipe, "Tracker")
   end
 
-  __Static__() __Arguments__{ Class, OptionRecipe }
+  __Static__() __Arguments__{ ClassType, OptionRecipe }
   function AddQuestRecipe(self, recipe)
     self:AddRecipe(recipe, "Quests")
   end
 
-  __Static__() __Arguments__{ Class, OptionRecipe }
+  __Static__() __Arguments__{ ClassType, OptionRecipe }
   function AddWorldQuestRecipe(self, recipe)
     self:AddRecipe(recipe, "Worldquests")
   end
 
-  __Static__() __Arguments__{ Class, OptionRecipe }
+  __Static__() __Arguments__{ ClassType, OptionRecipe }
   function AddAchievementRecipe(self, recipe)
     self:AddRecipe(recipe, "Achievements")
   end
@@ -1551,22 +1549,22 @@ class "OptionBuilder"
     self:AddRecipe(recipe, "Dungeon")
   end
 
-  __Static__() __Arguments__{ Class, OptionRecipe }
+  __Static__() __Arguments__{ ClassType, OptionRecipe }
   function AddKeystoneRecipe(self, recipe)
     self:AddRecipe(recipe, "Keystone")
   end
 
-  __Static__() __Arguments__{ Class, OptionRecipe }
+  __Static__() __Arguments__{ ClassType, OptionRecipe }
   function AddGroupFinderRecipe(self, recipe)
     self:AddRecipe(recipe, "Groupfinders")
   end
 
-  __Static__() __Arguments__{ Class, OptionRecipe}
+  __Static__() __Arguments__{ ClassType, OptionRecipe}
   function AddThemeRecipe(self, recipe)
     self:AddRecipe(recipe, "Themes")
   end
 
-  __Static__() __Arguments__{ Class, OptionRecipe }
+  __Static__() __Arguments__{ ClassType, OptionRecipe }
   function AddThemeElementRecipe(self, recipe)
     self:AddRecipe(recipe, "Theme/Elements")
   end

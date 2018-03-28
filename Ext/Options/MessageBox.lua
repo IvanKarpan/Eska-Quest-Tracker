@@ -12,7 +12,7 @@ class "MessageBox"
   _MESSAGE_BOX = nil
 
 
-  __Arguments__ { Class, Argument(Table, true, UIParent), Argument(String, true, ""), Argument(String, true, ""), Argument(String, true, ""), Argument(Function, true), Argument(Function, true) }
+  __Arguments__ { ClassType, Variable.Optional(Table, UIParent), Variable.Optional(String, ""), Variable.Optional(String, ""), Variable.Optional(String, ""), Variable.Optional(Function), Variable.Optional(Function) }
   __Static__() function QuestionWithEditBox(self, parent, title, text, defaultValue, callback, checkfunc)
       self._InitFrame()
       _MESSAGE_BOX.frame:SetPoint("CENTER", parent, "CENTER")
