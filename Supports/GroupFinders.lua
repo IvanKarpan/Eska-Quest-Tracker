@@ -245,7 +245,7 @@ class "WorldQuestTrackerAddon" (function(_ENV)
 
   end
 
-  function WorldQuestTrackerAddon()
+  function WorldQuestTrackerAddon(self)
     super(self)
   end
 
