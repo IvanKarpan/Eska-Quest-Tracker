@@ -6,7 +6,9 @@
 Scorpio           "EskaQuestTracker.Widgets.MenuContext"                      ""
 --============================================================================--
 namespace "EQT"
+_EQTAddon = _Addon
 --============================================================================--
+
 
 class "BaseMenuItem" inherit "Frame" extend "IReusable"
 
@@ -43,7 +45,7 @@ class "MenuItem" inherit "BaseMenuItem"
       if new == nil then
         self.btn:RegisterForClicks(nil)
       end
-      self.btn:SetScript("OnClick", function() if not self.disabled then new(); _Addon.MenuContext:Hide() end end)
+      self.btn:SetScript("OnClick", function() if not self.disabled then new(); _EQTAddon.MenuContext:Hide() end end)
     elseif prop == "disabled" then
       if not new then
         self.frame:SetTextColor(1, 1, 1)
@@ -64,7 +66,7 @@ class "MenuItem" inherit "BaseMenuItem"
   end
 
   function Reset(self)
-    Super.Reset(self)
+    super.Reset(self)
 
     self.icon = nil
     self.text = nil
@@ -77,7 +79,7 @@ class "MenuItem" inherit "BaseMenuItem"
   property "disabled" { TYPE = Boolean, DEFAULT = false, HANDLER = UpdateProps }
 
   function MenuItem(self)
-    Super(self)
+    super(self)
 
     local btn = CreateFrame("button", nil, self.frame)
     btn:SetAllPoints()
@@ -123,7 +125,7 @@ endclass "MenuItem"
 class "MenuItemSeparator" inherit "BaseMenuItem"
 
     function MenuItemSeparator(self)
-      Super(self)
+      super(self)
 
       self.frame:SetBackdropColor(1, 1, 1, 0.15)
 
@@ -171,12 +173,12 @@ class "MenuContext" inherit "Frame"
     self:UpdateAnchorPoint()
   end
 
-  __Arguments__ { Argument(Table) }
+  __Arguments__ { Table }
   function AnchorTo(self, frame)
     return self:AnchorTo(frame, frame, frame, frame)
   end
 
-  __Arguments__ { Argument(Table), Argument(Table), Argument(Table, true), Argument(Table, true) }
+  __Arguments__ { Table, Table, Variable.Optional(Table), Variable.Optional(Table) }
   function AnchorTo(self, frameWhenRight, frameWhenLeft, frameWhenTop, frameWhenBottom)
     self:SetAnchorFrame("RIGHT", frameWhenRight)
     self:SetAnchorFrame("LEFT", frameWhenLeft)
@@ -187,7 +189,7 @@ class "MenuContext" inherit "Frame"
   end
 
 
-  __Arguments__ { String, Argument(Table, true)}
+  __Arguments__ { String, Variable.Optional(Table)}
   function SetAnchorFrame(self, orientation, frame)
     self.anchorFrames[orientation] = frame
   end
@@ -228,7 +230,7 @@ class "MenuContext" inherit "Frame"
     self:Draw()
   end
 
-  __Arguments__ { String, Argument(String, true), Argument(Callable, true)}
+  __Arguments__ { String, Variable.Optional(String), Variable.Optional(Callable)}
   function AddItem(self, text, icon, onClick)
     local item
     -- code specific to EQT
@@ -241,7 +243,7 @@ class "MenuContext" inherit "Frame"
     item.text = text
     item.icon = icon
     item.onClick = onClick
-    This.AddItem(self, item)
+    AddItem(self, item)
 
     return item
   end
@@ -300,7 +302,7 @@ class "MenuContext" inherit "Frame"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function MenuContext(self)
-    Super(self)
+    super(self)
 
     local arrow = UIParent:CreateTexture()
     --arrow:SetTexture([[Interface\AddOns\EskaQuestTracker\Media\Textures\Arrow]])

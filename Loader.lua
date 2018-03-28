@@ -11,7 +11,6 @@ namespace "EQT"
 --        __DisableOnCondition__ and __EnableOnCondition__
 -- @TODO: Add the Hook and Secure Hook
 
-__AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
   class "__EnableAndDisableOnCondition__" { __SystemEvent__ }
     local function RegisterModule(owner, cond, ...)
       while true do
@@ -19,7 +18,7 @@ __AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = t
       end
     end
 
-    function __EnableAndDisableOnCondition__:ApplyAttribute(target, targetType, owner, name)
+    function __EnableAndDisableOnCondition__:AttachAttribute(target, targetType, owner, name)
       if #self > 0 then
         ThreadCall(RegisterModule, owner, target, unpack(self))
       else
@@ -27,7 +26,6 @@ __AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = t
       end
     end
 
-__AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
   class "__EnablingOnCondition__"  (function(_ENV)
     inherit "__SystemEvent__"
 
@@ -42,7 +40,7 @@ __AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = t
       owner._Enabled = enabled
     end
   end
-  function ApplyAttribute(self, target, targetType, owner, name)
+  function AttachAttribute(self, target, targetType, owner, name)
     if #self > 0 then
       ThreadCall(RegisterModule, owner, target, unpack(self))
     else
@@ -51,7 +49,6 @@ __AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = t
   end
 end)
 
-__AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
   class "__EnableOnCondition__" { __SystemEvent__ }
     local function RegisterModule(owner, cond, ...)
       while true do
@@ -63,7 +60,7 @@ __AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = 
       end
     end
 
-    function __EnableOnCondition__:ApplyAttribute(target, targetType, owner, name)
+    function __EnableOnCondition__:AttachAttribute(target, targetType, owner, name)
       if #self > 0 then
         ThreadCall(RegisterModule, owner, target, unpack(self))
       else
@@ -71,7 +68,6 @@ __AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = 
       end
     end
 
-__AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
   class "__DisableOnCondition__" { __SystemEvent__ }
     local function RegisterModule(owner, cond, ...)
       while true do
@@ -83,7 +79,7 @@ __AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = 
       end
     end
 
-    function __DisableOnCondition__:ApplyAttribute(target, targetType, owner, name)
+    function __DisableOnCondition__:AttachAttribute(target, targetType, owner, name)
       if #self > 0 then
         ThreadCall(RegisterModule, owner, target, unpack(self))
       else
@@ -91,7 +87,6 @@ __AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = 
       end
     end
 
-__AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
 class "__EnablingOnEvent__" (function(_ENV)
   inherit "__SystemEvent__"
 
@@ -105,7 +100,7 @@ class "__EnablingOnEvent__" (function(_ENV)
     end
   end
 
-  function ApplyAttribute(self, target, targetType, owner, name)
+  function AttachAttribute(self, target, targetType, owner, name)
     if #self > 0 then
       ThreadCall(RegisterModule, owner, target, unpack(self))
     else
@@ -114,7 +109,6 @@ class "__EnablingOnEvent__" (function(_ENV)
   end
 end)
 
-__AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
 class "__DisablingOnEvent__" (function(_ENV)
   inherit "__SystemEvent__"
 
@@ -128,7 +122,7 @@ class "__DisablingOnEvent__" (function(_ENV)
     end
   end
 
-  function ApplyAttribute(self, target, targetType, owner, name)
+  function AttachAttribute(self, target, targetType, owner, name)
     if #self > 0 then
       ThreadCall(RegisterModule, owner, target, unpack(self))
     else
@@ -138,7 +132,6 @@ class "__DisablingOnEvent__" (function(_ENV)
 end)
 
 
-__AttributeUsage__ { AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
 class "__SafeDisablingOnEvent__" (function(_ENV)
   inherit "__SystemEvent__"
 
@@ -160,7 +153,7 @@ class "__SafeDisablingOnEvent__" (function(_ENV)
     end
   end
 
-  function ApplyAttribute(self, target, targetType, owner, name)
+  function AttachAttribute(self, target, targetType, owner, name)
     if #self > 0 then
       ThreadCall(RegisterModule, owner, target, unpack(self))
     else
@@ -169,7 +162,6 @@ class "__SafeDisablingOnEvent__" (function(_ENV)
   end
 end)
 
-__AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
   class "__SafeActivatingOnEvent__"  (function(_ENV)
     inherit "__SystemEvent__"
 
@@ -186,7 +178,7 @@ __AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = t
       owner._Enabled = enabled
     end
   end
-  function ApplyAttribute(self, target, targetType, owner, name)
+  function AttachAttribute(self, target, targetType, owner, name)
     if #self > 0 then
       ThreadCall(RegisterModule, owner, target, unpack(self))
     else
@@ -195,7 +187,6 @@ __AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = t
   end
 end)
 
-__AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = true, AllowMultiple = true }
   class "__ActivatingOnEvent__"  (function(_ENV)
     inherit "__SystemEvent__"
 
@@ -204,7 +195,7 @@ __AttributeUsage__{ AttributeTarget = AttributeTargets.ObjectMethod, RunOnce = t
       owner._Enabled = cond(owner, Wait(...))
     end
   end
-  function ApplyAttribute(self, target, targetType, owner, name)
+  function AttachAttribute(self, target, targetType, owner, name)
     if #self > 0 then
       ThreadCall(RegisterModule, owner, target, unpack(self))
     else

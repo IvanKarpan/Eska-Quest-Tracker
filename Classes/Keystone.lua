@@ -153,16 +153,16 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info, alreadyInit)
     if alreadyInit then
-      Super.SkinFeatures(self, info)
+      super.SkinFeatures(self, info)
     end
 
     Theme:SkinText(self.frame.level, string.format("LEVEL %i", self.level), nil, skinFlags)
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_KeystoneCache) do
       obj:Refresh(skinInfo)
@@ -171,7 +171,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    local class = System.Reflector.GetObjectClass(self)
+    local class = Class.GetObjectClass(self)
 
     Theme:RegisterText(class._prefix..".level", self.frame.level)
   end
@@ -193,7 +193,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function Keystone(self)
-    Super(self)
+    super(self)
     self.id = "Keystone"
     self.priority = 5
     self.text = "Mythic +"
@@ -251,7 +251,7 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     -- Move the dungeon icon
     self.frame.ftex:SetPoint("TOPLEFT", affixes, "BOTTOMLEFT", 0, -4)
 
-    self.affixes = ObjectArray(Affix)
+    self.affixes = Array[Affix]()
 
     self.baseHeight = self.height + 64
 
@@ -259,9 +259,9 @@ class "Keystone" inherit "Dungeon" extend "IObjectiveHolder"
     _KeystoneCache[self] = true
     -- Important: Always use 'This' to avoid issues when this class is inherited by
     -- other classes.
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     -- Important: Don't forgot 'This' as argument to this method !
-    self:InitRefresh(This)
+    self:InitRefresh(Keystone)
   end
 endclass "Keystone"
 -- ========================================================================== --

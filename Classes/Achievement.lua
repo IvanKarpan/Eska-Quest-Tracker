@@ -119,11 +119,11 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.height = height + 2
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info, alreadyInit)
     -- Call the parent if the object is already init.
     if alreadyInit then
-      Super.SkinFeatures(self, info)
+      super.SkinFeatures(self, info)
     end
 
     local state = self:GetCurrentState()
@@ -152,7 +152,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   end
 
   function RegisterFramesForThemeAPI(self)
-    local class = System.Reflector.GetObjectClass(self)
+    local class = Class.GetObjectClass(self)
 
     Theme:RegisterFrame(class._prefix..".frame", self.frame)
     Theme:RegisterFrame(class._prefix..".header", self.frame.header)
@@ -163,7 +163,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     Theme:RegisterFrame(class._prefix..".icon", self.frame.ftex)
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_AchievementCache) do
       obj:Refresh(skinInfo)
@@ -187,7 +187,7 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   __Static__() property "_prefix" { DEFAULT = "achievement"}
 
   function Achievement(self)
-    Super(self)
+    super(self)
 
     self.frame = CreateFrame("Frame")
     self.frame:SetBackdrop(_Backdrops.Common)
@@ -269,9 +269,9 @@ class "Achievement" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     _AchievementCache[self] = true
     -- Important: Always use 'This' to avoid issues when this class is inherited by
     -- other classes.
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     -- Important: Don't forgot 'This' as argument to this method !
-    self:InitRefresh(This)
+    self:InitRefresh(Achievement)
   end
 
 
@@ -294,7 +294,7 @@ class "AchievementBlock" inherit "Block"
         self.height = self.height + (new - old)
       end
 
-      self.OnDrawRequest()
+      self:OnDrawRequest()
     end
   end
 
@@ -314,7 +314,7 @@ class "AchievementBlock" inherit "Block"
       achievement.OnHeightChanged = nil
       achievement.isReusable = true
 
-      self.OnDrawRequest()
+      self:OnDrawRequest()
     end
   end
 
@@ -367,7 +367,7 @@ class "AchievementBlock" inherit "Block"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_AchievementBlockCache) do
       obj:Refresh(skinInfo)
@@ -389,10 +389,10 @@ class "AchievementBlock" inherit "Block"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function AchievementBlock(self)
-    Super(self, "achievements", 10)
+    super(self, "achievements", 10)
     self.text = "Achievements"
 
-    self.achievements = ObjectArray(Achievement)
+    self.achievements = Array[Achievement]()
 
     -- Keep it in the cache for later.
     _AchievementBlockCache[self] = true

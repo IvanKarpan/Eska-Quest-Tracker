@@ -74,10 +74,10 @@ end
 __SystemEvent__()
 function QUEST_REMOVED(questID)
   _BonusObjectives:RemoveBonusQuest(questID)
-  _M:FireSystemEvent("EQT_BONUSQUEST_REMOVED")
+  Scorpio.FireSystemEvent("EQT_BONUSQUEST_REMOVED")
 end
 
-__Thread__()
+__Async__()
 function LoadBonusQuests(self)
   local numEntries, numQuests = GetNumQuestLogEntries()
   for i = 1, numEntries do

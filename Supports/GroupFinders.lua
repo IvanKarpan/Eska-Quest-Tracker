@@ -12,7 +12,7 @@ CreateListing           = C_LFGList.CreateListing
 GetActivityIDForQuestID = C_LFGList.GetActivityIDForQuestID
 
 
-class "GroupFinderAddon"
+class "GroupFinderAddon" (function(_ENV)
 
   _Addons = {}
 
@@ -61,12 +61,12 @@ class "GroupFinderAddon"
     return _Addons[name]
   end
 
-  __Static__() __Arguments__{ Class }
+  __Static__() __Arguments__{ ClassType }
   function GetIterator()
     return pairs(_Addons)
   end
 
-  __Static__() __Arguments__ { Class }
+  __Static__() __Arguments__ { ClassType }
   function GetSelected(self)
     Database:SelectRoot()
     local currentGFA = Database:GetValue("currentGroupFinderAddon")
@@ -84,7 +84,7 @@ class "GroupFinderAddon"
     return firstObject, firstName
   end
 
-  __Static__() __Arguments__ { Class, String }
+  __Static__() __Arguments__ { ClassType, String }
   function SetSelected(self, name)
     Database:SelectRoot()
     Database:SetValue("currentGroupFinderAddon", name)
@@ -95,13 +95,13 @@ class "GroupFinderAddon"
 
   end
 
-endclass "GroupFinderAddon"
+end)
 
 --------------------------------------------------------------------------------
 --                         Extend the API                                     --
 --------------------------------------------------------------------------------
 __Final__()
-interface "GroupFinder"
+interface "GroupFinder" (function(_ENV)
 
   -- Create a group for the id (e.g, quest id or world quest id)
   -- in using the current group finder.
@@ -139,38 +139,40 @@ interface "GroupFinder"
     end
   end
 
-endinterface "GroupFinder"
+end)
 --============================================================================--
 --                      World Quest Group Finder
 --        https://mods.curse.com/addons/wow/worldquestgroupfinder
 --============================================================================--
-class "WorldQuestGroupFinderAddon" inherit "GroupFinderAddon"
+class "WorldQuestGroupFinderAddon" (function(_ENV)
+  inherit "GroupFinderAddon"
 
   __Arguments__ { Number }
   function JoinGroup(self, questID)
-    Super.JoinGroup(self, questID)
+    super.JoinGroup(self, questID)
 
     WorldQuestGroupFinder.InitSearchProcess(questID, false, false, true)
   end
 
   __Arguments__ { Number }
   function CreateGroup(self, questID)
-    Super.CreateGroup(self, questID)
+    super.CreateGroup(self, questID)
 
     WorldQuestGroupFinder.CreateGroup(questID)
   end
 
   function WorldQuestGroupFinderAddon(self)
-    Super(self)
+    super(self)
   end
 
-endclass "WorldQuestGroupFinderAddon"
+end)
 
 --============================================================================--
 --                      World Quest Assistant
 --        https://mods.curse.com/addons/wow/266373-worldquestassistant
 --============================================================================--
-class "WorldQuestAssistantAddon" inherit "GroupFinderAddon"
+class "WorldQuestAssistantAddon" (function(_ENV)
+  inherit "GroupFinderAddon"
 
   __Arguments__ { Number }
   function JoinGroup(self, questID)
@@ -188,15 +190,16 @@ class "WorldQuestAssistantAddon" inherit "GroupFinderAddon"
   end
 
   function WorldQuestAssistantAddon()
-    Super(self)
+    super(self)
   end
 
-endclass "WorldQuestAssistantAddon"
+end)
 --============================================================================--
 --                      World Quest Tracker
 --        https://mods.curse.com/addons/wow/266373-worldquestassistant
 --============================================================================--
-class "WorldQuestTrackerAddon" inherit "GroupFinderAddon"
+class "WorldQuestTrackerAddon" (function(_ENV)
+  inherit "GroupFinderAddon"
 
   __Arguments__ { Number }
   function JoinGroup(self, questID)
@@ -205,7 +208,7 @@ class "WorldQuestTrackerAddon" inherit "GroupFinderAddon"
 
   __Arguments__ { Number }
   function CreateGroup(self, questID)
-    Super.JoinGroup(self, questID)
+    super.JoinGroup(self, questID)
     -- @NOTE World Quest Tracker addon doesn't provide a function could be called to create the group
     -- I put here the local function content.
     local questName
@@ -243,31 +246,30 @@ class "WorldQuestTrackerAddon" inherit "GroupFinderAddon"
   end
 
   function WorldQuestTrackerAddon()
-    Super(self)
+    super(self)
   end
 
-endclass "WorldQuestTrackerAddon"
-
+end)
 --------------------------------------------------------------------------------
 --  Register the group finder addons when they are loaded                     --
 --------------------------------------------------------------------------------
 Scorpio.Continue(
     function()
-        while Scorpio.Event("ADDON_LOADED") ~= "WorldQuestGroupFinder" do end
+        while Scorpio.NextEvent("ADDON_LOADED") ~= "WorldQuestGroupFinder" do end
         GroupFinderAddon:Register("WorldQuestGroupFinder", WorldQuestGroupFinderAddon())
     end
 )
 
 Scorpio.Continue(
     function()
-        while Scorpio.Event("ADDON_LOADED") ~= "WorldQuestAssistant" do end
+        while Scorpio.NextEvent("ADDON_LOADED") ~= "WorldQuestAssistant" do end
         GroupFinderAddon:Register("WorldQuestAssistant", WorldQuestAssistantAddon())
     end
 )
 
 Scorpio.Continue(
     function()
-        while Scorpio.Event("ADDON_LOADED") ~= "WorldQuestTracker" do end
+        while Scorpio.NextEvent("ADDON_LOADED") ~= "WorldQuestTracker" do end
         GroupFinderAddon:Register("WorldQuestTracker", WorldQuestTrackerAddon())
     end
 )

@@ -53,7 +53,7 @@ class "QuestItem" inherit "Frame" extend "IReusable"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function QuestItem(self)
-    Super(self)
+    super(self)
 
     local index = _QuestItemCount
     local name = "EQTQuestItem" .. index

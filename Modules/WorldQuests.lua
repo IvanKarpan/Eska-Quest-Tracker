@@ -135,7 +135,7 @@ function QUEST_REMOVED(questID, fromTracking)
 
   _WorldQuestBlock:RemoveWorldQuest(questID)
   _Addon.ItemBar:RemoveItem(questID)
-  _M:FireSystemEvent("EQT_WORLDQUEST_REMOVED")
+  Scorpio.FireSystemEvent("EQT_WORLDQUEST_REMOVED")
 end
 
 local lastTrackedQuestID = nil
@@ -154,7 +154,7 @@ function EQT_WORLDQUEST_TRACKED_LIST_CHANGED(questID, isAdded, hardWatch)
   end
 end
 
-__Thread__()
+__Async__()
 function LoadWorldQuests(self)
   local numEntries, numQuests = GetNumQuestLogEntries()
   for i = 1, numEntries do

@@ -40,7 +40,7 @@ _CURRENT_TRACKER_WIDTH       = 270
 _CURRENT_TRACKER_RATIO_WIDTH = _CURRENT_TRACKER_WIDTH / _DEFAULT_TRACKER_WIDTH
 _EQT_ICON                    = [[Interface\AddOns\EskaQuestTracker\Media\icon]]
 -- ========================================================================== --
-_THEMES = ObjectArray(Theme)
+_THEMES = Array[Theme]()
 -- ========================================================================== --
 
 -- !IMPORTANT
@@ -79,10 +79,6 @@ end
 
 function OnEnable(self)
   BLIZZARD_TRACKER_VISIBLITY_CHANGED(not Options:Get("replace-blizzard-objective-tracker"))
-
-  -- From now, all themes property changes will refresh the targeted frame.
-  Theme.refreshOnPropertyChanged = true
-
 end
 
 function OnQuit(self)
@@ -200,7 +196,7 @@ end
 
 do
   local triggered = false
-  __Thread__()
+  __Async__()
   function RequestDrawBlock(self, calculateHeight)
     if triggered then
       return
@@ -265,14 +261,14 @@ end
 __SecureHook__()
 function BonusObjectiveTracker_TrackWorldQuest(questID, hardWatch)
   if Options:Get("show-tracked-world-quests") then
-    _M:FireSystemEvent("EQT_WORLDQUEST_TRACKED_LIST_CHANGED", questID, true, hardWatch)
+    Scorpio.FireSystemEvent("EQT_WORLDQUEST_TRACKED_LIST_CHANGED", questID, true, hardWatch)
   end
 end
 
 __SecureHook__()
 function BonusObjectiveTracker_UntrackWorldQuest(questID)
   if Options:Get("show-tracked-world-quests") then
-    _M:FireSystemEvent("EQT_WORLDQUEST_TRACKED_LIST_CHANGED", questID, false)
+    Scorpio.FireSystemEvent("EQT_WORLDQUEST_TRACKED_LIST_CHANGED", questID, false)
   end
 end
 

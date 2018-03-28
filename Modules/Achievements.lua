@@ -85,7 +85,7 @@ function TRACKED_ACHIEVEMENT_LIST_CHANGED(achievementID, isAdded)
   end
 end
 
-__Thread__()
+__Async__()
 function LoadAchievements(self)
   local trackedAchievements = { GetTrackedAchievements() }
   for i = 1, #trackedAchievements do

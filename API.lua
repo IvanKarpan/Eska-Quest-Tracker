@@ -9,7 +9,7 @@ namespace "EQT"
 --============================================================================--
 import "System.Serialization"
 import "System.Collections"
-import "System.Reflector"
+
 --============================================================================--
 _COMPRESSER = LibStub:GetLibrary("LibCompress")
 _ENCODER    = _COMPRESSER:GetAddonEncodeTable()
@@ -17,12 +17,14 @@ _ENCODER    = _COMPRESSER:GetAddonEncodeTable()
 bit_band   = bit.band
 bit_lshift = bit.lshift
 bit_rshift = bit.rshift
+
+ValidateFlags = Enum.ValidateFlags
+_EQTAddon  = _Addon
 --============================================================================--
 
 --------------------------------------------------------------------------------
 --                       Callbakc Handler Classes                             --
 --------------------------------------------------------------------------------
-
 class "CallbackHandler"
   property "func" { TYPE = Callable + String }
 
@@ -38,7 +40,7 @@ class "CallbackHandler"
 endclass "CallbackHandler"
 
 class "CallbackObjectHandler" inherit "CallbackHandler"
-  property "obj" { TYPE = Class + Table}
+  property "obj" { TYPE = ClassType + Table}
 
   function __call(self, ...)
     if type(self.func) == "string" then
@@ -51,11 +53,11 @@ class "CallbackObjectHandler" inherit "CallbackHandler"
     end
   end
 
-  __Arguments__ { Class + Table, Callable + String }
+  __Arguments__ { ClassType + Table, Callable + String }
   function CallbackObjectHandler(self, obj, func)
     self.obj = obj
 
-    Super(self, func)
+    super(self, func)
   end
 
 endclass "CallbackObjectHandler"
@@ -67,9 +69,9 @@ class "CallbackPropertyHandler" inherit "CallbackObjectHandler"
     end
   end
 
-  __Arguments__ { Class + Table, String }
+  __Arguments__ { ClassType + Table, String }
   function CallbackPropertyHandler(self, obj, property)
-    Super(self, obj, property)
+    super(self, obj, property)
   end
 endclass "CallbackPropertyHandler"
 
@@ -78,7 +80,7 @@ class "CallbackHandlers"
   CALLBACK_HANDLERS = Dictionary()
   CALLBACK_HANDLERS_GROUPS = Dictionary()
 
-  __Static__() __Arguments__ { Class, String, CallbackHandler, { Type = String, Nilable = true, IsList = true }}
+  __Static__() __Arguments__ { ClassType, String, CallbackHandler, Variable.Rest(String)}
   function Register(self, id, handler, ...)
     local numGroup = select("#", ...)
     for i = 1, numGroup do
@@ -96,7 +98,7 @@ class "CallbackHandlers"
   end
 
 
-  __Static__() __Arguments__ { Class, { Type = String, Nilable = true, IsList = true } }
+  __Static__() __Arguments__ { ClassType, Variable.Rest(String) }
   function CallGroup(self, ...)
     local numGroup = select("#", ...)
     for i = 1, numGroup do
@@ -114,7 +116,7 @@ class "CallbackHandlers"
 
   end
 
-  __Static__() __Arguments__ { Class, String, { Type = Any, Nilable = true, IsList = true } }
+  __Static__() __Arguments__ { ClassType, String, Variable.Rest() }
   function Call(self, id, ...)
     local handler = CALLBACK_HANDLERS[id]
     if handler then
@@ -149,24 +151,24 @@ class "Database"
 
   endclass "Migration"
 
-  __Static__() __Arguments__{ Class, Any, Argument(Any, true) }
+  __Static__() __Arguments__{ ClassType, Any, Variable.Optional() }
   function SetValue(self, index, value)
     CURRENT_TABLE[index] = value
 
   end
 
-  __Static__() __Arguments__ { Class, Any }
+  __Static__() __Arguments__ { ClassType, Any }
   function GetValue(self, index)
     return CURRENT_TABLE[index]
   end
 
 
-  __Arguments__ { Class }
+  __Arguments__ { ClassType }
   __Static__() function IterateTable(self)
     return pairs(CURRENT_TABLE)
   end
 
-  __Arguments__ { Class }
+  __Arguments__ { ClassType }
   __Static__() function Clean()
     local function ClearEmptyTables(t)
       for k,v in pairs(t) do
@@ -182,7 +184,7 @@ class "Database"
       ClearEmptyTables(EskaQuestTrackerDB)
   end
 
-  __Static__() __Arguments__ { Class, { Type = String, Nilable = true, IsList = true } }
+  __Static__() __Arguments__ { ClassType, Variable.Rest(String) }
   function MoveTable(self, ...)
     local function deepcopy(orig)
       local orig_type = type(orig)
@@ -215,7 +217,7 @@ class "Database"
     end
   end
 
-  __Static__() __Arguments__ { Class, { Type = String, Nilable = true, IsList = true } }
+  __Static__() __Arguments__ { ClassType, Variable.Rest(String) }
   function CopyTable(self, ...)
     local function deepcopy(orig)
       local orig_type = type(orig)
@@ -245,18 +247,18 @@ class "Database"
     end
   end
 
-__Arguments__ { Class }
+__Arguments__ { ClassType }
 __Static__() function DeleteTable(self)
   wipe(CURRENT_TABLE)
   self:SelectRoot()
 end
 
-  __Static__() __Arguments__{ Class, { Type = String, Nilable = true, IsList = true } }
+  __Static__() __Arguments__{ ClassType, Variable.Rest(String) }
   function SelectTable(self, ...)
     return self:SelectTable(true, ...)
   end
 
-  __Static__() __Arguments__ { Class, Boolean, { Type = String, Nilable = true, IsList = true } }
+  __Static__() __Arguments__ { ClassType, Boolean, Variable.Rest(String) }
   function SelectTable(self, mustCreateTables, ...)
     local count = select("#", ...)
 
@@ -287,47 +289,47 @@ end
     return true
   end
 
-  __Static__() __Arguments__{ Class }
+  __Static__() __Arguments__{ ClassType }
   function SelectRoot(self)
     CURRENT_TABLE = self:Get()
     CURRENT_LEVEL = 0
   end
 
-  __Static__() __Arguments__{ Class }
+  __Static__() __Arguments__{ ClassType }
   function SelectRootChar(self)
     CURRENT_TABLE = self:GetChar()
     CURRENT_LEVEL = 0
   end
 
-  __Static__() __Arguments__ { Class }
+  __Static__() __Arguments__ { ClassType }
   function SelectRootSpec(self)
     CURRENT_TABLE = self:GetSpec()
     CURRENT_LEVEL = 0
   end
 
-  __Static__() __Arguments__ { Class, Number }
+  __Static__() __Arguments__ { ClassType, Number }
   function SetVersion(self, version)
     if self:Get() then
       self:Get().dbVersion = version
     end
   end
 
-  __Static__() __Arguments__ { Class }
+  __Static__() __Arguments__ { ClassType }
   function GetVersion(self)
     if self:Get() then return self:Get().dbVersion end
   end
 
-  __Static__() __Arguments__ { Class }
+  __Static__() __Arguments__ { ClassType }
   function Get(self)
     return _DB
   end
 
-  __Static__() __Arguments__ { Class }
+  __Static__() __Arguments__ { ClassType }
   function GetChar(self)
     return _DB.Char
   end
 
-  __Static__() __Arguments__ { Class }
+  __Static__() __Arguments__ { ClassType }
   function GetSpec(self)
     return _DB.Char.Spec
   end
@@ -353,7 +355,7 @@ class "Option"
     end
   end
 
-  __Arguments__ { String,  Any, Argument(Callable + String, true, nil) }
+  __Arguments__ { String,  Any, Variable.Optional(Callable + String) }
   function Option(self, id,  default, func)
     self.id = id
     self.default = default
@@ -366,7 +368,7 @@ endclass "Option"
 class "Options"
 OPTIONS = Dictionary()
 
-__Static__() __Arguments__ { Class }
+__Static__() __Arguments__ { ClassType }
 function SelectCurrentProfile(self)
   -- Get the current profile for this character
   local dbUsed = self:GetCurrentProfile()
@@ -381,7 +383,7 @@ function SelectCurrentProfile(self)
 end
 
 
-__Static__() __Arguments__ { Class, String }
+__Static__() __Arguments__ { ClassType, String }
 function Get(self, option)
   -- select the current profile (global, char or spec)
   self:SelectCurrentProfile()
@@ -398,7 +400,7 @@ function Get(self, option)
   end
 end
 
-__Static__() __Arguments__ { Class, String }
+__Static__() __Arguments__ { ClassType, String }
 function Exists(self, option)
     -- select the current profile (global, char or spec)
     self:SelectCurrentProfile()
@@ -412,7 +414,7 @@ function Exists(self, option)
     return false
 end
 
-__Static__() __Arguments__ { Class, String, Argument(Any, true, nil), Argument(Boolean, true, true), Argument(Boolean, true, true)}
+__Static__() __Arguments__ { ClassType, String, Variable.Optional(), Variable.Optional(Boolean, true), Variable.Optional(Boolean, true)}
 function Set(self, option, value, useHandler, passValue)
   -- select the current profile (global, char or spec)
   self:SelectCurrentProfile()
@@ -434,17 +436,17 @@ function Set(self, option, value, useHandler, passValue)
 end
 
 
-__Static__() __Arguments__ { Class, String, Any, Argument(Callable + String, true, nil) }
+__Static__() __Arguments__ { ClassType, String, Any, Variable.Optional(Callable + String) }
 function Register(self, option, default, func)
   self:Register(Option(option, default, func))
 end
 
-__Static__() __Arguments__ { Class, Option }
+__Static__() __Arguments__ { ClassType, Option }
 function Register(self, option)
     OPTIONS[option.id] = option
 end
 
-__Static__() __Arguments__ { Class, Argument(String, true, "global") }
+__Static__() __Arguments__ { ClassType, Variable.Optional(String, "global") }
 function SelectProfile(self, profile)
   Database:SelectRoot()
   Database:SelectTable("dbUsed")
@@ -455,7 +457,7 @@ function SelectProfile(self, profile)
   Database:SetValue(name, profile)
 end
 
-__Static__() __Arguments__ { Class }
+__Static__() __Arguments__ { ClassType }
 function GetCurrentProfile(self)
   Database:SelectRoot()
   if Database:SelectTable(false, "dbUsed") then
@@ -471,7 +473,7 @@ function GetCurrentProfile(self)
 end
 
 
-__Arguments__ { Class, String }
+__Arguments__ { ClassType, String }
 function ResetOption(self, id)
     self:Set(id, nil)
 end
@@ -487,7 +489,7 @@ endclass "Options"
 --                   Serializable container                                   --
 --    Credit goes to Kurapice on the SList,SDictionnary and Stack code        --
 --------------------------------------------------------------------------------
-__SimpleClass__() __Serializable__()
+__Serializable__()
 class "SList" inherit "List" extend "ISerializable"
 
   function Serialize(self, info)
@@ -497,19 +499,26 @@ class "SList" inherit "List" extend "ISerializable"
   end
 
   __Arguments__{ SerializationInfo }
-    function SList(self, info)
+    function __new(_, info)
       local i = 1
       local v = info:GetValue(i)
+      local self = {}
       while v ~= nil do
-        rawset(self, i, v)
+        self[i] = v
         i = i + 1
         v = info:GetValue(i)
       end
+      return self, true
+    end
+
+    __Arguments__.Rest()
+    function __new(_, ...)
+      return super.__new(_, ...)
     end
 
   endclass "SList"
 
-  __SimpleClass__() __Serializable__()
+  __Serializable__()
   class "SDictionary" inherit "Dictionary" extend "ISerializable"
 
     function Serialize(self, info)
@@ -526,11 +535,16 @@ class "SList" inherit "List" extend "ISerializable"
     end
 
     __Arguments__{ SerializationInfo }
-    function SDictionary(self, info)
+    function __new(_, info)
       local keys = info:GetValue(1, SList)
       local vals = info:GetValue(2, SList)
 
-      This(self, keys, vals)
+      return super.__new(_, keys, vals)
+    end
+
+    __Arguments__.Rest()
+    function __new(_, ...)
+      return super.__new(_, ...)
     end
 
   endclass "SDictionary"
@@ -725,7 +739,7 @@ _REGISTERED_FRAMES = {}
   ------------------------------------------------------------------------------
   --                       Register Methods                                   --
   ------------------------------------------------------------------------------
-  __Arguments__ { Class, String, Table, Argument(String, true), Argument(String, true, "FRAME")}
+  __Arguments__ { ClassType, String, Table, Variable.Optional(String), Variable.Optional(String, "FRAME")}
   __Static__() function RegisterFrame(self, elementID, frame, inheritElementID, type)
     if not frame then
       return
@@ -766,17 +780,17 @@ _REGISTERED_FRAMES = {}
     Theme:InstallScript(frame)
   end
 
-  __Arguments__ { Class, String, Table, Argument(String, true) }
+  __Arguments__ { ClassType, String, Table, Variable.Optional(String) }
   __Static__() function RegisterTexture(self, elementID, frame, inheritElementID)
     Theme:RegisterFrame(elementID, frame, inheritElementID, "TEXTURE")
   end
 
-  __Arguments__ { Class, String, Table, Argument(String, true)}
+  __Arguments__ { ClassType, String, Table, Variable.Optional(String)}
   __Static__() function RegisterText(self, elementID, frame, inheritElementID)
     Theme:RegisterFrame(elementID, frame, inheritElementID, "TEXT")
   end
 
-  __Arguments__ { Class, String, String }
+  __Arguments__ { ClassType, String, String }
   __Static__() function RegisterFont(self, fontID, fontFile)
     if _LibSharedMedia then
       _LibSharedMedia:Register("font", fontID, fontFile)
@@ -838,7 +852,7 @@ _REGISTERED_FRAMES = {}
 
 
 
-  __Arguments__ { Class, Argument(SkinFlags), Argument(SkinFlags) }
+  __Arguments__ { ClassType, SkinFlags, SkinFlags }
   __Static__() function ValidateSkinFlags(self, flags, flag)
     return ValidateFlags(flags, SkinFlags.ALL) or ValidateFlags(flags, flag)
   end
@@ -852,7 +866,7 @@ _REGISTERED_FRAMES = {}
       SET = false,
       }
 
-  __Arguments__ { Class, Table, SkinFrameFlags, Argument(String, true) }
+  __Arguments__ { ClassType, Table, SkinFrameFlags, Variable.Optional(String) }
   __Static__() function NewSkinFrame(self, frame, flags, state)
     local theme = Themes:GetSelected()
 
@@ -877,13 +891,13 @@ _REGISTERED_FRAMES = {}
     end
   end
 
-  __Arguments__ { Class, Table, Argument(SkinInfo, true, SkinInfo()), Argument(String, true) }
+  __Arguments__ { ClassType, Table, Variable.Optional(SkinInfo, SkinInfo()), Variable.Optional(String) }
   __Static__() function NewSkinFrame(self, frame, info, state)
     self:NewSkinFrame(frame, info.frameFlags, state)
   end
 
 
-  __Arguments__ { Class, Table, Argument(String, true), Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
+  __Arguments__ { ClassType, Table, Variable.Optional(String), Variable.Optional(String), Variable.Optional(SkinFlags, SkinFlags.ALL) }
   __Static__() function SkinFrame(self, frame, originText, state, flags)
     -- Get the selected theme
     local theme = Themes:GetSelected()
@@ -943,7 +957,7 @@ _REGISTERED_FRAMES = {}
       }
 
 
-  __Arguments__ { Class, Table, SkinTextFlags, Argument(String + Number, true), Argument(String, true)}
+  __Arguments__ { ClassType, Table, SkinTextFlags, Variable.Optional(String + Number), Variable.Optional(String)}
   __Static__() function NewSkinText(self, obj, flags, text, state)
     local theme = Themes:GetSelected()
 
@@ -1033,13 +1047,13 @@ _REGISTERED_FRAMES = {}
   end
 
 
-  __Arguments__ { Class, Table, Argument(SkinInfo, true, SkinInfo()), Argument(String + Number, true), Argument(String, true)}
+  __Arguments__ { ClassType, Table, Variable.Optional(SkinInfo, SkinInfo()), Variable.Optional(String + Number), Variable.Optional(String)}
   __Static__() function NewSkinText(self, obj, info, text, state)
     self:NewSkinText(obj, info.textFlags, text, state)
   end
 
 
-  __Arguments__ { Class, Table, Argument(String + Number, true), Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
+  __Arguments__ { ClassType, Table, Variable.Optional(String + Number), Variable.Optional(String), Variable.Optional(SkinFlags, SkinFlags.ALL) }
   __Static__() function SkinText(self, fontstring, originText, state, flags)
     local theme = Themes:GetSelected()
 
@@ -1112,7 +1126,7 @@ _REGISTERED_FRAMES = {}
       }
 
 
-  __Arguments__{ Class, Table, SkinTextureFlags, Argument(String, true)}
+  __Arguments__{ ClassType, Table, SkinTextureFlags, Variable.Optional(String)}
   __Static__() function NewSkinTexture(self, obj, flags, state)
     local theme = Themes:GetSelected()
 
@@ -1143,12 +1157,12 @@ _REGISTERED_FRAMES = {}
     end
   end
 
-  __Arguments__{ Class, Table, Argument(SkinInfo, true, SkinInfo()), Argument(String, true)}
+  __Arguments__{ ClassType, Table, Variable.Optional(SkinInfo, SkinInfo()), Variable.Optional(String)}
   __Static__() function NewSkinTexture(self, obj, info, state)
     self:NewSkinTexture(obj, info.textureFlags, state)
   end
 
-  __Arguments__{ Class, Table, Argument(String, true), Argument(SkinFlags, true, SkinFlags.ALL) }
+  __Arguments__{ ClassType, Table, Variable.Optional(String), Variable.Optional(SkinFlags, SkinFlags.ALL) }
   __Static__() function SkinTexture(self, texture, state, flags)
     local theme = Themes:GetSelected()
 
@@ -1240,7 +1254,7 @@ _REGISTERED_FRAMES = {}
 
   end
 
-  __Arguments__ { String, String, Argument(String, true), Argument(ElementFlags, true, 15) }
+  __Arguments__ { String, String, Variable.Optional(String), Variable.Optional(ElementFlags, 15) }
   function GetElementProperty(self, elementID, property, inheritElementID, flags)
       elementID = elementID:gsub("%s+", "") -- Remove the space
 
@@ -1298,7 +1312,7 @@ _REGISTERED_FRAMES = {}
       end
   end
 
-  __Arguments__{ String, String, Argument(Any, true) }
+  __Arguments__{ String, String, Variable.Optional() }
   function SetElementProperty(self, elementID, property, value)
     -- NOTE Make the *
     elementID = elementID:gsub("%s+", "") -- Remove the space
@@ -1318,13 +1332,13 @@ _REGISTERED_FRAMES = {}
 
   __Arguments__ { String, Any }
   function SetElementProperty(self, property, value)
-    This.SetElementProperty(self, "*", property, value)
+    SetElementProperty(self, "*", property, value)
   end
 
 
 
   -- ElementFlags (3) = INCLUDE_PARENT (1) + INCLUDE_DATABASE (2)
-  __Arguments__{ String, String, Argument(String, true), Argument(ElementFlags, true, 3)}
+  __Arguments__{ String, String, Variable.Optional(String), Variable.Optional(ElementFlags, 3)}
   function ElementHasState(self, elementID, state, inheritElementID, flags)
     flags = flags + ElementFlags.IGNORE_WITHOUT_STATE + ElementFlags.INCLUDE_STATE
     elementID = string.format("%s[%s]", elementID, state)
@@ -1342,7 +1356,7 @@ _REGISTERED_FRAMES = {}
     return false
   end
 
-  __Arguments__ { Class, String }
+  __Arguments__ { ClassType, String }
   __Static__() function GetDefaultProperty(self, property)
       local defaults = {
         ["background-color"] = { r = 0, g = 0, b = 0, a = 0 },
@@ -1373,7 +1387,7 @@ _REGISTERED_FRAMES = {}
     end
   end
 
-  __Arguments__ { String, String, Argument(Any, true)}
+  __Arguments__ { String, String, Variable.Optional()}
   function SetElementPropertyToDB(self, elementID, property, value)
     Database:SelectRoot()
 
@@ -1398,7 +1412,7 @@ _REGISTERED_FRAMES = {}
   ------------------------------------------------------------------------------
   --                        Helper Methods                                    --
   ------------------------------------------------------------------------------
-  __Arguments__ { Class, Table }
+  __Arguments__ { ClassType, Table }
   __Static__() function InstallScript(self, frame)
     if not frame.GetScript or not frame.SetScript then
       return
@@ -1430,13 +1444,13 @@ _REGISTERED_FRAMES = {}
 
 
     if not frame:GetScript("OnMouseDown") and not frame:GetScript("OnMouseUp") then
-      frame:SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
-      frame:SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
+      frame:SetScript("OnMouseDown", _EQTAddon.ObjectiveTrackerMouseDown)
+      frame:SetScript("OnMouseUp", _EQTAddon.ObjectiveTrackerMouseUp)
     end
   end
 
   -- ElementFlags (9)  = INCLUDE_PARENT (1) + INCLUDE_STATE (8)
-  __Arguments__ { Class, String, Argument(String, true), Argument(ElementFlags, true, 9)}
+  __Arguments__ { ClassType, String, Variable.Optional(String), Variable.Optional(ElementFlags, 9)}
   __Static__() function GetReadingIDList(self, elementID, inheritElementID, flags)
     local rawElementID, states = self:RemoveStates(elementID)
     local categories = { strsplit(".", rawElementID) }
@@ -1511,7 +1525,7 @@ _REGISTERED_FRAMES = {}
     return list:Range(-1, 1, -1):ToList()
   end
 
-  __Arguments__ { Class, String, Argument(Boolean, true, false)}
+  __Arguments__ { ClassType, String, Variable.Optional(Boolean, false)}
   __Static__() function GetElementNameFromString(self, str, includeFlags)
 
     local categories = {strsplit(".", str) }
@@ -1524,14 +1538,14 @@ _REGISTERED_FRAMES = {}
     end
   end
 
-  __Arguments__ { Class, String}
+  __Arguments__ { ClassType, String}
   __Static__() function RemoveStates(self, str)
     local states = str:match("(%[[,|%w]*%])")
     local str =  str:gsub("(%[[,|%w]*%])", "")
     return str, states
   end
 
-  __Arguments__ { Class, String }
+  __Arguments__ { ClassType, String }
   __Static__() function GetPossibleElementIDs(self, str)
     local elementID, states = self:RemoveStates(str)
     if states then
@@ -1547,7 +1561,7 @@ _REGISTERED_FRAMES = {}
   end
 
 
-  __Arguments__ { Class, String }
+  __Arguments__ { ClassType, String }
   __Static__() function GetPossibleStates(self, str)
     -- Build the list
     local andList = {}
@@ -1585,7 +1599,7 @@ _REGISTERED_FRAMES = {}
   function ExportToText(self, includeDatabase)
     local theme = self
     if includeDatabase or self.lua == false then
-      theme = System.Reflector.Clone(self, true)
+      theme = System.Toolset.clone(self, true)
       Database:SelectRoot()
       if Database:SelectTable(false, "themes", self.name, "properties") then
         for elementID, properties in Database:IterateTable() do
@@ -1610,7 +1624,7 @@ _REGISTERED_FRAMES = {}
     return encode
   end --]]
 
-  __Arguments__ { Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Boolean, true) }
   function ExportToText(self, includeDB)
 
 
@@ -1638,7 +1652,7 @@ _REGISTERED_FRAMES = {}
     return encode
   end
 
-  __Arguments__ { Class, String }
+  __Arguments__ { ClassType, String }
   __Static__() function GetFromText(self, text)
     -- decode from base 64
     local decode = API:DecodeFromBase64(text)
@@ -1764,7 +1778,7 @@ _REGISTERED_FRAMES = {}
     LUA_TABLE = 2,
   }
 
-  __Arguments__ { Theme, Argument(SourceType, true, SourceFlags.DATABASE + SourceFlags.LUA_TABLE), Argument(OverrideFlags, true, OverrideFlags.OVERRIDE_THEME_INFO) }
+  __Arguments__ { Theme, Variable.Optional(SourceType, SourceFlags.DATABASE + SourceFlags.LUA_TABLE), Variable.Optional(OverrideFlags, OverrideFlags.OVERRIDE_THEME_INFO) }
   function Override(self, theme, sourceFlags, overrideFlags)
     if ValidateFlags(overrideFlags, OverrideFlags.OVERRIDE_THEME_INFO) then
       self.name = theme.name
@@ -1820,7 +1834,7 @@ _REGISTERED_FRAMES = {}
 
   __Arguments__{ SerializationInfo }
   function Theme(self, info)
-    This(self)
+    this(self)
 
     self.name = info:GetValue("name", String)
     self.author = info:GetValue("author", String)
@@ -1830,9 +1844,9 @@ _REGISTERED_FRAMES = {}
     self.properties = info:GetValue("properties", SDictionary)
   end
 
-  __Arguments__ { Theme, Argument(Boolean, true, true )}
+  __Arguments__ { Theme, Variable.Optional(Boolean, true )}
   function Theme(self, orig)
-    This(self)
+    this(self)
 
     if orig.lua then
       for elementID, properties in orig.properties:GetIterator() do
@@ -1861,7 +1875,7 @@ class "Themes"
   _CURRENT_THEME = nil
   _THEMES = Dictionary()
 
-  __Static__() __Arguments__ { Class, Theme }
+  __Static__() __Arguments__ { ClassType, Theme }
   function Register(self, theme)
     if not _THEMES[theme.name] then
       _THEMES[theme.name] = theme
@@ -1872,7 +1886,7 @@ class "Themes"
     end
   end
 
-  __Static__() __Arguments__ { Class, String }
+  __Static__() __Arguments__ { ClassType, String }
   function Select(self, themeName)
     local theme = _THEMES[themeName]
     if theme then
@@ -1885,7 +1899,7 @@ class "Themes"
     end
   end
 
-  __Static__() __Arguments__ { Class }
+  __Static__() __Arguments__ { ClassType }
   function GetSelected(self)
     -- In case where no theme has been selected
     if not _CURRENT_THEME then
@@ -1906,12 +1920,12 @@ class "Themes"
     return _CURRENT_THEME
   end
 
-  __Static__() __Arguments__ { Class }
+  __Static__() __Arguments__ { ClassType }
   function GetIterator(self)
     return _THEMES:GetIterator()
   end
 
-  __Static__() __Arguments__ { Class, String }
+  __Static__() __Arguments__ { ClassType, String }
   function Get(self, name)
     for _, theme in _THEMES:GetIterator() do
       if theme.name == name then
@@ -1920,12 +1934,12 @@ class "Themes"
     end
   end
 
-  __Static__() __Arguments__  { Class, String }
+  __Static__() __Arguments__  { ClassType, String }
   function GetFirst(self)
     for _, theme in _THEMES:GetIterator() do return theme end
   end
 
-  __Arguments__ { Class }
+  __Arguments__ { ClassType }
   __Static__() function LoadFromDB(self)
     Database:SelectRoot()
 
@@ -1959,7 +1973,7 @@ class "Themes"
 
 
   -- Create a DB Theme, it hightly advised to use this function
-  __Arguments__ { Class, String, String, String, String, Argument(String, true, "none"), Argument(Boolean, true, false)}
+  __Arguments__ { ClassType, String, String, String, String, Variable.Optional(String, "none"), Variable.Optional(Boolean, false)}
   __Static__() function CreateDBTheme(self, name, author, version, stage, themeToCopy, includeDB )
     -- Check if a theme already exists before to continue
     Database:SelectRoot()
@@ -2025,7 +2039,7 @@ class "Themes"
   end
 
 
-  __Arguments__ { Class, String }
+  __Arguments__ { ClassType, String }
   __Static__() function Delete(self, name)
     local theme = self:Get(name)
     if theme and theme.lua == false then
@@ -2040,7 +2054,7 @@ class "Themes"
     return false
   end
 
-  __Arguments__ { Class, String, Argument(String, true) }
+  __Arguments__ { ClassType, String, Variable.Optional(String) }
   __Static__() function Import(self, importText, destName)
     local theme, msg = Theme:GetFromText(importText)
     if theme then
@@ -2067,7 +2081,7 @@ class "Themes"
   end
 
 
-  __Arguments__ { Class }
+  __Arguments__ { ClassType }
   __Static__() function Print(self)
     print("----[[ Themes ]]----")
     local i = 1
@@ -2123,7 +2137,7 @@ class "Frame"
       self.needToBeRedraw = true
       Scorpio.Delay(0.25, function()
           local aborted = false
-          if ObjectIsInterface(self, IReusable) and self.isReusable then
+          if Interface.IsSubType(getmetatable(self), IReusable) and self.isReusable then
             aborted = true
           end
 
@@ -2159,17 +2173,17 @@ class "Frame"
   --                        SetPoint Methods                                  --
   ------------------------------------------------------------------------------
   -- It's highly advised to use these functions for anchoring frames
-  __Arguments__ { String, Table, String, Argument(Number, true), Argument(Number, true)}
+  __Arguments__ { String, Table, String, Variable.Optional(Number), Variable.Optional(Number)}
   function SetPoint(self, point, relativeTo, relativePoint, xOffset, yOffset)
     self:GetFrameContainer():SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
   end
 
-  __Arguments__ { String, Frame, String, Argument(Number, true), Argument(Number, true)}
+  __Arguments__ { String, Frame, String, Variable.Optional(Number), Variable.Optional(Number)}
   function SetPoint(self, point, relativeTo, relativePoint, xOffset, yOffset)
-    This.SetPoint(self, point, relativeTo:GetFrameContainer(), relativePoint, xOffset, yOffset)
+    SetPoint(self, point, relativeTo:GetFrameContainer(), relativePoint, xOffset, yOffset)
   end
 
-  __Arguments__ { String, Argument(Number, true, 0), Argument(Number, true, 0) }
+  __Arguments__ { String, Variable.Optional(Number, 0), Variable.Optional(Number, 0) }
   function SetPoint(self, point, offsetX, offsetY)
     self:GetFrameContainer():SetPoint(point, offsetX, offsetY)
   end
@@ -2182,7 +2196,7 @@ class "Frame"
   --                 Visibility Methods                                       --
   ------------------------------------------------------------------------------
   function Show(self)
-    if ObjectIsInterface(self, IReusable) then
+    if Interface.IsSubType(getmetatable(self), IReusable) then
       if not self.isReusable then
         self:ForceShow()
       end
@@ -2214,30 +2228,30 @@ class "Frame"
   ------------------------------------------------------------------------------
   --                    SetParent Methods                                     --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Table, true) }
+  __Arguments__ { Variable.Optional(Table) }
   function SetParent(self, parent)
     self:GetFrameContainer():SetParent(parent)
   end
 
   __Arguments__ { Frame }
   function SetParent(self, parent)
-    This.SetParent(parent:GetFrameContainer())
+    SetParent(parent:GetFrameContainer())
   end
 
   ------------------------------------------------------------------------------
   --                   Refresh & Skin Methods                                 --
   ------------------------------------------------------------------------------
   -- This function contains stuff related to skin system.
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info, alreadyInit)
   end
 
   -- This function is similar to SkinFeatures, and called after SkinFeatures
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function ExtraSkinFeatures(self, info, alreadyInit)
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()) }
   function Refresh(self, info)
       self:SkinFeatures(info)
       self:ExtraSkinFeatures(info)
@@ -2245,8 +2259,8 @@ class "Frame"
 
   __Arguments__ { Userdata }
   function InitRefresh(self, this)
-    this.SkinFeatures(self, Theme.SKIN_INFO_ALL_FLAGS, false)
-    this.ExtraSkinFeatures(self, Theme.SKIN_INFO_ALL_FLAGS, false)
+    Class.GetMethod(this, "SkinFeatures", true)(self, Theme.SKIN_INFO_ALL_FLAGS, false)
+    Class.GetMethod(this, "ExtraSkinFeatures", true)(self, Theme.SKIN_INFO_ALL_FLAGS, false)
   end
   ------------------------------------------------------------------------------
   --                   Other Methods                                          --
@@ -2258,7 +2272,7 @@ class "Frame"
   end
 
   -- Returns the current state. Nil if there is no state.
-  -- This method may be overrided if the frame uses states. 
+  -- This method may be overrided if the frame uses states.
   function GetCurrentState(self)
     return nil
   end
@@ -2268,7 +2282,7 @@ class "Frame"
   ------------------------------------------------------------------------------
   -- This function return if the frame must be interactive (i.e, answer to click events)
   -- NOTE: This function is used to prevent the button can be clicked outside of scrolling.
-  __Arguments__ { Class, Argument(Table) }
+  __Arguments__ { ClassType, Table }
   __Static__() function MustBeInteractive(self, frame)
 
     local yTop = frame:GetTop()
@@ -2334,19 +2348,19 @@ class "Frame"
   -- You should alaways set this code to the end of main constructor:
   -- if self:CanExecInitMethods(This) then self:ExecInitMethods() end
   function CanExecInitMethods(self, this)
-    return tostring(System.Reflector.GetObjectClass(self)) == tostring(this)
+    return tostring(Class.GetObjectClass(self)) == tostring(this)
   end
 
   __Arguments__ { Userdata}
   function IsFinalConstructor(self, this)
-    return tostring(System.Reflector.GetObjectClass(self)) == tostring(this)
+    return tostring(Class.GetObjectClass(self)) == tostring(this)
   end
   ------------------------------------------------------------------------------
   --                         Properties                                       --
   ------------------------------------------------------------------------------
   property "frame" {TYPE = Table }
-  property "width" { TYPE = Number, HANDLER = UpdateWidth }
-  property "height" { TYPE = Number, HANDLER = UpdateHeight }
+  property "width" { TYPE = Number, HANDLER = UpdateWidth, DEFAULT = 0 }
+  property "height" { TYPE = Number, HANDLER = UpdateHeight, DEFAULT = 0 }
   property "baseHeight" { TYPE = Number, DEFAULT = 0 }
   property "baseWidth" { TYPE = Number, DEFAULT = 0 }
   property "needToBeRedraw" { TYPE = Boolean, DEFAULT = false } -- use internally
@@ -2530,11 +2544,11 @@ class "BorderFrame" inherit "Frame"
   ------------------------------------------------------------------------------
   --                   Refresh & Skin Methods                                 --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function ExtraSkinFeatures(self, info, alreadyInit)
     -- Call the super function
     if alreadyInit then
-      Super.ExtraSkinFeatures(self)
+      super.ExtraSkinFeatures(self)
     end
 
     -- Get the selected theme by user
@@ -2578,7 +2592,7 @@ class "BorderFrame" inherit "Frame"
   --                         Constructors                                     --
   ------------------------------------------------------------------------------
   function BorderFrame(self)
-    Super(self)
+    super(self)
 
     _BorderFrameCache[self] = true
 
@@ -2607,17 +2621,17 @@ endclass "State"
 class "States"
   _STATES = Dictionary()
 
-  __Arguments__ { Class, State}
+  __Arguments__ { ClassType, State}
   __Static__() function Add(self, state)
     _STATES[state.id] = state
   end
 
-  __Arguments__ { Class }
+  __Arguments__ { ClassType }
   __Static__() function GetIterator()
     return _STATES:GetIterator()
   end
 
-  __Arguments__ { Class, String }
+  __Arguments__ { ClassType, String }
   __Static__() function Get(self, stateID)
     return _STATES[stateID]
   end

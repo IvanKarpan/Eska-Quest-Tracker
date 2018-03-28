@@ -6,6 +6,7 @@
 Scorpio                "EskaQuestTracker.Classes.Quest"                       ""
 --============================================================================--
 namespace "EQT"
+_EQTAddon = _Addon
 --============================================================================--
 class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   _QuestCache = setmetatable( {}, { __mode = "v" } )
@@ -114,13 +115,13 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info, alreadyInit)
     -- In orter to avoid useless function calls, this is important to call not the super
     -- when the object has not finished its intialization.
     -- So put always this check in Refresh, SkinFeature, ExtraSkinFeatures Methods.
     if alreadyInit then
-      Super.SkinFeatures(self, skinInfo)
+      super.SkinFeatures(self, skinInfo)
     end
 
     local state = nil
@@ -144,19 +145,19 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function ExtraSkinFeatures(self, info, alreadyInit)
     -- In orter to avoid useless function calls, this is important to call not the super
     -- when the object has not finished its intialization.
     -- So put always this check in Refresh, SkinFeature, ExtraSkinFeatures Methods.
     if alreadyInit then
-      Super.SkinFeatures(self, skinInfo)
+      super.SkinFeatures(self, skinInfo)
     end
 
     local theme = Themes:GetSelected()
     if not theme then return end
 
-    if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
+    if Enum.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
       local headerName = self.frame.headerName
       local elementID = headerName.elementID
       local inheritElementID = headerName.inheritElementID
@@ -205,12 +206,12 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     self.IsCompletedChanged = nil
 
     -- Reset variables
-    --self.objectives =  ObjectArray(Objective)
+    --self.objectives =  Array[Objective]()
     --self:ClearObjectives()
 
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_QuestCache) do
       obj:Refresh(skinInfo)
@@ -218,7 +219,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   end
 
   function RegisterFramesForThemeAPI(self)
-    local class = System.Reflector.GetObjectClass(self)
+    local class = Class.GetObjectClass(self)
 
     Theme:RegisterFrame(class._prefix..".frame", self.frame, "quest.frame")
     Theme:RegisterFrame(class._prefix..".header", self.frame.header, "quest.header")
@@ -247,7 +248,7 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function Quest(self)
-    Super(self)
+    super(self)
 
     local frame = CreateFrame("Frame")
     frame:SetBackdrop(_Backdrops.Common)
@@ -302,25 +303,25 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
             end
         end
       elseif button == "RightButton" then
-        if _Addon.MenuContext:IsShown() then
-          _Addon.MenuContext:Hide()
+        if _EQTAddon.MenuContext:IsShown() then
+          _EQTAddon.MenuContext:Hide()
         else
-          _Addon.MenuContext:Show()
-          _Addon.MenuContext:ClearAnchorFrames():AnchorTo(headerFrame):UpdateAnchorPoint()
-          _Addon.MenuContext:Clear()
-          _Addon.MenuContext:AddItem("Create a group", nil, function() GroupFinder:CreateGroup(self.id) end)
-          _Addon.MenuContext:AddItem("Join a group", nil, function() GroupFinder:JoinGroup(self.id) end)
-          _Addon.MenuContext:AddItem(MenuItemSeparator())
-          _Addon.MenuContext:AddItem("Leave the group", nil, GroupFinder.LeaveGroup)
-          _Addon.MenuContext:AddItem(MenuItemSeparator())
+          _EQTAddon.MenuContext:Show()
+          _EQTAddon.MenuContext:ClearAnchorFrames():AnchorTo(headerFrame):UpdateAnchorPoint()
+          _EQTAddon.MenuContext:Clear()
+          _EQTAddon.MenuContext:AddItem("Create a group", nil, function() GroupFinder:CreateGroup(self.id) end)
+          _EQTAddon.MenuContext:AddItem("Join a group", nil, function() GroupFinder:JoinGroup(self.id) end)
+          _EQTAddon.MenuContext:AddItem(MenuItemSeparator())
+          _EQTAddon.MenuContext:AddItem("Leave the group", nil, GroupFinder.LeaveGroup)
+          _EQTAddon.MenuContext:AddItem(MenuItemSeparator())
           if not QuestUtils_IsQuestWorldQuest(self.id) then
             if GetSuperTrackedQuestID() == self.id then
-              _Addon.MenuContext:AddItem("Stop tracking", nil, function() SetSuperTrackedQuestID(0); QuestSuperTracking_ChooseClosestQuest() end)
+              _EQTAddon.MenuContext:AddItem("Stop tracking", nil, function() SetSuperTrackedQuestID(0); QuestSuperTracking_ChooseClosestQuest() end)
             else
-              _Addon.MenuContext:AddItem("Track", nil, function() SetSuperTrackedQuestID(self.id) end)
+              _EQTAddon.MenuContext:AddItem("Track", nil, function() SetSuperTrackedQuestID(self.id) end)
             end
           end
-          _Addon.MenuContext:AddItem("Show details", nil, function()
+          _EQTAddon.MenuContext:AddItem("Show details", nil, function()
             local questLogIndex = GetQuestLogIndexByID(self.id);
             if ( IsQuestComplete(self.id) and GetQuestLogIsAutoComplete(questLogIndex) ) then
               ShowQuestComplete(questLogIndex);
@@ -328,15 +329,15 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
               QuestLogPopupDetailFrame_Show(questLogIndex)
             end
           end)
-          _Addon.MenuContext:AddItem("Link to chat", nil, function() ChatFrame_OpenChat(GetQuestLink(self.id)) end)
-          _Addon.MenuContext:AddItem(MenuItemSeparator())
+          _EQTAddon.MenuContext:AddItem("Link to chat", nil, function() ChatFrame_OpenChat(GetQuestLink(self.id)) end)
+          _EQTAddon.MenuContext:AddItem(MenuItemSeparator())
 
           -- Abandon (Only for Quests)
           if not QuestUtils_IsQuestWorldQuest(self.id) and CanAbandonQuest(self.id) then
-            _Addon.MenuContext:AddItem("Abandon", nil, function() QuestMapQuestOptions_AbandonQuest(self.id) end)
-            _Addon.MenuContext:AddItem(MenuItemSeparator())
+            _EQTAddon.MenuContext:AddItem("Abandon", nil, function() QuestMapQuestOptions_AbandonQuest(self.id) end)
+            _EQTAddon.MenuContext:AddItem(MenuItemSeparator())
           end
-          _Addon.MenuContext:AddItem("Help", nil, function() print("Put a Help handler here !") end).disabled = true
+          _EQTAddon.MenuContext:AddItem("Help", nil, function() print("Put a Help handler here !") end).disabled = true
         end
       end
     end)
@@ -366,9 +367,9 @@ class "Quest" inherit "Frame" extend "IReusable" "IObjectiveHolder"
     _QuestCache[self] = true
     -- Important: Always use 'This' to avoid issues when this class is inherited by
     -- other classes.
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     -- Important: Don't forgot 'This' as argument to this method !
-    self:InitRefresh(This)
+    self:InitRefresh(Quest)
   end
 endclass "Quest"
 --============================================================================--

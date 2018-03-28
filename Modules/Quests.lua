@@ -40,7 +40,7 @@ function OnLoad(self)
 
 end
 
-__Thread__()
+__Async__()
 function OnEnable(self)
   if not _QuestBlock then
     _QuestBlock = QuestBlock()
@@ -72,7 +72,7 @@ function UPDATE_BLOCK_VISIBILITY(quest)
 end
 
 
-__Thread__()
+__Async__()
 __SystemEvent__()
 function QUEST_ACCEPTED(index, questID)
   -- Don't continue if the quest is a world quest or a emissary
@@ -322,7 +322,7 @@ do
   end
 
 
-  __Thread__()
+  __Async__()
   function UpdateDistance()
     while Options:Get("sort-quests-by-distance") do
       for index, quest in _QuestBlock.quests:GetIterator() do

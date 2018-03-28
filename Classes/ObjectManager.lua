@@ -8,7 +8,7 @@ Scorpio            "EskaQuestTracker.Classes.ObjectManager"                   ""
 namespace "EQT"
 import "System"
 import "System.Recycle"
-import "System.Reflector"
+
 -- ========================================================================== --
 
 class "ObjectManager"
@@ -32,7 +32,7 @@ function GetQuestHeader(self)
   return self:Get(QuestHeader)
 end
 
-__Arguments__ { Class }
+__Arguments__ { ClassType }
 function Get(self, type)
   local obj
   if type == Quest then
@@ -54,18 +54,18 @@ end
 __Arguments__ { IReusable }
 function Recycle(self, obj)
 
-  if ObjectIsClass(obj, Quest) then
+  if Class.IsSubType(getmetatable(obj), Quest) then
     self.questRecycler(obj)
-  elseif ObjectIsClass(obj, Objective) then
+  elseif Class.IsSubType(getmetatable(obj), Objective) then
     self.objectiveRecycler(obj)
-  elseif ObjectIsClass(obj, QuestItem) then
+  elseif Class.IsSubType(getmetatable(obj), QuestItem) then
     self.questItemRecycler(obj)
-  elseif ObjectIsClass(obj, QuestHeader) then
+  elseif Class.IsSubType(getmetatable(obj), QuestHeader) then
     self.questHeaderRecycler(obj)
   end
 end
 
-__Arguments__{ Class }
+__Arguments__{ ClassType }
 function Register(self, type)
   if not self.recyclers[type] then
     self.recyclers[type] = System.Recycle(type)

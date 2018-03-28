@@ -14,10 +14,10 @@ class "BonusQuest" inherit "Quest"
   ------------------------------------------------------------------------------
   __Arguments__{}
   function Draw(self)
-    Super.Draw(self)
+    super.Draw(self)
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_BonusQuestCache) do
       obj:Refresh(skinInfo)
@@ -31,7 +31,7 @@ class "BonusQuest" inherit "Quest"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function BonusQuest(self)
-    Super(self)
+    super(self)
 
     -- Keep it in the cache for later.
     _BonusQuestCache[self] = true
@@ -53,7 +53,7 @@ class "BonusObjectives" inherit "Block"
         self.height = self.height + (new - old)
       end
 
-      self.OnDrawRequest()
+      self:OnDrawRequest()
     end
   end
 
@@ -72,7 +72,7 @@ class "BonusObjectives" inherit "Block"
       bonusQuest.OnHeightChanged = nil
       bonusQuest.isReusable = true
 
-      self.OnDrawRequest()
+      self:OnDrawRequest()
     end
   end
 
@@ -110,7 +110,7 @@ class "BonusObjectives" inherit "Block"
     self.height = self.baseHeight + height
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_BonusObjectivesCache) do
       obj:Refresh(skinInfo)
@@ -124,10 +124,10 @@ class "BonusObjectives" inherit "Block"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function BonusObjectives(self)
-    Super(self, "bonusObjectives", 12)
+    super(self, "bonusObjectives", 12)
     self.text = "Bonus Objectives"
 
-    self.bonusQuests = ObjectArray(BonusQuest)
+    self.bonusQuests = Array[BonusQuest]()
 
     -- Keep it in the cache for later.
     _BonusObjectivesCache[self] = true

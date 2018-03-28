@@ -6,7 +6,7 @@
 Scorpio            "EskaQuestTracker.Interfaces.IReusable"               "1.0.0"
 -- ========================================================================== --
 namespace "EQT"
-import "System.Reflector"
+
 -- ========================================================================== --
 interface "IReusable"
   -- ======================================================================== --
@@ -17,7 +17,7 @@ interface "IReusable"
       if self.Reset then
         self:Reset()
       end
-      if ObjectIsClass(self, Frame) then
+      if Class.IsSubType(getmetatable(self), Frame) then
         self.needToBeRedraw = nil
       end
 

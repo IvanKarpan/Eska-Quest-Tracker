@@ -21,17 +21,17 @@ class "Block" inherit "Frame"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_BlockCache) do
       obj:Refresh(skinInfo)
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info, alreadyInit)
     if alreadyInit then
-      Super.SkinFeatures(self, info)
+      super.SkinFeatures(self, info)
     end
 
     Theme:NewSkinFrame(self.frame, info)
@@ -40,16 +40,16 @@ class "Block" inherit "Frame"
     Theme:NewSkinTexture(self.frame.header.stripe, info)
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function ExtraSkinFeatures(self, info, alreadyInit)
     if alreadyInit then
-      Super.ExtraSkinFeatures(self, info)
+      super.ExtraSkinFeatures(self, info)
     end
 
     local theme = Themes:GetSelected()
     if not theme then return end
 
-    if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
+    if Enum.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
       local headerText = self.frame.header.text
       local elementID = headerText.elementID
       local inheritElementID = headerText.inheritElementID
@@ -67,7 +67,7 @@ class "Block" inherit "Frame"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    local class = System.Reflector.GetObjectClass(self)
+    local class = Class.GetObjectClass(self)
 
 
     Theme:RegisterFrame(class._prefix..".frame", self.frame, "block.frame")
@@ -89,7 +89,7 @@ class "Block" inherit "Frame"
   ------------------------------------------------------------------------------
   __Arguments__ { }
   function Block(self)
-    Super(self)
+    super(self)
 
     local frame = CreateFrame("Frame")
     frame:SetBackdrop(_Backdrops.CommonWithBiggerBorder)
@@ -127,9 +127,9 @@ class "Block" inherit "Frame"
     _BlockCache[self] = true
     -- Important: Always use 'This' to avoid issues when this class is inherited by
     -- other classes.
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     -- Important: Don't forgot 'This' as argument to this method !
-    self:InitRefresh(This)
+    self:InitRefresh(Block)
   end
 
   __Arguments__{ String, Number }
@@ -137,7 +137,7 @@ class "Block" inherit "Frame"
     self.id = id
     self.priority = priority
 
-    This(self)
+    this(self)
   end
 endclass "Block"
 -- ========================================================================== --

@@ -49,7 +49,7 @@ function EnableAndDisableOn(self, ...)
   return inInstance and (type == "party") and IsInScenario() and GetActiveKeystoneInfo() == 0
 end
 
-__Thread__()
+__Async__()
 __SystemEvent__ "SCENARIO_CRITERIA_UPDATE" "CRITERIA_COMPLETE" "SCENARIO_UPDATE"
 function UpdateObjectives()
   local dungeonName, _, numObjectives = GetStepInfo()

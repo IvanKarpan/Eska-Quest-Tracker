@@ -26,11 +26,11 @@ class "QuestBlock" inherit "Block"
         quest.OnHeightChanged = function(_, new, old)
           self.height = self.height + (new - old)
         end
-        quest.OnDistanceChanged = function() self.OnDrawRequest() end
+        quest.OnDistanceChanged = function() self:OnDrawRequest() end
       end
       self.quests:Insert(quest)
-      self.OnDrawRequest()
-      _M:FireSystemEvent("EQT_QUESTBLOCK_QUEST_ADDED", quest)
+      self:OnDrawRequest()
+      Scorpio.FireSystemEvent("EQT_QUESTBLOCK_QUEST_ADDED", quest)
     end
   end
 
@@ -63,9 +63,9 @@ class "QuestBlock" inherit "Block"
     if Options:Get("quest-categories-enabled") then
       self:RemoveQuestFromHeader(quest)
     end
-    self.OnDrawRequest()
+    self:OnDrawRequest()
 
-    _M:FireSystemEvent("EQT_QUESTBLOCK_QUEST_REMOVED", quest)
+    Scorpio.FireSystemEvent("EQT_QUESTBLOCK_QUEST_REMOVED", quest)
     quest.isReusable = true
   end
 
@@ -95,7 +95,7 @@ class "QuestBlock" inherit "Block"
     end
 
     header.OnQuestDistanceChanged = function(h)
-      self.OnDrawRequest()
+      self:OnDrawRequest()
     end
 
     self.headers[name] = header
@@ -215,7 +215,7 @@ class "QuestBlock" inherit "Block"
       header:AddQuest(quest)
     end
     -- Request a draw to displaying changes
-    self.OnDrawRequest()
+    self:OnDrawRequest()
   end
 
   function DisableCategories(self)
@@ -229,10 +229,10 @@ class "QuestBlock" inherit "Block"
       quest.OnHeightChanged = function(_, new, old)
         self.height = self.height + (new - old )
       end
-      quest.OnDistanceChanged = function() self.OnDrawRequest() end
+      quest.OnDistanceChanged = function() self:OnDrawRequest() end
     end
     -- Request a draw to displaying changes
-    self.OnDrawRequest()
+    self:OnDrawRequest()
   end
 
 
@@ -247,7 +247,7 @@ class "QuestBlock" inherit "Block"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_QuestBlockCache) do
       obj:Refresh(skinInfo)
@@ -258,7 +258,7 @@ class "QuestBlock" inherit "Block"
     TYPE = Boolean,
     SET = function(self, filteringByZone)
       _DB.Quests.filteringByZone = filteringByZone
-      _M:FireSystemEvent("EQT_SHOW_ONLY_QUESTS_IN_ZONE", filteringByZone)
+      Scorpio.FireSystemEvent("EQT_SHOW_ONLY_QUESTS_IN_ZONE", filteringByZone)
     end,
     GET = function(self) return _DB.Quests.filteringByZone end
   }
@@ -270,11 +270,11 @@ class "QuestBlock" inherit "Block"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function QuestBlock(self)
-    Super(self, "quests", 20)
+    super(self, "quests", 20)
     self.text = "Quests"
 
 
-    self.quests = ObjectArray(Quest)
+    self.quests = Array[Quest]()
     self.headers = Dictionary()
 
     -- Keep it in the cache for later.

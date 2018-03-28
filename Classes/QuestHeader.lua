@@ -31,11 +31,11 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
         end
 
         quest.OnDistanceChanged = function()
-          self.OnDrawRequest()
+          self:OnDrawRequest()
           self.OnQuestDistanceChanged()
          end
 
-        self.OnDrawRequest()
+        self:OnDrawRequest()
       end
     end
 
@@ -45,7 +45,7 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
       if found then
         quest.OnHeightChanged = nil
         quest.OnDistanceChanged = nil
-        self.OnDrawRequest()
+        self:OnDrawRequest()
       end
     end
 
@@ -114,17 +114,17 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info, alreadyInit)
     if alreadyInit then
-      Super.SkinFeatures(self, info)
+      super.SkinFeatures(self, info)
     end
 
     Theme:SkinFrame(self.frame, nil, nil, skinFlags)
     Theme:SkinText(self.frame.name, self.name, nil, skinFlags)
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_QuestHeaderCache) do
       obj:Refresh(skinInfo)
@@ -133,7 +133,7 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    local class = System.Reflector.GetObjectClass(self)
+    local class = Class.GetObjectClass(self)
 
     Theme:RegisterFrame(class._prefix..".frame", self.frame)
     Theme:RegisterText(class._prefix..".name", self.frame.name)
@@ -157,7 +157,7 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function QuestHeader(self, name)
-    Super(self)
+    super(self)
     local frame = CreateFrame("Frame")
     frame:SetBackdrop(_Backdrops.Common)
     frame:SetBackdropBorderColor(0,0,0,0)
@@ -170,15 +170,15 @@ class "QuestHeader" inherit "Frame" extend "IReusable"
     self.frame = frame
     self.height = 29
     self.baseHeight = self.height
-    self.quests = ObjectArray(Quest)
+    self.quests = Array[Quest]()
 
     -- Keep it in the cache for later.
     _QuestHeaderCache[self] = true
     -- Important: Always use 'This' to avoid issues when this class is inherited by
     -- other classes.
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     -- Important: Don't forgot 'This' as argument to this method !
-    self:InitRefresh(This)
+    self:InitRefresh(QuestHeader)
   end
 endclass "QuestHeader"
 --============================================================================--

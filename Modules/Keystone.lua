@@ -73,7 +73,7 @@ function EnableAndDisableOn(self)
   return GetActiveKeystoneInfo() > 0
 end
 
-__Thread__()
+__Async__()
 __SystemEvent__ "SCENARIO_CRITERIA_UPDATE" "CRITERIA_UPDATE" "SCENARIO_UPDATE"
 function UpdateObjectives()
     local dungeonName, _, numObjectives = GetStepInfo()
@@ -106,7 +106,7 @@ function UpdateObjectives()
     _Keystone:Draw()
 end
 
-__Thread__()
+__Async__()
 __SystemEvent__()
 function CHALLENGE_MODE_START(timerID)
   _Keystone.timer = 0
@@ -122,7 +122,7 @@ function WORLD_MAP_UPDATE()
   _Keystone.texture = select(6, EJ_GetInstanceInfo(EJ_GetCurrentInstance()))
 end
 
-__Thread__()
+__Async__()
 function UpdateTimer(self)
     while not _Keystone.isCompleted do
        local _, elapsedTime = GetWorldElapsedTime(1)

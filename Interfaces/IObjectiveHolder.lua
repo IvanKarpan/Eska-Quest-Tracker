@@ -6,7 +6,7 @@
 Scorpio         "EskaQuestTracker.Interfaces.IObjectiveHolder"           "1.0.0"
 -- ========================================================================== --
 namespace "EQT"
-import "System.Reflector"
+
 -- ========================================================================== --
 interface "IObjectiveHolder"
   -- ======================================================================== --
@@ -31,8 +31,8 @@ interface "IObjectiveHolder"
         --self:Draw()
       --end
     end
-    if ObjectIsClass(self, Frame) then
-      self.OnDrawRequest()
+    if Class.IsSubType(getmetatable(self), Frame) then
+      self:OnDrawRequest()
     end
   end
   -- ======================================================================== --
@@ -167,7 +167,7 @@ end
   -- Constructors
   -- ======================================================================== --
   function IObjectiveHolder(self)
-    self.objectives = ObjectArray(Objective)
+    self.objectives = Array[Objective]()
   end
 
 endinterface "IObjectiveHolder"

@@ -109,7 +109,7 @@ class "ItemBar" inherit "Frame"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function ItemBar(self)
-    Super(self)
+    super(self)
 
     local frame = CreateFrame("Frame", "EQT-ItemBar", UIParent, "SecureFrameTemplate")
     frame:SetPoint("CENTER")

@@ -24,10 +24,10 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info, alreadyInit)
     if alreadyInit then
-      Super.SkinFeatures(self, info)
+      super.SkinFeatures(self, info)
     end
 
     Theme:SkinFrame(self.frame.stage)
@@ -38,15 +38,15 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     Theme:SkinText(self.frame.stageCounter, string.format("%i/%i", self.currentStage, self.numStages))
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function ExtraSkinFeatures(self, info, alreadyInit)
       if alreadyInit then
-        Super.ExtraSkinFeatures(self, info)
+        super.ExtraSkinFeatures(self, info)
       end
       local theme = Themes:GetSelected()
       if not theme then return end
 
-      if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
+      if Enum.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
         local name = self.frame.name
         local elementID = name.elementID
         local inheritElementID = name.inheritElementID
@@ -82,7 +82,7 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     self.numObjectives = nil
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_ScenarioCache) do
       obj:Refresh(skinInfo)
@@ -91,7 +91,7 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    local class = System.Reflector.GetObjectClass(self)
+    local class = Class.GetObjectClass(self)
 
     Theme:RegisterFrame(class._prefix..".stage", self.frame.stage)
     -- Text
@@ -113,7 +113,7 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function Scenario(self)
-    Super(self, "scenario", 10)
+    super(self, "scenario", 10)
     self.text = "Scenario"
 
     local header = self.frame.header
@@ -156,9 +156,9 @@ class "Scenario" inherit "Block" extend "IObjectiveHolder"
     _ScenarioCache[self] = true
     -- Important: Always use 'This' to avoid issues when this class is inherited by
     -- other classes.
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     -- Important: Don't forgot 'This' as argument to this method !
-    self:InitRefresh(This)
+    self:InitRefresh(Scenario)
   end
 endclass "Scenario"
 

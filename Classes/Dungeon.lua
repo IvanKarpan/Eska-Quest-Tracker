@@ -78,26 +78,26 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
       self.height = height
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info, alreadyInit)
     -- Call the parent if the object is already init.
     if alreadyInit then
-      Super.SkinFeatures(self, info)
+      super.SkinFeatures(self, info)
     end
 
     Theme:NewSkinFrame(self.frame.ftex, info)
     Theme:NewSkinText(self.frame.name, Theme.SKIN_TEXT_ALL_FLAGS, self.name)
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function ExtraSkinFeatures(self, info, alreadyInit)
       if alreadyInit then
-        Super.ExtraSkinFeatures(self, info)
+        super.ExtraSkinFeatures(self, info)
       end
       local theme = Themes:GetSelected()
       if not theme then return end
 
-      if System.Reflector.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
+      if Enum.ValidateFlags(info.textFlags, Theme.SkinTextFlags.TEXT_LOCATION) then
         local name = self.frame.name
         local elementID = name.elementID
         local inheritElementID = name.inheritElementID
@@ -128,7 +128,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     self:Draw()
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_DungeonCache) do
       obj:Refresh(skinInfo)
@@ -144,7 +144,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
 
   __Arguments__ {}
   function RegisterFramesForThemeAPI(self)
-    local class = System.Reflector.GetObjectClass(self)
+    local class = Class.GetObjectClass(self)
 
     Theme:RegisterFrame(class._prefix..".icon", self.frame.ftex, "block.dungeon.icon")
     Theme:RegisterText(class._prefix..".name", self.frame.name, "block.dungeon.name")
@@ -160,7 +160,7 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function Dungeon(self)
-    Super(self, "dungeon", 10)
+    super(self, "dungeon", 10)
     self.text = "Dungeon"
 
     local header = self.frame.header
@@ -199,9 +199,9 @@ class "Dungeon" inherit "Block" extend "IObjectiveHolder"
     _DungeonCache[self] = true
     -- Important: Always use 'This' to avoid issues when this class is inherited by
     -- other classes.
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     -- Important: Don't forgot 'This' as argument to this method !
-    self:InitRefresh(This)
+    self:InitRefresh(Dungeon)
   end
 endclass "Dungeon"
 

@@ -22,7 +22,7 @@ class "WorldQuestBlock" inherit "Block"
         self.height = self.height + (new - old)
       end
 
-      self.OnDrawRequest()
+      self:OnDrawRequest()
     end
   end
 
@@ -41,7 +41,7 @@ class "WorldQuestBlock" inherit "Block"
       worldQuest.OnHeightChanged = nil
       worldQuest.isReusable = true
 
-      self.OnDrawRequest()
+      self:OnDrawRequest()
     end
   end
 
@@ -79,7 +79,7 @@ class "WorldQuestBlock" inherit "Block"
     self.height = self.baseHeight + height
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_WorldQuestBlockCache) do
       obj:Refresh(skinInfo)
@@ -93,10 +93,10 @@ class "WorldQuestBlock" inherit "Block"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function WorldQuestBlock(self)
-    Super(self, "worldQuests", 15)
+    super(self, "worldQuests", 15)
     self.text = "World Quests"
 
-    self.worldQuests = ObjectArray(WorldQuest)
+    self.worldQuests = Array[WorldQuest]()
 
     -- Keep it in the cache for later.
     _WorldQuestBlockCache[self] = true

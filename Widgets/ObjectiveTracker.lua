@@ -6,6 +6,9 @@
 Scorpio        "EskaQuestTracker.Widgets.ObjectiveTrackerFrame"               ""
 --============================================================================--
 namespace "EQT"
+
+_EQTAddon = _Addon
+
 --============================================================================--
 class "ObjectiveTracker" inherit "BorderFrame"
   _Obj = {}
@@ -94,7 +97,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
   --      Some frames can need to get theses handler in order to Tracker      --
   --      moving works.                                                       --
   ------------------------------------------------------------------------------
-  _Addon.ObjectiveTrackerMouseDown = function(f, button)
+  _EQTAddon.ObjectiveTrackerMouseDown = function(f, button)
     if button == "LeftButton" and not Options:Get("tracker-locked") and _Obj then
       if not Frame:MustBeInteractive(f) then
         return
@@ -104,7 +107,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     end
   end
 
-  _Addon.ObjectiveTrackerMouseUp = function(f, button)
+  _EQTAddon.ObjectiveTrackerMouseUp = function(f, button)
     if button == "LeftButton" and not Options:Get("tracker-locked") and _Obj then
       if not Frame:MustBeInteractive(f) then
         return
@@ -131,7 +134,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     self:GetFrameContainer():SetMovable(not locked)
   end
 
-  __Arguments__ { Number, Number, Argument(Boolean, true, true, "saveInDB")}
+  __Arguments__ { Number, Number, Variable("saveInDB", Boolean, true, true)}
   function SetPosition(self, x, y, saveInDB)
     --self.frame:ClearAllPoints()
     --self.frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)
@@ -171,7 +174,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     end
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()) }
   function Refresh(self, skinInfo, callSuper)
     --Theme:SkinFrame(self.frame, nil, nil, skinFlags)
     --Theme:SkinFrame(self.scrollbar, nil, nil, skinFlags)
@@ -185,7 +188,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     self:ExtraSkinFeatures()
   end
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     if _Obj then
       _Obj:Refresh(skinInfo)
@@ -209,7 +212,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function ObjectiveTracker(self)
-    Super(self)
+    super(self)
 
     self:SetSize(Options:Get("tracker-width"), Options:Get("tracker-height"))
     self:SetParent(UIParent)
@@ -229,8 +232,8 @@ class "ObjectiveTracker" inherit "BorderFrame"
     self:SetLocked(Options:Get("tracker-locked"))
 
     -- Drag and move functions
-    self:GetFrameContainer():SetScript("OnMouseDown", _Addon.ObjectiveTrackerMouseDown)
-    self:GetFrameContainer():SetScript("OnMouseUp", _Addon.ObjectiveTrackerMouseUp)
+    self:GetFrameContainer():SetScript("OnMouseDown", _EQTAddon.ObjectiveTrackerMouseDown)
+    self:GetFrameContainer():SetScript("OnMouseUp", _EQTAddon.ObjectiveTrackerMouseUp)
 
     local scrollFrame = CreateFrame("ScrollFrame", "EQT-ObjectiveTrackerFrameScrollFrame", self.frame, "UIPanelScrollFrameTemplate")
     scrollFrame:SetPoint("TOP")
@@ -283,7 +286,7 @@ class "ObjectiveTracker" inherit "BorderFrame"
     self.scrollbar = scrollbar
     self.scrollbar.thumb = thumb
 
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     self:Refresh()
 
     _Obj = self

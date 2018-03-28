@@ -147,7 +147,7 @@ function UpdateObjectives(self)
   --_Scenario:Draw()
 end
 
-__Thread__()
+__Async__()
 function RunTimer(self)
   while HasTimer do
     self:UpdateObjectives()

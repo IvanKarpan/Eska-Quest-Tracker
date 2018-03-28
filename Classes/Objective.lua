@@ -237,7 +237,7 @@ class "Objective" inherit "Frame" extend "IReusable"
     self.height = height
   end
 
-  __Arguments__  { Argument(Theme.SkinInfo, true, Theme.SkinInfo()) }
+  __Arguments__  { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()) }
   function Refresh(self, skinFlags)
     self:SkinFeatures()
 
@@ -245,11 +245,11 @@ class "Objective" inherit "Frame" extend "IReusable"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SkinInfo()), Argument(Boolean, true, true) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SkinInfo()), Variable.Optional(Boolean, true) }
   function SkinFeatures(self, info)
     -- Call the parent if the object is already init.
     if alreadyInit then
-      Super.SkinFeatures(self, info)
+      super.SkinFeatures(self, info)
     end
 
     local state = self:GetCurrentState()
@@ -260,7 +260,7 @@ class "Objective" inherit "Frame" extend "IReusable"
   end
 
 
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_ObjectiveCache) do
       obj:Refresh(skinInfo)
@@ -303,7 +303,7 @@ class "Objective" inherit "Frame" extend "IReusable"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function Objective(self)
-    Super()
+    super(self)
 
     self.frame = CreateFrame("Frame")
     self.frame:SetBackdrop(_Backdrops.Common)
@@ -335,16 +335,16 @@ class "Objective" inherit "Frame" extend "IReusable"
     _ObjectiveCache[self] = true
     -- Important: Always use 'This' to avoid issues when this class is inherited by
     -- other classes.
-    This.RegisterFramesForThemeAPI(self)
+    RegisterFramesForThemeAPI(self)
     -- Important: Don't forgot 'This' as argument to this method !
-    self:InitRefresh(This)
+    self:InitRefresh(Objective)
   end
 endclass "Objective"
 
   class "DottedObjective" inherit "Frame" extend "IReusable"
   	_DottedObjectiveCache = setmetatable( {}, { __mode = "k"})
   	function DottedObjective(self)
-  		Super(self)
+  		super(self)
 
   		local frame = CreateFrame("Frame")
   		frame:SetHeight(8)

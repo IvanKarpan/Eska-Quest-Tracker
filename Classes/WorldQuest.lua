@@ -12,7 +12,7 @@ class "WorldQuest" inherit "Quest"
   ------------------------------------------------------------------------------
   --                                   Methods                                --
   ------------------------------------------------------------------------------
-  __Arguments__ { Argument(Theme.SkinInfo, true, Theme.SKIN_INFO_ALL_FLAGS) }
+  __Arguments__ { Variable.Optional(Theme.SkinInfo, Theme.SKIN_INFO_ALL_FLAGS) }
   __Static__() function RefreshAll(skinInfo)
     for obj in pairs(_WorldQuestCache) do
       obj:Refresh(skinInfo)
@@ -26,7 +26,7 @@ class "WorldQuest" inherit "Quest"
   --                            Constructors                                  --
   ------------------------------------------------------------------------------
   function WorldQuest(self)
-      Super(self)
+      super(self)
       -- Keep it in the cache for later.
       _WorldQuestCache[self] = true
   end

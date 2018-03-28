@@ -42,6 +42,10 @@ class "ItemButton" inherit "Frame" extend "IReusable"
     self.frame.texture:SetTexture(texture)
   end
 
+  function GetTexture(self)
+    return self.__texture
+  end
+
   function Reset(self)
     self:Hide()
     self.frame:ClearAllPoints()
@@ -51,7 +55,7 @@ class "ItemButton" inherit "Frame" extend "IReusable"
     self.frame.cooldown:SetCooldown(start, duration)
   end
 
-  __Thread__()
+  __Async__()
   function RefreshRange(self)
     local frame = self.frame
     while frame:IsShown() do
